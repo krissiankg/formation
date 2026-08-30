@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Connexion — Supabase · FORGE IA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --surface: #171d17;
+      --border: #30382f;
+      --text: #f4f2e8;
+      --muted: #9ca493;
+      --accent: #aa9158;
+      --accent-hover: #c4a96a;
+      --error: #dc4c4c;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(170, 145, 88, 0.15), transparent),
+        radial-gradient(ellipse 60% 40% at 100% 100%, rgba(48, 56, 47, 0.5), transparent);
+      pointer-events: none;
+    }
+    .card {
+      position: relative;
+      width: 100%;
+      max-width: 420px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 40px 36px;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+    }
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .subtitle {
+      margin: 0 0 28px;
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    input {
+      width: 100%;
+      padding: 12px 14px;
+      margin-bottom: 18px;
+      font-size: 1rem;
+      font-family: inherit;
+      color: var(--text);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(170, 145, 88, 0.2);
+    }
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      font-family: inherit;
+      color: #0a0a0a;
+      background: var(--accent);
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    button:hover { background: var(--accent-hover); }
+    .error {
+      display: none;
+      margin-bottom: 16px;
+      padding: 12px 14px;
+      font-size: 0.875rem;
+      color: #ffb4b4;
+      background: rgba(220, 76, 76, 0.12);
+      border: 1px solid rgba(220, 76, 76, 0.35);
+      border-radius: 10px;
+    }
+    .error.visible { display: block; }
+    .footer {
+      margin-top: 28px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-align: center;
+    }
+    .footer a { color: var(--accent); text-decoration: none; }
+    .footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <span class="badge">FORGE IA · Supabase</span>
+    <h1>Espace administrateur</h1>
+    <p class="subtitle">Connectez-vous pour accéder au tableau de bord Supabase (base de données, auth, storage).</p>
+
+    <div id="error" class="error" role="alert"></div>
+
+    <form method="post" action="/auth/login.php">
+      <input type="hidden" name="next" id="next" value="/" />
+      <label for="username">Identifiant</label>
+      <input id="username" name="username" type="text" autocomplete="username" required autofocus />
+
+      <label for="password">Mot de passe</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required />
+
+      <button type="submit">Se connecter</button>
+    </form>
+
+    <p class="footer">
+      Plateforme <a href="https://forgeia.guelichweb.store">FORGE IA</a> · Accès réservé aux administrateurs
+    </p>
+  </div>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const next = params.get("next") || "/";
+    if (next.startsWith("/") && !next.startsWith("//")) {
+      document.getElementById("next").value = next;
+    }
+    const err = params.get("error");
+    if (err) {
+      const el = document.getElementById("error");
+      el.textContent = err === "invalid" ? "Identifiant ou mot de passe incorrect." : "Une erreur est survenue. Réessayez.";
+      el.classList.add("visible");
+    }
+  </script>
+</body>
+</html>
