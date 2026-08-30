@@ -1,0 +1,391 @@
+@import "tailwindcss";
+
+:root {
+  /* EffyTech exact palette */
+  --neutral-50: #fbfaf4;
+  --neutral-100: #f4f2e8;
+  --neutral-200: #e8e5d9;
+  --neutral-300: #d7d2c5;
+  --neutral-400: #9ca493;
+  --neutral-500: #727867;
+  --neutral-600: #596157;
+  --neutral-700: #465043;
+  --neutral-800: #30382f;
+  --neutral-900: #20261f;
+  --neutral-950: #0a0a0a;
+  --neutral-black: #171d17;
+
+  --accent: #aa9158;
+  --accent-dark: #8f7947;
+  --accent-darkest: #6e5d36;
+  --accent-light: #c7c9bf;
+  --accent-lightest: #f3f1e7;
+
+  --border: #d7d2c5;
+  --border-light: #e8e5d9;
+  --border-dark: #9ca493;
+
+  --bg: var(--neutral-50);
+  --bg-soft: var(--neutral-100);
+  --text: var(--neutral-black);
+  --muted: var(--neutral-500);
+  --error: #dc4c4c;
+}
+
+@theme inline {
+  --color-background: var(--bg);
+  --color-foreground: var(--text);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-line: var(--border);
+  --font-sans: var(--font-body);
+  --font-display: var(--font-heading);
+  --font-mono: var(--font-code);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body), Inter, system-ui, sans-serif;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent) 35%, white);
+  color: var(--neutral-black);
+}
+
+.font-display {
+  font-family: var(--font-heading), Inter, system-ui, sans-serif;
+}
+
+.font-mono {
+  font-family: var(--font-code), ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.section-kicker {
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent-dark);
+  font-weight: 600;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  border-radius: 999px;
+  background: var(--neutral-black);
+  color: var(--neutral-50);
+  font-weight: 600;
+  padding: 0.9rem 1.4rem;
+  transition: background 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--neutral-black) 12%, transparent);
+}
+
+.btn-primary:hover {
+  background: var(--neutral-800);
+  transform: translateY(-1px);
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--neutral-black);
+  background: color-mix(in srgb, white 55%, transparent);
+  padding: 0.9rem 1.4rem;
+  transition: border-color 0.25s ease, background 0.25s ease, transform 0.25s ease;
+}
+
+.btn-ghost:hover {
+  border-color: var(--accent);
+  background: var(--accent-lightest);
+  transform: translateY(-1px);
+}
+
+.input-field {
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid var(--border);
+  background: var(--neutral-100);
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  color: var(--neutral-black);
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.input-field:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.accent-text {
+  color: var(--accent-dark);
+}
+
+/* —— EffyTech animations —— */
+@keyframes effy-code-caret {
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes effy-code-flow {
+  to {
+    stroke-dashoffset: -48px;
+  }
+}
+
+@keyframes effy-code-orbit {
+  to {
+    rotate: 360deg;
+  }
+}
+
+@keyframes meshShift {
+  0% {
+    background-position: 0 0, 100% 100%, 50%, 0 0;
+  }
+  33% {
+    background-position: 30% 60%, 70% 30%, 20% 80%, 0 0;
+  }
+  66% {
+    background-position: 80% 20%, 20% 80%, 60% 20%, 0 0;
+  }
+  to {
+    background-position: 100% 100%, 0 0, 80% 60%, 0 0;
+  }
+}
+
+@keyframes scanLine {
+  0% {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(100vh);
+  }
+}
+
+@keyframes effyCorePulse {
+  0%,
+  to {
+    opacity: 0.28;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 0.75;
+    transform: scale(1.02);
+  }
+}
+
+@keyframes footer-marquee-scroll {
+  0% {
+    transform: translate(0);
+  }
+  to {
+    transform: translate(-50%);
+  }
+}
+
+@keyframes effyMenuIn {
+  0% {
+    opacity: 0;
+    transform: translate(34px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0);
+  }
+}
+
+@keyframes effy-proof-orb-one {
+  0% {
+    transform: translate(-10px, -12px) scale(0.96);
+  }
+  to {
+    transform: translate(22px, 18px) scale(1.05);
+  }
+}
+
+@keyframes effy-proof-orb-two {
+  0% {
+    transform: translate(16px, 10px) scale(1.04);
+  }
+  to {
+    transform: translate(-18px, -14px) scale(0.95);
+  }
+}
+
+@keyframes effy-code-terminal-in {
+  0% {
+    opacity: 0;
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0);
+  }
+}
+
+@keyframes effy-code-scroll {
+  50% {
+    transform: translateY(4px);
+  }
+}
+
+@keyframes effy-code-status {
+  50% {
+    opacity: 0.35;
+    transform: scale(0.75);
+  }
+}
+
+@keyframes effy-boot-progress {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes fadeRise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mesh-bg {
+  background-color: var(--neutral-50);
+  background-image:
+    radial-gradient(ellipse 60% 50% at 15% 20%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 60%),
+    radial-gradient(ellipse 50% 45% at 85% 15%, color-mix(in srgb, var(--neutral-400) 22%, transparent), transparent 55%),
+    radial-gradient(ellipse 55% 50% at 50% 90%, color-mix(in srgb, var(--accent-light) 35%, transparent), transparent 60%),
+    linear-gradient(180deg, var(--neutral-50), var(--neutral-100));
+  background-size: 140% 140%, 140% 140%, 140% 140%, 100% 100%;
+  animation: meshShift 18s ease-in-out infinite alternate;
+}
+
+.scan-line {
+  pointer-events: none;
+  position: absolute;
+  inset-inline: 0;
+  height: 120px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in srgb, var(--accent) 18%, transparent),
+    transparent
+  );
+  animation: scanLine 7s linear infinite;
+  opacity: 0.35;
+}
+
+.core-pulse {
+  animation: effyCorePulse 3.2s ease-in-out infinite;
+}
+
+.orbit {
+  animation: effy-code-orbit 18s linear infinite;
+}
+
+.terminal-in {
+  animation: effy-code-terminal-in 0.9s ease both;
+}
+
+.caret-blink {
+  animation: effy-code-caret 1s step-end infinite;
+}
+
+.status-pulse {
+  animation: effy-code-status 1.6s ease-in-out infinite;
+}
+
+.orb-one {
+  animation: effy-proof-orb-one 7s ease-in-out infinite alternate;
+}
+
+.orb-two {
+  animation: effy-proof-orb-two 9s ease-in-out infinite alternate;
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: footer-marquee-scroll 28s linear infinite;
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.fade-up {
+  animation: fadeRise 0.75s ease both;
+}
+
+@keyframes waFloatPulse {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-5px) scale(1.04);
+  }
+}
+
+@keyframes waRing {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  100% {
+    transform: scale(1.75);
+    opacity: 0;
+  }
+}
+
+.wa-float {
+  animation: waFloatPulse 2.4s ease-in-out infinite;
+}
+
+.wa-float:hover {
+  animation-play-state: paused;
+}
+
+.wa-float-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  border: 2px solid #25d366;
+  animation: waRing 2s ease-out infinite;
+  pointer-events: none;
+}
