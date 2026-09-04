@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { brand, contact } from "@/lib/config/formation";
 
 const links = [
@@ -14,10 +15,19 @@ export function SiteHeader() {
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
         <Link
           href="/"
-          className="font-display text-xl font-semibold tracking-tight text-[color:var(--neutral-black)]"
+          className="flex items-center gap-2.5 group"
         >
-          {brand.name}
-          <span className="text-[color:var(--accent)]">.</span>
+          <Image
+            src="/logo-color.png"
+            alt="Logo FORGEIA"
+            width={34}
+            height={34}
+            className="rounded-lg object-contain transition group-hover:scale-105"
+            priority
+          />
+          <span className="font-logo text-lg font-black tracking-wider text-[color:var(--neutral-black)]">
+            FORGE<span className="text-[color:var(--accent)]">IA</span>
+          </span>
         </Link>
         <nav className="hidden items-center gap-7 text-sm text-[color:var(--neutral-600)] md:flex">
           {links.map((link) => (
