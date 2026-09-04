@@ -1,46 +1,68 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
 import { formation } from "@/lib/config/formation";
+import type { ScheduleId } from "@/lib/types";
 import { formatFcfa } from "@/lib/format";
 
-type FormState = {
+type InscriptionState = {
   fullName: string;
   email: string;
   whatsapp: string;
-  schedule: "saturday" | "sunday" | "";
+  schedule: ScheduleId;
   acceptTerms: boolean;
-};
-
-const initial: FormState = {
-  fullName: "",
-  email: "",
-  whatsapp: "",
-  schedule: "",
-  acceptTerms: false,
+  promoCode: string;
 };
 
 export function InscriptionForm() {
-  const router = useRouter();
-  const [form, setForm] = useState<FormState>(initial);
+  const [form, setForm] = useState<InscriptionState>({
+    fullName: "",
+    email: "",
+    whatsapp: "",
+    schedule: "saturday",
+    acceptTerms: false,
+    promoCode: "",
+  });
+
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [promoChecked, setPromoChecked] = useState<"idle" | "valid" | "invalid">("idle");
+  const [, startTransition] = useTransition();
+
+  const promoApplied = promoChecked === "valid";
+
+  async function checkPromo() {
+    const code = form.promoCode.trim();
+    if (!code) return;
+    try {
+      const res = await fetch("/api/inscriptions/check-promo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ promoCode: code }),
+      });
+      const data = (await res.json()) as { valid?: boolean };
+      if (data.valid) {
+        setPromoChecked("valid");
+        setError(null);
+      } else {
+        setPromoChecked("invalid");
+      }
+    } catch {
+      setPromoChecked("invalid");
+    }
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
 
-    if (!form.schedule) {
-      setError("Choisis ton créneau (samedi ou dimanche).");
-      return;
-    }
     if (!form.acceptTerms) {
-      setError("Accepte les conditions pour continuer.");
+      setError("Tu dois accepter les conditions pour continuer.");
       return;
     }
 
     setLoading(true);
+
     try {
       const res = await fetch("/api/inscriptions", {
         method: "POST",
@@ -50,17 +72,23 @@ export function InscriptionForm() {
           email: form.email,
           whatsapp: form.whatsapp,
           schedule: form.schedule,
-          acceptTerms: true,
+          acceptTerms: form.acceptTerms,
+          promoCode: promoApplied ? form.promoCode.trim() : undefined,
         }),
       });
-      const data = (await res.json()) as {
-        error?: string;
-        paymentUrl?: string;
-        enrollmentId?: string;
-      };
+
+      const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error ?? "Impossible de créer l'inscription.");
+        setError(data.error ?? "Une erreur est survenue lors de l'inscription.");
+        setLoading(false);
+        return;
+      }
+
+      if (data.promoApplied) {
+        startTransition(() => {
+          window.location.href = `/inscription/confirmation?id=${data.enrollmentId}&promo=1`;
+        });
         return;
       }
 
@@ -69,10 +97,10 @@ export function InscriptionForm() {
         return;
       }
 
-      router.push(`/inscription/confirmation?id=${data.enrollmentId}`);
+      setError("Impossible d'initialiser le paiement.");
+      setLoading(false);
     } catch {
-      setError("Erreur réseau. Réessaie dans un instant.");
-    } finally {
+      setError("Erreur réseau. Vérifie ta connexion et réessaie.");
       setLoading(false);
     }
   }
@@ -136,6 +164,44 @@ export function InscriptionForm() {
         </div>
       </fieldset>
 
+      {/* ── Code promo (discret sans exemple affiché) ─────────────────────────── */}
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-[color:var(--neutral-black)]">
+          Code promo <span className="font-normal text-[color:var(--neutral-500)]">(facultatif)</span>
+        </label>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={form.promoCode}
+            onChange={(v) => {
+              setForm((s) => ({ ...s, promoCode: v.target.value }));
+              setPromoChecked("idle");
+            }}
+            placeholder="Entrez votre code"
+            className="flex-1 rounded-xl border border-[color:var(--border)] bg-[color:var(--neutral-50)] px-4 py-3 text-[color:var(--neutral-black)] uppercase outline-none transition focus:border-[color:var(--accent)]"
+          />
+          <button
+            type="button"
+            onClick={checkPromo}
+            disabled={!form.promoCode.trim() || loading}
+            className="btn-ghost shrink-0"
+          >
+            Appliquer
+          </button>
+        </div>
+        {promoChecked === "valid" && (
+          <p className="text-sm font-medium text-green-600">
+            ✓ Code valide — frais d&apos;inscription offerts !
+          </p>
+        )}
+        {promoChecked === "invalid" && (
+          <p className="text-sm text-[color:var(--error)]">
+            Code promo invalide.
+          </p>
+        )}
+      </div>
+
+      {/* ── Récapitulatif paiement ─────────────────────────────────────────────── */}
       <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--neutral-100)] p-4 text-sm text-[color:var(--neutral-600)]">
         <p className="font-medium text-[color:var(--neutral-black)]">
           Plan de paiement
@@ -143,9 +209,16 @@ export function InscriptionForm() {
         <ul className="mt-3 space-y-2">
           <li className="flex justify-between gap-3">
             <span>Frais d&apos;inscription (maintenant)</span>
-            <span className="text-[color:var(--neutral-black)]">
-              {formatFcfa(formation.registrationFee)}
-            </span>
+            {promoApplied ? (
+              <span className="font-medium text-green-600">
+                <s className="mr-1 text-[color:var(--neutral-400)]">{formatFcfa(formation.registrationFee)}</s>
+                Offerts
+              </span>
+            ) : (
+              <span className="text-[color:var(--neutral-black)]">
+                {formatFcfa(formation.registrationFee)}
+              </span>
+            )}
           </li>
           {formation.installments.map((item) => (
             <li key={item.id} className="flex justify-between gap-3">
@@ -173,7 +246,7 @@ export function InscriptionForm() {
         />
         <span>
           Je confirme mon choix de créneau et je m&apos;engage à payer{" "}
-          {formatFcfa(formation.registrationFee)} pour réserver ma place.
+          {promoApplied ? "0 FCFA" : formatFcfa(formation.registrationFee)} pour réserver ma place.
         </span>
       </label>
 
@@ -185,8 +258,10 @@ export function InscriptionForm() {
 
       <button type="submit" className="btn-primary w-full" disabled={loading}>
         {loading
-          ? "Préparation du paiement…"
-          : `Payer ${formatFcfa(formation.registrationFee)} et s'inscrire`}
+          ? "Traitement en cours…"
+          : promoApplied
+            ? "Confirmer mon inscription (0 FCFA)"
+            : `Payer ${formatFcfa(formation.registrationFee)} et s'inscrire`}
       </button>
     </form>
   );

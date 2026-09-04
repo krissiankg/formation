@@ -62,12 +62,16 @@ export async function createEnrollment(input: {
   return mapRow(data as EnrollmentRow);
 }
 
-export async function markRegistrationPaid(id: string, fedapayId?: string) {
+export async function markPaymentPaid(
+  id: string,
+  kind: PaymentKind,
+  fedapayId?: string,
+) {
   const enrollment = await getEnrollment(id);
   if (!enrollment) return null;
 
   const payments = enrollment.payments.map((p) =>
-    p.kind === "registration"
+    p.kind === kind
       ? {
           ...p,
           status: "paid" as PaymentStatus,
@@ -77,18 +81,27 @@ export async function markRegistrationPaid(id: string, fedapayId?: string) {
       : p,
   );
 
+  const nextStatus: EnrollmentStatus =
+    kind === "registration" ? "registered" : "active";
+
   const supabase = getSupabaseAdmin();
   const { data, error } = await supabase
     .from("enrollments")
-    .update({ status: "registered", payments })
+    .update({ status: nextStatus, payments })
     .eq("id", id)
     .select("*")
     .single();
 
   if (error) throw error;
   const updated = mapRow(data as EnrollmentRow);
-  await initStudentProgress(updated.id);
+  if (kind === "registration") {
+    await initStudentProgress(updated.id);
+  }
   return updated;
+}
+
+export async function markRegistrationPaid(id: string, fedapayId?: string) {
+  return markPaymentPaid(id, "registration", fedapayId);
 }
 
 export async function getEnrollment(id: string) {

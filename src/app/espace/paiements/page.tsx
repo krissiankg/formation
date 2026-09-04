@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
-import { PageHeader, PaymentsPanel } from "@/components/espace/shared";
+import { PageHeader } from "@/components/espace/shared";
+import { PaymentsClient } from "@/components/espace/PaymentsClient";
 import { getPaymentSchedule } from "@/lib/programme/payments";
 import { brand } from "@/lib/config/formation";
 import { getStudentContext } from "@/lib/store/student-context";
@@ -21,9 +22,9 @@ export default async function PaiementsPage() {
       <PageHeader
         kicker="Paiements"
         title="Suivi de tes échéances"
-        description="Consulte ce que tu as déjà payé et ce qui reste à régler pour la formation."
+        description="Consulte ce que tu as déjà payé et règle directement tes prochaines tranches par Mobile Money."
       />
-      <PaymentsPanel items={items} />
+      <PaymentsClient items={items} />
     </div>
   );
 }
