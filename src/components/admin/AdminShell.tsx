@@ -9,6 +9,7 @@ const nav = [
   { id: "overview", label: "Tableau de bord", href: "/admin" },
   { id: "inscrits", label: "Inscrits", href: "/admin/inscrits" },
   { id: "programme", label: "Programme", href: "/admin/programme" },
+  { id: "tests", label: "Tests & Quiz", href: "/admin/tests" },
   { id: "seances", label: "Séances", href: "/admin/seances" },
   { id: "contenus", label: "Ressources", href: "/admin/contenus" },
   { id: "todos", label: "À faire", href: "/admin/todos" },

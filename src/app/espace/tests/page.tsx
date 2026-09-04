@@ -1,10 +1,12 @@
 import { redirect } from "next/navigation";
-import { PageHeader, TestsPanel } from "@/components/espace/shared";
+import { PageHeader } from "@/components/espace/shared";
+import { StudentTestsClient } from "@/components/espace/StudentTestsClient";
 import { brand } from "@/lib/config/formation";
 import { getStudentContext } from "@/lib/store/student-context";
+import { getStudentQuizzes } from "@/lib/quiz/store";
 
 export const metadata = {
-  title: `Tests — ${brand.name}`,
+  title: `Tests & Quiz — ${brand.name}`,
 };
 
 export const dynamic = "force-dynamic";
@@ -13,18 +15,16 @@ export default async function TestsPage() {
   const ctx = await getStudentContext();
   if (!ctx) redirect("/connexion");
 
-  const tests = ctx.progress.modules.flatMap((m) =>
-    m.lessons.filter((l) => l.type === "test"),
-  );
+  const quizzes = await getStudentQuizzes(ctx.enrollment.id);
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="mx-auto max-w-4xl space-y-6">
       <PageHeader
-        kicker="Tests"
-        title="Quiz & validation"
-        description="Valide ce que tu as appris après certaines séances. Les tests se débloquent progressivement."
+        kicker="Évaluations"
+        title="Quiz & Validation des acquis"
+        description="Valide tes compétences après chaque séance. Obtiens ta note immédiate, tes explications détaillées et débloque ta progression."
       />
-      <TestsPanel tests={tests} />
+      <StudentTestsClient quizzes={quizzes} />
     </div>
   );
 }
