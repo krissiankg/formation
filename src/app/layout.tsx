@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, Inter, Newsreader } from "next/font/google";
+import { IBM_Plex_Mono, Inter, Newsreader, Orbitron } from "next/font/google";
 import "./globals.css";
 import { brand } from "@/lib/config/formation";
 import { WhatsAppFloat } from "@/components/WhatsAppFloat";
@@ -13,6 +13,12 @@ const heading = Newsreader({
   variable: "--font-heading",
   subsets: ["latin"],
   style: ["normal", "italic"],
+});
+
+const logoFont = Orbitron({
+  variable: "--font-logo",
+  subsets: ["latin"],
+  weight: ["700", "800", "900"],
 });
 
 const mono = IBM_Plex_Mono({
@@ -30,7 +36,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="fr"
-      className={`${body.variable} ${heading.variable} ${mono.variable} h-full antialiased`}
+      className={`${body.variable} ${heading.variable} ${mono.variable} ${logoFont.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col mesh-bg">
         {children}

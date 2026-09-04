@@ -1,0 +1,90 @@
+{
+  "name": "forgeia-assistant",
+  "displayName": "Forge IA Assistant",
+  "description": "Assistant IA officiel Forge IA connecté à la passerelle privée de formation",
+  "version": "1.0.0",
+  "publisher": "forgeia",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "icon": "media/icon.png",
+  "categories": [
+    "Machine Learning",
+    "Programming Languages",
+    "Other"
+  ],
+  "keywords": [
+    "forgeia",
+    "ai",
+    "assistant",
+    "deepseek",
+    "code"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "forgeia-view-container",
+          "title": "Forge IA",
+          "icon": "media/icon.png"
+        }
+      ]
+    },
+    "views": {
+      "forgeia-view-container": [
+        {
+          "type": "webview",
+          "id": "forgeia.chatView",
+          "name": "Assistant IA"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "forgeia.openChat",
+        "title": "Forge IA : Ouvrir l'assistant"
+      },
+      {
+        "command": "forgeia.explainCode",
+        "title": "Forge IA : Expliquer le code sélectionné"
+      },
+      {
+        "command": "forgeia.fixCode",
+        "title": "Forge IA : Corriger / Améliorer le code sélectionné"
+      },
+      {
+        "command": "forgeia.configureKey",
+        "title": "Forge IA : Configurer ma clé Étudiant"
+      }
+    ],
+    "configuration": {
+      "title": "Forge IA",
+      "properties": {
+        "forgeia.apiUrl": {
+          "type": "string",
+          "default": "https://ia.guelichweb.store/v1",
+          "description": "URL de la passerelle privée Forge IA"
+        },
+        "forgeia.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "Clé personnelle étudiant fournie dans votre espace apprenant"
+        },
+        "forgeia.model": {
+          "type": "string",
+          "default": "deepseek/deepseek-chat",
+          "enum": [
+            "deepseek/deepseek-chat",
+            "deepseek/deepseek-coder",
+            "openrouter/auto"
+          ],
+          "description": "Modèle d'IA utilisé"
+        }
+      }
+    }
+  }
+}

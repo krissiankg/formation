@@ -69,6 +69,11 @@ body {
   font-family: var(--font-heading), Inter, system-ui, sans-serif;
 }
 
+.font-logo {
+  font-family: var(--font-logo), Orbitron, monospace, sans-serif;
+  letter-spacing: 0.08em;
+}
+
 .font-mono {
   font-family: var(--font-code), ui-monospace, SFMono-Regular, Menlo, monospace;
 }

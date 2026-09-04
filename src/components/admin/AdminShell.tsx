@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { brand } from "@/lib/config/formation";
@@ -42,9 +43,17 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       <div className="flex min-h-screen">
         <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-[color:var(--border)] bg-[color:var(--neutral-50)] lg:flex">
           <div className="border-b border-[color:var(--border)] px-5 py-5">
-            <Link href="/" className="font-display text-lg font-semibold tracking-tight">
-              {brand.name}
-              <span className="text-[color:var(--accent)]">.</span>
+            <Link href="/" className="flex items-center gap-2.5 group">
+              <Image
+                src="/logo-color.png"
+                alt="Logo FORGEIA"
+                width={30}
+                height={30}
+                className="rounded-lg object-contain transition group-hover:scale-105"
+              />
+              <span className="font-logo text-base font-black tracking-wider text-[color:var(--neutral-black)]">
+                FORGE<span className="text-[color:var(--accent)]">IA</span>
+              </span>
             </Link>
             <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.16em] text-[color:var(--neutral-500)]">
               Administration
