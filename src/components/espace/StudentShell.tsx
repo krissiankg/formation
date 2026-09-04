@@ -29,8 +29,8 @@ export function StudentShell({
     fullName: string;
     email: string;
     scheduleLabel: string;
-    phone: string;
-    isPaid: boolean;
+    phone?: string;
+    isPaid?: boolean;
   };
 }) {
   const pathname = usePathname();
