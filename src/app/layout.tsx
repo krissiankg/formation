@@ -38,11 +38,20 @@ export const metadata: Metadata = {
     siteName: "FORGEIA",
     locale: "fr_FR",
     type: "website",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "FORGEIA — Formation Présentielle IA Cotonou",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: `${brand.name} — ${brand.tagline}`,
     description: brand.shortDescription,
+    images: ["/og-image.png"],
   },
   icons: {
     icon: [
