@@ -66,23 +66,8 @@ export default async function RessourcesPage() {
         </div>
 
         <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-white/10 pt-6">
-          <a
-            href="/downloads/forgeia-assistant.vsix"
-            download="forgeia-assistant.vsix"
-            className="btn-primary !bg-[color:var(--accent)] !text-[color:var(--neutral-black)] hover:!bg-[color:var(--accent-light)] font-medium inline-flex items-center gap-2 shadow-md"
-          >
-            <span>📥 Télécharger l&apos;extension Forge IA (.vsix)</span>
-          </a>
-          <a
-            href="https://marketplace.visualstudio.com/items?itemName=saoudrizwan.claude-dev"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-ghost !text-white/80 hover:!text-white !border-white/20 text-xs"
-          >
-            Alternative Cline VS Code
-          </a>
-          <span className="text-xs text-white/50 block sm:inline">
-            Compatible VS Code, Cursor, Windsurf &amp; VSCodium.
+          <span className="text-xs text-white/70">
+            Utilisable avec vos agents de code (Cline, Cursor, etc.) via le protocole standard OpenAI compatible.
           </span>
         </div>
       </div>
