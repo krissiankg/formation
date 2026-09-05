@@ -12,6 +12,7 @@ const nav = [
   { id: "tests", label: "Tests & Quiz", href: "/espace/tests" },
   { id: "projects", label: "Projets SaaS", href: "/espace/projets" },
   { id: "ressources", label: "Ressources & IA", href: "/espace/ressources" },
+  { id: "avis", label: "Mon avis", href: "/espace/avis" },
   { id: "paiements", label: "Mes paiements", href: "/espace/paiements" },
 ];
 

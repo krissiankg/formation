@@ -10,6 +10,7 @@ const nav = [
   { id: "overview", label: "Tableau de bord", href: "/admin" },
   { id: "inscrits", label: "Inscrits", href: "/admin/inscrits" },
   { id: "projects", label: "Projets SaaS", href: "/admin/projets" },
+  { id: "testimonials", label: "Avis & Témoignages", href: "/admin/avis" },
   { id: "programme", label: "Programme", href: "/admin/programme" },
   { id: "tests", label: "Tests & Quiz", href: "/admin/tests" },
   { id: "seances", label: "Séances", href: "/admin/seances" },

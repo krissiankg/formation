@@ -4,6 +4,7 @@ import { HeroTerminal } from "@/components/HeroTerminal";
 import { Reveal } from "@/components/Reveal";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
+import { TestimonialsSection } from "@/components/TestimonialsSection";
 import { brand, formation } from "@/lib/config/formation";
 import { formatFcfa } from "@/lib/format";
 
@@ -19,6 +20,7 @@ export default function HomePage() {
         <Format />
         <Pricing />
         <Platform />
+        <TestimonialsSection />
         <Faq />
         <FinalCta />
       </main>
@@ -332,7 +334,7 @@ function Faq() {
     >
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <Reveal>
-          <p className="section-kicker">06 — FAQ</p>
+          <p className="section-kicker">07 — FAQ</p>
           <h2 className="font-display mt-3 text-3xl tracking-tight sm:text-4xl">
             Les questions à se poser avant de s&apos;inscrire.
           </h2>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { formation } from "@/lib/config/formation";
 import type { PaymentDisplayItem } from "@/lib/programme/payments";
 
@@ -74,6 +75,18 @@ export function PaymentsClient({ items }: { items: PaymentDisplayItem[] }) {
                   <span className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${colors[item.status]}`}>
                     {item.status}
                   </span>
+
+                  {item.status === "payé" ? (
+                    <Link
+                      href={`/espace/paiements/recu/${item.kind}`}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-[color:var(--border)] bg-white px-3 py-1.5 text-xs font-medium text-[color:var(--neutral-800)] hover:bg-[color:var(--neutral-100)] transition shadow-sm"
+                    >
+                      <svg className="size-3.5 text-[color:var(--accent-dark)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      Reçu officiel
+                    </Link>
+                  ) : null}
 
                   {canPay ? (
                     <button
