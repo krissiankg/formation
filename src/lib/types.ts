@@ -88,3 +88,18 @@ export interface StudentProject {
   studentName?: string;
   studentWhatsapp?: string;
 }
+
+export type TestimonialStatus = "pending" | "approved" | "rejected";
+
+export interface StudentTestimonial {
+  id: string;
+  enrollmentId: string;
+  rating: number;
+  content: string;
+  roleOrProject?: string | null;
+  status: TestimonialStatus;
+  createdAt: string;
+  updatedAt: string;
+  studentName?: string;
+  studentEmail?: string;
+}
