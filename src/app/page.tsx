@@ -33,11 +33,11 @@ function Hero() {
       <div className="scan-line opacity-20" />
       <div className="relative mx-auto grid max-w-6xl gap-12 px-4 pb-20 pt-16 sm:px-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:pb-28 lg:pt-24">
         <div className="fade-up max-w-2xl">
-          <p className="section-kicker mb-5">Systèmes de formation sur mesure</p>
-          <h1 className="font-display text-4xl leading-[1.05] tracking-tight text-[color:var(--neutral-black)] sm:text-5xl lg:text-6xl">
-            Crée.{" "}
-            <span className="italic text-[color:var(--accent-dark)]">Vends.</span>
-            <span className="block">Gagne avec l&apos;IA.</span>
+          <p className="section-kicker mb-5">Programme de formation d&apos;élite</p>
+          <h1 className="font-display text-4xl font-extrabold leading-[1.08] tracking-tight text-[color:var(--neutral-black)] sm:text-5xl lg:text-6xl">
+            Créez.{" "}
+            <span className="text-[color:var(--accent)]">Vendez.</span>
+            <span className="block">Dominez avec l&apos;IA.</span>
           </h1>
           <p className="mt-6 max-w-xl text-lg leading-relaxed text-[color:var(--neutral-600)]">
             {brand.shortDescription} Formation présentielle ·{" "}
@@ -370,9 +370,9 @@ function FinalCta() {
               <p className="section-kicker !text-[color:var(--accent)]">
                 Prêt à construire
               </p>
-              <h2 className="font-display mt-3 text-3xl tracking-tight sm:text-5xl">
+              <h2 className="font-display mt-3 text-3xl font-extrabold tracking-tight sm:text-5xl">
                 PRÊT À{" "}
-                <span className="italic text-[color:var(--accent)]">CRÉER</span>{" "}
+                <span className="text-[color:var(--accent-light)]">CRÉER</span>{" "}
                 PLUS INTELLIGEMMENT ?
               </h2>
               <p className="mt-4 text-white/65">

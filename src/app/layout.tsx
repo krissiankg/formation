@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, Inter, Newsreader, Orbitron } from "next/font/google";
+import { IBM_Plex_Mono, Inter, Plus_Jakarta_Sans, Orbitron } from "next/font/google";
 import "./globals.css";
 import { brand } from "@/lib/config/formation";
 import { WhatsAppFloat } from "@/components/WhatsAppFloat";
@@ -9,10 +9,10 @@ const body = Inter({
   subsets: ["latin"],
 });
 
-const heading = Newsreader({
+const heading = Plus_Jakarta_Sans({
   variable: "--font-heading",
   subsets: ["latin"],
-  style: ["normal", "italic"],
+  weight: ["600", "700", "800"],
 });
 
 const logoFont = Orbitron({
