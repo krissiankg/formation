@@ -30,6 +30,14 @@ const mono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: `${brand.name} — ${brand.tagline}`,
   description: brand.shortDescription,
+  icons: {
+    icon: [
+      { url: "/logo-color.png", type: "image/png" },
+      { url: "/icon.png", type: "image/png" },
+    ],
+    shortcut: "/logo-color.png",
+    apple: "/logo-color.png",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
