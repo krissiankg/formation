@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, Inter, Plus_Jakarta_Sans, Orbitron } from "next/font/google";
+import { IBM_Plex_Mono, Inter, Orbitron } from "next/font/google";
 import "./globals.css";
 import { brand } from "@/lib/config/formation";
 import { WhatsAppFloat } from "@/components/WhatsAppFloat";
@@ -9,10 +9,10 @@ const body = Inter({
   subsets: ["latin"],
 });
 
-const heading = Plus_Jakarta_Sans({
+const heading = Orbitron({
   variable: "--font-heading",
   subsets: ["latin"],
-  weight: ["600", "700", "800"],
+  weight: ["500", "600", "700", "800", "900"],
 });
 
 const logoFont = Orbitron({
@@ -28,8 +28,22 @@ const mono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://forgeia.guelichweb.store"),
   title: `${brand.name} — ${brand.tagline}`,
   description: brand.shortDescription,
+  openGraph: {
+    title: `${brand.name} — ${brand.tagline}`,
+    description: brand.shortDescription,
+    url: "https://forgeia.guelichweb.store",
+    siteName: "FORGEIA",
+    locale: "fr_FR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${brand.name} — ${brand.tagline}`,
+    description: brand.shortDescription,
+  },
   icons: {
     icon: [
       { url: "/logo-color.png", type: "image/png" },
