@@ -60,13 +60,19 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+h1, h2, h3, h4, h5, h6, nav {
+  font-family: var(--font-heading), var(--font-logo), Orbitron, system-ui, sans-serif;
+  letter-spacing: 0.03em;
+}
+
 ::selection {
   background: color-mix(in srgb, var(--accent) 35%, white);
   color: var(--neutral-black);
 }
 
 .font-display {
-  font-family: var(--font-heading), Inter, system-ui, sans-serif;
+  font-family: var(--font-heading), var(--font-logo), Orbitron, system-ui, sans-serif;
+  letter-spacing: 0.02em;
 }
 
 .font-logo {
@@ -79,14 +85,17 @@ body {
 }
 
 .section-kicker {
+  font-family: var(--font-heading), var(--font-logo), Orbitron, monospace, sans-serif;
   font-size: 0.72rem;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--accent-dark);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .btn-primary {
+  font-family: var(--font-heading), var(--font-logo), Orbitron, system-ui, sans-serif;
+  letter-spacing: 0.03em;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -106,6 +115,8 @@ body {
 }
 
 .btn-ghost {
+  font-family: var(--font-heading), var(--font-logo), Orbitron, system-ui, sans-serif;
+  letter-spacing: 0.03em;
   display: inline-flex;
   align-items: center;
   justify-content: center;

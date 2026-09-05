@@ -2,7 +2,12 @@ import { NextResponse } from "next/server";
 import { validateInscription } from "@/lib/types";
 import { createEnrollment } from "@/lib/store/enrollments";
 import { formation } from "@/lib/config/formation";
-import { createFedapayTransaction, notifyTelegram } from "@/lib/integrations";
+import {
+  createFedapayTransaction,
+  notifyTelegram,
+  notifyWhatsApp,
+  notifyAdminWhatsApp,
+} from "@/lib/integrations";
 import { formatFcfa } from "@/lib/format";
 
 export async function POST(request: Request) {
@@ -41,7 +46,12 @@ export async function POST(request: Request) {
       ],
     });
 
-    const origin = new URL(request.url).origin;
+    const host =
+      request.headers.get("x-forwarded-host") ||
+      request.headers.get("host") ||
+      "forgeia.guelichweb.store";
+    const proto = request.headers.get("x-forwarded-proto") || "https";
+    const origin = `${proto}://${host}`;
     const callbackUrl = `${origin}/inscription/confirmation?id=${enrollment.id}`;
 
     const [firstname, ...rest] = data.fullName.trim().split(/\s+/);
@@ -63,9 +73,12 @@ export async function POST(request: Request) {
       },
     });
 
+    const scheduleLabel =
+      formation.schedule[data.schedule]?.label || data.schedule;
+
     await notifyTelegram(
       `<b>Inscription démarrée</b>\n` +
-        `${data.fullName} · ${formation.schedule[data.schedule].label}\n` +
+        `${data.fullName} · ${scheduleLabel}\n` +
         `WhatsApp: ${data.whatsapp}\n` +
         `Montant: ${formatFcfa(formation.registrationFee)}\n` +
         `Mode: ${tx.stub ? "démo (sans clé FedaPay)" : "FedaPay"}`,
@@ -74,6 +87,35 @@ export async function POST(request: Request) {
     const paymentUrl = tx.stub
       ? `${callbackUrl}&mock_payment=1&tx=${tx.id}`
       : tx.paymentUrl;
+
+    // Envoi WhatsApp immédiat de confirmation à l'apprenant
+    try {
+      await notifyWhatsApp(
+        data.whatsapp,
+        `*Bienvenue sur FORGEIA, ${firstname} !*\n\n` +
+          `Ton inscription pour la cohorte d'octobre 2026 (${scheduleLabel}) est bien enregistrée.\n\n` +
+          `👉 *Finalise ta place en réglant les frais d'inscription (${formatFcfa(formation.registrationFee)}) :*\n` +
+          `${paymentUrl}\n\n` +
+          `Une fois ton paiement validé, ton espace apprenant sera débloqué immédiatement.\n\n` +
+          `_L'équipe FORGEIA_`,
+      );
+    } catch (waErr) {
+      console.error("[inscriptions:whatsapp:student:error]", waErr);
+    }
+
+    // Envoi WhatsApp d'alerte à l'administrateur
+    try {
+      await notifyAdminWhatsApp(
+        `🚀 *FORGEIA — Nouvelle inscription démarrée*\n\n` +
+          `👤 *Nom :* ${data.fullName}\n` +
+          `📱 *WhatsApp :* ${data.whatsapp}\n` +
+          `📅 *Créneau :* ${scheduleLabel}\n` +
+          `✉️ *Email :* ${data.email}\n` +
+          `💰 *Montant :* ${formatFcfa(formation.registrationFee)}`,
+      );
+    } catch (waAdminErr) {
+      console.error("[inscriptions:whatsapp:admin:error]", waAdminErr);
+    }
 
     return NextResponse.json({
       enrollmentId: enrollment.id,

@@ -10,6 +10,7 @@ const nav = [
   { id: "overview", label: "Tableau de bord", href: "/espace" },
   { id: "programme", label: "Mon programme", href: "/espace/programme" },
   { id: "tests", label: "Tests & Quiz", href: "/espace/tests" },
+  { id: "projects", label: "Projets SaaS", href: "/espace/projets" },
   { id: "ressources", label: "Ressources & IA", href: "/espace/ressources" },
   { id: "paiements", label: "Mes paiements", href: "/espace/paiements" },
 ];

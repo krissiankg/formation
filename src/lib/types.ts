@@ -64,3 +64,27 @@ export interface Enrollment {
     fedapayId?: string;
   }[];
 }
+
+export type ProjectStatus =
+  | "submitted"
+  | "in_review"
+  | "approved"
+  | "changes_requested";
+
+export interface StudentProject {
+  id: string;
+  enrollmentId: string;
+  title: string;
+  description?: string | null;
+  projectUrl: string;
+  githubUrl?: string | null;
+  demoCredentials?: string | null;
+  status: ProjectStatus;
+  score?: number | null;
+  feedback?: string | null;
+  reviewedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  studentName?: string;
+  studentWhatsapp?: string;
+}

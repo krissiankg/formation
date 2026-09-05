@@ -29,12 +29,12 @@ export function SiteHeader() {
             FORGE<span className="text-[color:var(--accent)]">IA</span>
           </span>
         </Link>
-        <nav className="hidden items-center gap-7 text-sm text-[color:var(--neutral-600)] md:flex">
+        <nav className="hidden items-center gap-7 font-display text-sm font-semibold tracking-wider text-[color:var(--neutral-600)] md:flex">
           {links.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="transition-colors hover:text-[color:var(--neutral-black)]"
+              className="transition-colors hover:text-[color:var(--accent)]"
             >
               {link.label}
             </Link>
