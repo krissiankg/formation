@@ -32,7 +32,7 @@ type AttemptRow = {
   passed: boolean;
   answers: any;
   completed_at: string;
-  enrollments?: { full_name: string; phone: string } | null;
+  enrollments?: { full_name: string; whatsapp: string } | null;
   formation_quizzes?: { title: string } | null;
 };
 
@@ -73,7 +73,7 @@ function mapAttempt(row: AttemptRow): StudentQuizAttempt {
     answers: Array.isArray(row.answers) ? row.answers : [],
     completedAt: row.completed_at,
     studentName: row.enrollments?.full_name,
-    studentPhone: row.enrollments?.phone,
+    studentPhone: row.enrollments?.whatsapp,
     quizTitle: row.formation_quizzes?.title,
   };
 }
@@ -245,7 +245,7 @@ export async function getStudentAttempts(enrollmentId: string): Promise<StudentQ
   const supabase = getSupabaseAdmin();
   const { data, error } = await supabase
     .from("student_quiz_attempts")
-    .select("*, enrollments(full_name, phone), formation_quizzes(title)")
+    .select("*, enrollments(full_name, whatsapp), formation_quizzes(title)")
     .eq("enrollment_id", enrollmentId)
     .order("completed_at", { ascending: false });
 
@@ -257,7 +257,7 @@ export async function listAllAttempts(): Promise<StudentQuizAttempt[]> {
   const supabase = getSupabaseAdmin();
   const { data, error } = await supabase
     .from("student_quiz_attempts")
-    .select("*, enrollments(full_name, phone), formation_quizzes(title)")
+    .select("*, enrollments(full_name, whatsapp), formation_quizzes(title)")
     .order("completed_at", { ascending: false });
 
   if (error) throw error;
@@ -317,7 +317,7 @@ export async function submitQuizAttempt(
       answers: detailedAnswers,
       completed_at: new Date().toISOString(),
     })
-    .select("*, enrollments(full_name, phone), formation_quizzes(title)")
+    .select("*, enrollments(full_name, whatsapp), formation_quizzes(title)")
     .single();
 
   if (error) throw error;
