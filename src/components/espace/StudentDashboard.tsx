@@ -122,10 +122,47 @@ export function StudentDashboard({
         </div>
       </div>
 
+      {/* 🚀 Bannière FORGEIA CODE */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-2xl border border-[color:var(--border)] bg-[#171d17] p-5 text-[#fbfaf4] shadow-sm">
+        <div className="flex items-center gap-3.5">
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-[color:var(--accent)] text-white shadow">
+            <svg className="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+            </svg>
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <p className="font-medium text-white">FORGEIA CODE est disponible !</p>
+              <span className="rounded-full bg-[color:var(--accent)]/20 px-2 py-0.5 font-mono text-[10px] font-semibold text-[color:var(--accent)]">
+                v1.0.0
+              </span>
+            </div>
+            <p className="text-xs text-white/70 mt-0.5">
+              Ton assistant IA autonome dans VS Code, pré-configuré avec la passerelle IA FORGEIA.
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2.5 shrink-0 w-full sm:w-auto">
+          <a
+            href="/downloads/forgeia-code-1.0.0.vsix"
+            download="forgeia-code-1.0.0.vsix"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 rounded-xl bg-[color:var(--accent)] px-4 py-2 text-xs font-semibold text-white shadow transition hover:opacity-90"
+          >
+            Télécharger (.vsix)
+          </a>
+          <Link
+            href="/espace/ressources"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/5 px-4 py-2 text-xs font-medium text-white transition hover:bg-white/10"
+          >
+            Guide & Clé
+          </Link>
+        </div>
+      </div>
+
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {[
           { href: "/espace/programme", label: "Mon programme", hint: "Modules & leçons" },
-          { href: "/espace/ressources", label: "Ressources", hint: "Outils & codes" },
+          { href: "/espace/ressources", label: "Ressources & IA", hint: "FORGEIA CODE & codes" },
           { href: "/espace/paiements", label: "Paiements", hint: "Échéancier" },
           { href: "/espace/tests", label: "Tests", hint: "Quiz & validation" },
         ].map((item) => (
