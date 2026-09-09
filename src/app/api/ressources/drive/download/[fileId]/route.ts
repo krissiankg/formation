@@ -12,15 +12,11 @@ export async function GET(
 ) {
   // 1. Vérification session
   const student = await getSessionEnrollment();
-  let isAuthorized = Boolean(student);
+  const cookieStore = await cookies();
+  const adminToken = cookieStore.get(ADMIN_SESSION_COOKIE)?.value;
+  const isAdmin = await verifyAdminSessionToken(adminToken);
 
-  if (!isAuthorized) {
-    const cookieStore = await cookies();
-    const adminToken = cookieStore.get(ADMIN_SESSION_COOKIE)?.value;
-    isAuthorized = await verifyAdminSessionToken(adminToken);
-  }
-
-  if (!isAuthorized) {
+  if (!student && !isAdmin) {
     return NextResponse.json({ error: "Connexion requise pour télécharger ce fichier." }, { status: 401 });
   }
 
@@ -28,6 +24,18 @@ export async function GET(
 
   if (!fileId || typeof fileId !== "string") {
     return NextResponse.json({ error: "Identifiant de fichier invalide" }, { status: 400 });
+  }
+
+  // 2. Si l'utilisateur est un étudiant (et non l'administrateur), vérifier que le fichier est bien débloqué
+  if (student && !isAdmin) {
+    const { hasStudentUnlockedFile } = await import("@/lib/wallet/store");
+    const isUnlocked = await hasStudentUnlockedFile(student.id, fileId);
+    if (!isUnlocked) {
+      return NextResponse.json(
+        { error: "Fichier verrouillé. Vous devez débloquer cette ressource avec vos coins pour la télécharger." },
+        { status: 403 }
+      );
+    }
   }
 
   try {

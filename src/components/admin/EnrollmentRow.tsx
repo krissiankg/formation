@@ -9,9 +9,11 @@ import { PaymentStatusBadge } from "@/components/admin/PaymentStatusBadge";
 export function EnrollmentRow({
   enrollment,
   compact = false,
+  onGrantCoins,
 }: {
   enrollment: Enrollment;
   compact?: boolean;
+  onGrantCoins?: (student: { id: string; name: string }) => void;
 }) {
   const [sending, setSending] = useState(false);
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
@@ -93,20 +95,34 @@ export function EnrollmentRow({
         })}
       </td>
       <td className="px-4 py-4 text-xs">
-        {statusMsg ? (
-          <span className="font-medium text-xs text-[color:var(--accent-dark)]">{statusMsg}</span>
-        ) : (
-          <button
-            type="button"
-            disabled={sending}
-            onClick={() => handleRemind(paid ? "payment" : "registration")}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-[color:var(--border)] bg-[color:var(--neutral-50)] px-2.5 py-1.5 font-medium text-[color:var(--neutral-black)] transition hover:border-[color:var(--accent)] hover:bg-[color:var(--accent-lightest)] disabled:opacity-50"
-            title={paid ? "Relancer paiement tranches suivantes" : "Relancer paiement inscription"}
-          >
-            <span>💬</span>
-            <span>{paid ? "Relance solde" : "Relancer"}</span>
-          </button>
-        )}
+        <div className="flex items-center gap-1.5">
+          {statusMsg ? (
+            <span className="font-medium text-xs text-[color:var(--accent-dark)]">{statusMsg}</span>
+          ) : (
+            <button
+              type="button"
+              disabled={sending}
+              onClick={() => handleRemind(paid ? "payment" : "registration")}
+              className="inline-flex items-center gap-1 rounded-lg border border-[color:var(--border)] bg-[color:var(--neutral-50)] px-2.5 py-1.5 font-medium text-[color:var(--neutral-black)] transition hover:border-[color:var(--accent)] hover:bg-[color:var(--accent-lightest)] disabled:opacity-50 cursor-pointer"
+              title={paid ? "Relancer paiement tranches suivantes" : "Relancer paiement inscription"}
+            >
+              <span>💬</span>
+              <span>{paid ? "Relance solde" : "Relancer"}</span>
+            </button>
+          )}
+
+          {onGrantCoins && (
+            <button
+              type="button"
+              onClick={() => onGrantCoins({ id: enrollment.id, name: enrollment.fullName })}
+              className="inline-flex items-center gap-1 rounded-lg border border-amber-300 bg-amber-50 px-2 py-1.5 font-medium text-amber-900 transition hover:bg-amber-100 active:scale-95 cursor-pointer shadow-2xs"
+              title="Offrir des coins bonus pour les templates UI8"
+            >
+              <span>🪙</span>
+              <span className="font-semibold">+Coins</span>
+            </button>
+          )}
+        </div>
       </td>
     </tr>
   );
