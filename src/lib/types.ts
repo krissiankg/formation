@@ -55,6 +55,8 @@ export interface Enrollment {
   whatsapp: string;
   schedule: ScheduleId;
   status: EnrollmentStatus;
+  avatarUrl?: string;
+  passwordHash?: string;
   createdAt: string;
   payments: {
     kind: PaymentKind;
