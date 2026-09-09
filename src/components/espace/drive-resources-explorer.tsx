@@ -12,18 +12,17 @@ interface DriveResourceFile {
 }
 
 const QUICK_TAGS = [
-  { label: "🔥 Nouveautés", value: "" },
-  { label: "Wisp Website", value: "wisp website" },
   { label: "SaaS", value: "saas" },
   { label: "Dashboard", value: "dashboard" },
   { label: "Mobile App", value: "mobile app" },
   { label: "Figma UI", value: "figma" },
+  { label: "E-Commerce", value: "ecommerce" },
   { label: "3D & Icons", value: "icon" },
 ];
 
 export function DriveResourcesExplorer() {
   const [files, setFiles] = useState<DriveResourceFile[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [configured, setConfigured] = useState(true);
@@ -33,12 +32,20 @@ export function DriveResourcesExplorer() {
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   async function fetchFiles(query: string) {
+    const trimmed = query.trim();
+
+    // S'il n'y a pas de mot clé de recherche, on ne renvoie et n'affiche aucun fichier
+    if (!trimmed || trimmed.length < 2) {
+      setFiles([]);
+      setSearching(false);
+      setLoading(false);
+      return;
+    }
+
     try {
       setSearching(true);
       setError(null);
-      const url = query.trim()
-        ? `/api/ressources/drive?q=${encodeURIComponent(query.trim())}`
-        : "/api/ressources/drive";
+      const url = `/api/ressources/drive?q=${encodeURIComponent(trimmed)}`;
 
       const res = await fetch(url);
       if (!res.ok) {
@@ -60,29 +67,41 @@ export function DriveResourcesExplorer() {
     }
   }
 
-  // Chargement initial
-  useEffect(() => {
-    fetchFiles("");
-  }, []);
-
-  // Détection de la saisie avec debounce 350ms pour recherche dynamique
+  // Détection de la saisie utilisateur avec debounce (350ms)
   function handleSearchChange(val: string) {
     setSearch(val);
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
     }
+
+    if (!val.trim() || val.trim().length < 2) {
+      setFiles([]);
+      setSearching(false);
+      return;
+    }
+
     setSearching(true);
     debounceTimerRef.current = setTimeout(() => {
       fetchFiles(val);
     }, 350);
   }
 
+  // Clic sur une suggestion : sélectionne ou DÉSÉLECTIONNE si déjà actif
   function handleTagClick(tagValue: string) {
-    setSearch(tagValue);
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
     }
-    fetchFiles(tagValue);
+
+    if (search.toLowerCase() === tagValue.toLowerCase()) {
+      // Désélectionner
+      setSearch("");
+      setFiles([]);
+      setSearching(false);
+    } else {
+      // Sélectionner
+      setSearch(tagValue);
+      fetchFiles(tagValue);
+    }
   }
 
   const displayedFiles = useMemo(() => {
@@ -91,19 +110,17 @@ export function DriveResourcesExplorer() {
   }, [files, onlyZip]);
 
   const zipCount = useMemo(() => files.filter((f) => f.isZip).length, [files]);
+  const hasQuery = search.trim().length >= 2;
 
   return (
     <div className="overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[color:var(--neutral-50)] p-6 text-[color:var(--neutral-black)] sm:p-8 shadow-sm">
-      {/* En-tête */}
+      {/* En-tête avec uniquement Collection UI8 */}
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[color:var(--accent-lightest)] px-3 py-1 font-mono text-xs font-semibold text-[color:var(--accent-darkest)]">
-              <span className="size-2 rounded-full bg-[color:var(--accent)] animate-pulse" />
-              Drive Privé Connecté
-            </span>
-            <span className="rounded-full bg-[color:var(--neutral-100)] px-2.5 py-1 font-mono text-xs font-medium text-[color:var(--neutral-600)]">
-              Collection UI8 Complète
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[color:var(--neutral-100)] px-3 py-1 font-mono text-xs font-semibold text-[color:var(--neutral-700)]">
+              <span className="size-1.5 rounded-full bg-[color:var(--accent)]" />
+              Collection UI8
             </span>
           </div>
           <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
@@ -115,7 +132,7 @@ export function DriveResourcesExplorer() {
         </div>
 
         {/* Badge récapitulatif */}
-        {!loading && configured && (
+        {hasQuery && !searching && (
           <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--neutral-100)] px-4 py-2 text-right">
             <p className="font-mono text-[10px] uppercase tracking-wider text-[color:var(--neutral-500)]">
               Résultats trouvés
@@ -127,7 +144,7 @@ export function DriveResourcesExplorer() {
         )}
       </div>
 
-      {/* Barre de recherche principale */}
+      {/* Barre de recherche */}
       <div className="mt-6 space-y-3">
         <div className="relative">
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-[color:var(--neutral-400)]">
@@ -146,7 +163,7 @@ export function DriveResourcesExplorer() {
             type="text"
             value={search}
             onChange={(e) => handleSearchChange(e.target.value)}
-            placeholder="Rechercher par nom (ex: wisp website, saas, dashboard, finance, mobile...)"
+            placeholder="Rechercher par nom (ex: saas, dashboard, finance, mobile, e-commerce...)"
             className="w-full rounded-xl border border-[color:var(--border)] bg-white py-3 pl-10 pr-10 text-sm placeholder:text-[color:var(--neutral-400)] focus:border-[color:var(--accent)] focus:outline-none focus:ring-2 focus:ring-[color:var(--accent)]/20 shadow-xs"
           />
           {search && (
@@ -160,7 +177,7 @@ export function DriveResourcesExplorer() {
           )}
         </div>
 
-        {/* Suggestions de tags rapides */}
+        {/* Suggestions de tags (sélectionnables et désélectionnables en un clic) */}
         <div className="flex flex-wrap items-center gap-1.5 pt-1">
           <span className="font-mono text-[11px] uppercase tracking-wider text-[color:var(--neutral-500)] mr-1">
             Suggestions :
@@ -172,55 +189,57 @@ export function DriveResourcesExplorer() {
                 key={tag.label}
                 type="button"
                 onClick={() => handleTagClick(tag.value)}
-                className={`rounded-lg px-2.5 py-1 text-xs font-medium transition ${
+                className={`rounded-lg px-2.5 py-1 text-xs font-medium transition cursor-pointer ${
                   isSelected
                     ? "bg-[color:var(--accent)] text-white shadow-xs"
                     : "bg-white border border-[color:var(--border)] text-[color:var(--neutral-600)] hover:border-[color:var(--accent)] hover:text-[color:var(--neutral-black)]"
                 }`}
               >
-                {tag.label}
+                {isSelected ? `✓ ${tag.label}` : tag.label}
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* Barre de filtre type de fichier */}
-      <div className="mt-5 flex items-center justify-between border-t border-[color:var(--border)] pt-4">
-        <p className="text-xs text-[color:var(--neutral-500)]">
-          {searching ? "Recherche en cours dans Google Drive..." : `${displayedFiles.length} ressource(s) affichée(s)`}
-        </p>
+      {/* Barre de filtres format (uniquement si une recherche a été effectuée et qu'il y a des résultats) */}
+      {hasQuery && displayedFiles.length > 0 && (
+        <div className="mt-5 flex items-center justify-between border-t border-[color:var(--border)] pt-4">
+          <p className="text-xs text-[color:var(--neutral-500)]">
+            {searching ? "Recherche en cours dans Google Drive..." : `${displayedFiles.length} ressource(s) trouvée(s)`}
+          </p>
 
-        <div className="flex items-center gap-1.5 rounded-xl border border-[color:var(--border)] bg-[color:var(--neutral-100)] p-1 text-xs">
-          <button
-            onClick={() => setOnlyZip(true)}
-            className={`rounded-lg px-3 py-1.5 font-medium transition ${
-              onlyZip
-                ? "bg-white text-[color:var(--neutral-black)] shadow-xs"
-                : "text-[color:var(--neutral-500)] hover:text-[color:var(--neutral-black)]"
-            }`}
-          >
-            Archives .ZIP ({zipCount})
-          </button>
-          <button
-            onClick={() => setOnlyZip(false)}
-            className={`rounded-lg px-3 py-1.5 font-medium transition ${
-              !onlyZip
-                ? "bg-white text-[color:var(--neutral-black)] shadow-xs"
-                : "text-[color:var(--neutral-500)] hover:text-[color:var(--neutral-black)]"
-            }`}
-          >
-            Tous les formats ({files.length})
-          </button>
+          <div className="flex items-center gap-1.5 rounded-xl border border-[color:var(--border)] bg-[color:var(--neutral-100)] p-1 text-xs">
+            <button
+              onClick={() => setOnlyZip(true)}
+              className={`rounded-lg px-3 py-1.5 font-medium transition ${
+                onlyZip
+                  ? "bg-white text-[color:var(--neutral-black)] shadow-xs"
+                  : "text-[color:var(--neutral-500)] hover:text-[color:var(--neutral-black)]"
+              }`}
+            >
+              Archives .ZIP ({zipCount})
+            </button>
+            <button
+              onClick={() => setOnlyZip(false)}
+              className={`rounded-lg px-3 py-1.5 font-medium transition ${
+                !onlyZip
+                  ? "bg-white text-[color:var(--neutral-black)] shadow-xs"
+                  : "text-[color:var(--neutral-500)] hover:text-[color:var(--neutral-black)]"
+              }`}
+            >
+              Tous les formats ({files.length})
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Liste des résultats */}
+      {/* Contenu principal */}
       <div className="mt-5">
-        {loading || (searching && files.length === 0) ? (
-          /* Skeletons */
+        {searching && files.length === 0 ? (
+          /* Skeletons pendant la recherche */
           <div className="grid gap-3 sm:grid-cols-2">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
+            {[1, 2, 3, 4].map((i) => (
               <div key={i} className="animate-pulse rounded-xl border border-[color:var(--border)] bg-white p-4">
                 <div className="h-4 w-3/4 rounded bg-[color:var(--neutral-200)]" />
                 <div className="mt-3 flex items-center justify-between">
@@ -233,12 +252,7 @@ export function DriveResourcesExplorer() {
         ) : !configured ? (
           /* Non encore connecté */
           <div className="rounded-xl border border-dashed border-[color:var(--border)] bg-[color:var(--neutral-100)] p-8 text-center">
-            <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-[color:var(--accent-lightest)] text-[color:var(--accent-darkest)]">
-              <svg className="size-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-            </div>
-            <h3 className="mt-3 font-medium text-[color:var(--neutral-black)]">
+            <h3 className="font-medium text-[color:var(--neutral-black)]">
               Dossier en attente de synchronisation
             </h3>
             <p className="mx-auto mt-1 max-w-md text-xs text-[color:var(--neutral-500)]">
@@ -251,26 +265,39 @@ export function DriveResourcesExplorer() {
             <p className="font-semibold">Erreur de chargement</p>
             <p className="mt-1 text-xs">{error}</p>
           </div>
+        ) : !hasQuery ? (
+          /* État initial : Aucun terme de recherche saisi -> aucun fichier affiché */
+          <div className="rounded-xl border border-dashed border-[color:var(--border)] bg-white p-10 text-center">
+            <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-[color:var(--neutral-100)] text-[color:var(--neutral-500)]">
+              <svg className="size-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <h3 className="mt-3 text-sm font-semibold text-[color:var(--neutral-800)]">
+              Rechercher une ressource ou un template
+            </h3>
+            <p className="mx-auto mt-1 max-w-sm text-xs text-[color:var(--neutral-500)]">
+              Tape le nom d&apos;un projet ou clique sur l&apos;une des suggestions ci-dessus pour afficher les fichiers disponibles au téléchargement.
+            </p>
+          </div>
         ) : displayedFiles.length === 0 ? (
-          /* Aucun résultat */
+          /* Recherche sans résultat */
           <div className="rounded-xl border border-dashed border-[color:var(--border)] bg-white p-8 text-center">
             <p className="text-sm font-semibold text-[color:var(--neutral-700)]">
               Aucun fichier trouvé pour &laquo; {search} &raquo;
             </p>
             <p className="mt-1 text-xs text-[color:var(--neutral-500)]">
-              Essaie avec un mot-clé plus court (ex: <code>wisp</code>, <code>saas</code>, <code>dashboard</code>, <code>finance</code>).
+              Essaie avec un mot-clé différent (ex: <code>saas</code>, <code>dashboard</code>, <code>finance</code>, <code>mobile</code>).
             </p>
-            {search && (
-              <button
-                onClick={() => handleSearchChange("")}
-                className="mt-3 inline-flex items-center rounded-lg bg-[color:var(--neutral-100)] px-3 py-1.5 text-xs font-medium text-[color:var(--neutral-700)] hover:bg-[color:var(--neutral-200)]"
-              >
-                Afficher tous les fichiers récents
-              </button>
-            )}
+            <button
+              onClick={() => handleSearchChange("")}
+              className="mt-3 inline-flex items-center rounded-lg bg-[color:var(--neutral-100)] px-3 py-1.5 text-xs font-medium text-[color:var(--neutral-700)] hover:bg-[color:var(--neutral-200)]"
+            >
+              Effacer la recherche
+            </button>
           </div>
         ) : (
-          /* Liste des fichiers */
+          /* Liste des fichiers trouvés */
           <div className="grid gap-3 sm:grid-cols-2">
             {displayedFiles.map((file) => {
               const formattedDate = file.modifiedTime
