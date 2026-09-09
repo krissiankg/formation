@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { PageHeader, ResourcesPanel } from "@/components/espace/shared";
+import { DriveResourcesExplorer } from "@/components/espace/drive-resources-explorer";
 import { brand } from "@/lib/config/formation";
 import { getStudentContext } from "@/lib/store/student-context";
 
@@ -149,6 +150,9 @@ export default async function RessourcesPage() {
           </ol>
         </div>
       </div>
+
+      {/* 📦 Projets & Ressources ZIP Google Drive */}
+      <DriveResourcesExplorer />
 
       <ResourcesPanel contents={ctx.contents} />
     </div>

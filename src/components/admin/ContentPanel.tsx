@@ -5,6 +5,7 @@ import { useState } from "react";
 import type { ContentItem } from "@/lib/store/content";
 import { PageHeader } from "@/components/espace/shared";
 import { ContentKindBadge } from "@/components/admin/ContentKindBadge";
+import { DriveConnectionCard } from "@/components/admin/DriveConnectionCard";
 
 export function ContentPanel({ contents }: { contents: ContentItem[] }) {
   const router = useRouter();
@@ -66,6 +67,9 @@ export function ContentPanel({ contents }: { contents: ContentItem[] }) {
         title="Publier pour les apprenants"
         description="Outils, codes, annonces. Les apprenants les voient dans Ressources et reçoivent une alerte WhatsApp si tu coches la notification."
       />
+
+      {/* 🚀 Passerelle Google Drive pour les fichiers ZIP */}
+      <DriveConnectionCard />
 
       <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
         <section className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--neutral-50)] p-5 sm:p-6">
