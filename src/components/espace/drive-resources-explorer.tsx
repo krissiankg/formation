@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 
 interface DriveResourceFile {
   id: string;
@@ -11,61 +11,90 @@ interface DriveResourceFile {
   isZip: boolean;
 }
 
+const QUICK_TAGS = [
+  { label: "🔥 Nouveautés", value: "" },
+  { label: "Wisp Website", value: "wisp website" },
+  { label: "SaaS", value: "saas" },
+  { label: "Dashboard", value: "dashboard" },
+  { label: "Mobile App", value: "mobile app" },
+  { label: "Figma UI", value: "figma" },
+  { label: "3D & Icons", value: "icon" },
+];
+
 export function DriveResourcesExplorer() {
   const [files, setFiles] = useState<DriveResourceFile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searching, setSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [configured, setConfigured] = useState(true);
   const [search, setSearch] = useState("");
   const [onlyZip, setOnlyZip] = useState(true);
 
-  useEffect(() => {
-    async function fetchFiles() {
-      try {
-        setLoading(true);
-        setError(null);
-        const res = await fetch("/api/ressources/drive");
-        if (!res.ok) {
-          throw new Error("Impossible de charger les fichiers");
-        }
-        const data = await res.json();
-        if (data.configured === false) {
-          setConfigured(false);
-          setFiles([]);
-        } else {
-          setConfigured(true);
-          setFiles(data.files || []);
-        }
-      } catch (err) {
-        setError((err as Error).message || "Erreur réseau");
-      } finally {
-        setLoading(false);
-      }
-    }
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-    fetchFiles();
+  async function fetchFiles(query: string) {
+    try {
+      setSearching(true);
+      setError(null);
+      const url = query.trim()
+        ? `/api/ressources/drive?q=${encodeURIComponent(query.trim())}`
+        : "/api/ressources/drive";
+
+      const res = await fetch(url);
+      if (!res.ok) {
+        throw new Error("Impossible de charger les fichiers");
+      }
+      const data = await res.json();
+      if (data.configured === false) {
+        setConfigured(false);
+        setFiles([]);
+      } else {
+        setConfigured(true);
+        setFiles(data.files || []);
+      }
+    } catch (err) {
+      setError((err as Error).message || "Erreur réseau");
+    } finally {
+      setLoading(false);
+      setSearching(false);
+    }
+  }
+
+  // Chargement initial
+  useEffect(() => {
+    fetchFiles("");
   }, []);
 
-  const filteredFiles = useMemo(() => {
-    let result = files;
-
-    if (onlyZip) {
-      result = result.filter((f) => f.isZip);
+  // Détection de la saisie avec debounce 350ms pour recherche dynamique
+  function handleSearchChange(val: string) {
+    setSearch(val);
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
     }
+    setSearching(true);
+    debounceTimerRef.current = setTimeout(() => {
+      fetchFiles(val);
+    }, 350);
+  }
 
-    if (search.trim()) {
-      const q = search.toLowerCase().trim();
-      result = result.filter((f) => f.name.toLowerCase().includes(q));
+  function handleTagClick(tagValue: string) {
+    setSearch(tagValue);
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
     }
+    fetchFiles(tagValue);
+  }
 
-    return result;
-  }, [files, search, onlyZip]);
+  const displayedFiles = useMemo(() => {
+    if (!onlyZip) return files;
+    return files.filter((f) => f.isZip);
+  }, [files, onlyZip]);
 
   const zipCount = useMemo(() => files.filter((f) => f.isZip).length, [files]);
 
   return (
     <div className="overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[color:var(--neutral-50)] p-6 text-[color:var(--neutral-black)] sm:p-8 shadow-sm">
-      {/* En-tête du module */}
+      {/* En-tête */}
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
@@ -74,14 +103,14 @@ export function DriveResourcesExplorer() {
               Drive Privé Connecté
             </span>
             <span className="rounded-full bg-[color:var(--neutral-100)] px-2.5 py-1 font-mono text-xs font-medium text-[color:var(--neutral-600)]">
-              Accès Étudiant Direct
+              Collection UI8 Complète
             </span>
           </div>
           <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
             Projets & Ressources ZIP
           </h2>
           <p className="max-w-2xl text-sm text-[color:var(--neutral-600)]">
-            Recherche et télécharge en un clic les templates de projets, starters et archives du dossier partagé de la formation.
+            Recherche parmi l&apos;intégralité des milliers de templates, kits UI et archives du dossier partagé de la formation.
           </p>
         </div>
 
@@ -89,34 +118,41 @@ export function DriveResourcesExplorer() {
         {!loading && configured && (
           <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--neutral-100)] px-4 py-2 text-right">
             <p className="font-mono text-[10px] uppercase tracking-wider text-[color:var(--neutral-500)]">
-              Fichiers disponibles
+              Résultats trouvés
             </p>
             <p className="font-mono text-lg font-bold text-[color:var(--accent-darkest)]">
-              {zipCount} {zipCount > 1 ? "archives ZIP" : "archive ZIP"}
+              {displayedFiles.length} {displayedFiles.length > 1 ? "fichiers" : "fichier"}
             </p>
           </div>
         )}
       </div>
 
-      {/* Barre de recherche et filtres */}
-      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative flex-1">
+      {/* Barre de recherche principale */}
+      <div className="mt-6 space-y-3">
+        <div className="relative">
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-[color:var(--neutral-400)]">
-            <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
+            {searching ? (
+              <svg className="size-4 animate-spin text-[color:var(--accent)]" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+              </svg>
+            ) : (
+              <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            )}
           </div>
           <input
             type="text"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Rechercher un fichier ZIP (ex: boilerplate, saas, auth, module...)"
-            className="w-full rounded-xl border border-[color:var(--border)] bg-white py-2.5 pl-10 pr-10 text-sm placeholder:text-[color:var(--neutral-400)] focus:border-[color:var(--accent)] focus:outline-none focus:ring-1 focus:ring-[color:var(--accent)]"
+            onChange={(e) => handleSearchChange(e.target.value)}
+            placeholder="Rechercher par nom (ex: wisp website, saas, dashboard, finance, mobile...)"
+            className="w-full rounded-xl border border-[color:var(--border)] bg-white py-3 pl-10 pr-10 text-sm placeholder:text-[color:var(--neutral-400)] focus:border-[color:var(--accent)] focus:outline-none focus:ring-2 focus:ring-[color:var(--accent)]/20 shadow-xs"
           />
           {search && (
             <button
-              onClick={() => setSearch("")}
-              className="absolute inset-y-0 right-0 flex items-center pr-3 text-xs text-[color:var(--neutral-400)] hover:text-[color:var(--neutral-700)]"
+              onClick={() => handleSearchChange("")}
+              className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-sm text-[color:var(--neutral-400)] hover:text-[color:var(--neutral-700)]"
               title="Effacer la recherche"
             >
               ✕
@@ -124,8 +160,38 @@ export function DriveResourcesExplorer() {
           )}
         </div>
 
-        {/* Filtre toggle ZIP / Tous */}
-        <div className="flex items-center gap-1.5 self-start rounded-xl border border-[color:var(--border)] bg-[color:var(--neutral-100)] p-1 text-xs">
+        {/* Suggestions de tags rapides */}
+        <div className="flex flex-wrap items-center gap-1.5 pt-1">
+          <span className="font-mono text-[11px] uppercase tracking-wider text-[color:var(--neutral-500)] mr-1">
+            Suggestions :
+          </span>
+          {QUICK_TAGS.map((tag) => {
+            const isSelected = search.toLowerCase() === tag.value.toLowerCase();
+            return (
+              <button
+                key={tag.label}
+                type="button"
+                onClick={() => handleTagClick(tag.value)}
+                className={`rounded-lg px-2.5 py-1 text-xs font-medium transition ${
+                  isSelected
+                    ? "bg-[color:var(--accent)] text-white shadow-xs"
+                    : "bg-white border border-[color:var(--border)] text-[color:var(--neutral-600)] hover:border-[color:var(--accent)] hover:text-[color:var(--neutral-black)]"
+                }`}
+              >
+                {tag.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Barre de filtre type de fichier */}
+      <div className="mt-5 flex items-center justify-between border-t border-[color:var(--border)] pt-4">
+        <p className="text-xs text-[color:var(--neutral-500)]">
+          {searching ? "Recherche en cours dans Google Drive..." : `${displayedFiles.length} ressource(s) affichée(s)`}
+        </p>
+
+        <div className="flex items-center gap-1.5 rounded-xl border border-[color:var(--border)] bg-[color:var(--neutral-100)] p-1 text-xs">
           <button
             onClick={() => setOnlyZip(true)}
             className={`rounded-lg px-3 py-1.5 font-medium transition ${
@@ -134,7 +200,7 @@ export function DriveResourcesExplorer() {
                 : "text-[color:var(--neutral-500)] hover:text-[color:var(--neutral-black)]"
             }`}
           >
-            Fichiers .ZIP ({zipCount})
+            Archives .ZIP ({zipCount})
           </button>
           <button
             onClick={() => setOnlyZip(false)}
@@ -144,21 +210,21 @@ export function DriveResourcesExplorer() {
                 : "text-[color:var(--neutral-500)] hover:text-[color:var(--neutral-black)]"
             }`}
           >
-            Tous les fichiers ({files.length})
+            Tous les formats ({files.length})
           </button>
         </div>
       </div>
 
-      {/* Contenu principal */}
-      <div className="mt-6">
-        {loading ? (
+      {/* Liste des résultats */}
+      <div className="mt-5">
+        {loading || (searching && files.length === 0) ? (
           /* Skeletons */
           <div className="grid gap-3 sm:grid-cols-2">
-            {[1, 2, 3, 4].map((i) => (
+            {[1, 2, 3, 4, 5, 6].map((i) => (
               <div key={i} className="animate-pulse rounded-xl border border-[color:var(--border)] bg-white p-4">
                 <div className="h-4 w-3/4 rounded bg-[color:var(--neutral-200)]" />
                 <div className="mt-3 flex items-center justify-between">
-                  <div className="h-3 w-16 rounded bg-[color:var(--neutral-100)]" />
+                  <div className="h-3 w-20 rounded bg-[color:var(--neutral-100)]" />
                   <div className="h-8 w-24 rounded bg-[color:var(--neutral-200)]" />
                 </div>
               </div>
@@ -176,7 +242,7 @@ export function DriveResourcesExplorer() {
               Dossier en attente de synchronisation
             </h3>
             <p className="mx-auto mt-1 max-w-md text-xs text-[color:var(--neutral-500)]">
-              Le dossier partagé est en cours d&apos;autorisation par le formateur. Les fichiers ZIP apparaîtront automatiquement ici dès la validation.
+              Le dossier partagé est en cours d&apos;autorisation par le formateur.
             </p>
           </div>
         ) : error ? (
@@ -185,28 +251,28 @@ export function DriveResourcesExplorer() {
             <p className="font-semibold">Erreur de chargement</p>
             <p className="mt-1 text-xs">{error}</p>
           </div>
-        ) : filteredFiles.length === 0 ? (
+        ) : displayedFiles.length === 0 ? (
           /* Aucun résultat */
           <div className="rounded-xl border border-dashed border-[color:var(--border)] bg-white p-8 text-center">
-            <p className="text-sm font-medium text-[color:var(--neutral-700)]">
+            <p className="text-sm font-semibold text-[color:var(--neutral-700)]">
               Aucun fichier trouvé pour &laquo; {search} &raquo;
             </p>
-            <p className="mt-1 text-xs text-[color:var(--neutral-400)]">
-              Vérifie l&apos;orthographe ou efface ta recherche pour voir l&apos;ensemble des fichiers disponibles.
+            <p className="mt-1 text-xs text-[color:var(--neutral-500)]">
+              Essaie avec un mot-clé plus court (ex: <code>wisp</code>, <code>saas</code>, <code>dashboard</code>, <code>finance</code>).
             </p>
             {search && (
               <button
-                onClick={() => setSearch("")}
+                onClick={() => handleSearchChange("")}
                 className="mt-3 inline-flex items-center rounded-lg bg-[color:var(--neutral-100)] px-3 py-1.5 text-xs font-medium text-[color:var(--neutral-700)] hover:bg-[color:var(--neutral-200)]"
               >
-                Réinitialiser la recherche
+                Afficher tous les fichiers récents
               </button>
             )}
           </div>
         ) : (
-          /* Liste des fichiers trouvés */
+          /* Liste des fichiers */
           <div className="grid gap-3 sm:grid-cols-2">
-            {filteredFiles.map((file) => {
+            {displayedFiles.map((file) => {
               const formattedDate = file.modifiedTime
                 ? new Date(file.modifiedTime).toLocaleDateString("fr-FR", {
                     day: "numeric",
@@ -221,7 +287,7 @@ export function DriveResourcesExplorer() {
                   className="flex flex-col justify-between rounded-xl border border-[color:var(--border)] bg-white p-4 shadow-2xs transition hover:border-[color:var(--accent)] hover:shadow-xs"
                 >
                   <div className="flex items-start gap-3">
-                    {/* Icône ZIP ou fichier */}
+                    {/* Icône ZIP */}
                     <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-[color:var(--accent-lightest)] text-[color:var(--accent-darkest)]">
                       {file.isZip ? (
                         <svg className="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -267,7 +333,11 @@ export function DriveResourcesExplorer() {
                   </div>
 
                   {/* Bouton de téléchargement direct */}
-                  <div className="mt-4 flex items-center justify-end border-t border-[color:var(--border)]/60 pt-3">
+                  <div className="mt-4 flex items-center justify-between border-t border-[color:var(--border)]/60 pt-3">
+                    <span className="font-mono text-[10px] uppercase text-[color:var(--neutral-400)]">
+                      {file.isZip ? "Archive ZIP" : "Ressource"}
+                    </span>
+
                     <a
                       href={`/api/ressources/drive/download/${file.id}`}
                       download={file.name}
@@ -293,7 +363,7 @@ export function DriveResourcesExplorer() {
 
       {/* Note d'information */}
       <div className="mt-6 border-t border-[color:var(--border)] pt-4 text-xs text-[color:var(--neutral-500)]">
-        💡 <strong>Astuce :</strong> Tous les fichiers sont téléchargés directement depuis la plateforme sans passer par Google Drive. Si tu as un souci pour décompresser une archive, contacte le formateur sur WhatsApp.
+        💡 <strong>Astuce :</strong> Le téléchargement démarre directement dans ton navigateur de façon optimisée. Tu peux rechercher n&apos;importe quel nom de template parmi les milliers de fichiers du pack de formation.
       </div>
     </div>
   );
