@@ -58,6 +58,69 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: true, pending: true });
     }
 
+    // Gestion de l'achat de Coins pour les templates UI8
+    if (metadata.type === "coins_purchase") {
+      const { creditCoins } = await import("@/lib/wallet/store");
+      const { getSupabaseAdmin } = await import("@/lib/supabase/admin");
+
+      const student = await getEnrollment(enrollmentId);
+      if (!student) {
+        return NextResponse.json({ error: "student_not_found" }, { status: 404 });
+      }
+
+      const coins = Number(metadata.coins ?? 0);
+      if (coins <= 0) {
+        return NextResponse.json({ error: "invalid_coins_amount" }, { status: 400 });
+      }
+
+      // Idempotence : vérifier si cette transaction a déjà été créditée
+      const supabase = getSupabaseAdmin();
+      const { data: existingTx } = await supabase
+        .from("coin_transactions")
+        .select("id")
+        .eq("reference_id", txId)
+        .maybeSingle();
+
+      if (existingTx) {
+        return NextResponse.json({ ok: true, already: true });
+      }
+
+      const formattedAmount = amount > 0 ? formatFcfa(amount) : `${coins} coins`;
+
+      await creditCoins(
+        enrollmentId,
+        coins,
+        "fedapay_purchase",
+        `Achat de pack (${coins} coins - ${formattedAmount})`,
+        txId
+      );
+
+      await notifyTelegram(
+        `<b>Recharge de Coins (FedaPay)</b>\n` +
+          `Coins crédités: +${coins} 🪙\n` +
+          `Apprenant: ${student.fullName}\n` +
+          `Email: ${student.email}\n` +
+          `WhatsApp: ${student.whatsapp}\n` +
+          `Montant: ${formattedAmount} · tx ${txId}`
+      );
+
+      await notifyAdminWhatsApp(
+        `FORGE IA — Recharge Coins reçue\n` +
+          `Coins: +${coins} 🪙\n` +
+          `Apprenant: ${student.fullName}\n` +
+          `Montant: ${formattedAmount}`
+      );
+
+      if (student.whatsapp) {
+        await notifyWhatsApp(
+          student.whatsapp,
+          `FORGE IA : Ton portefeuille a bien été rechargé de +${coins} coins (Montant: ${formattedAmount}). Tu peux dès maintenant débloquer tes templates UI8 sur ton espace ressources !`
+        );
+      }
+
+      return NextResponse.json({ ok: true, coinsCredited: coins });
+    }
+
     const existing = await getEnrollment(enrollmentId);
     if (!existing) {
       return NextResponse.json({ error: "not_found" }, { status: 404 });

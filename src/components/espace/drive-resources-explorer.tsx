@@ -1,6 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState, useRef } from "react";
+import { WalletWidget } from "@/components/espace/WalletWidget";
+import { UnlockConfirmModal } from "@/components/espace/UnlockConfirmModal";
+import type { CoinPack, CoinTransaction } from "@/lib/wallet/types";
+import { COIN_PACKS } from "@/lib/wallet/types";
 
 interface DriveResourceFile {
   id: string;
@@ -9,6 +13,7 @@ interface DriveResourceFile {
   formattedSize: string;
   modifiedTime?: string;
   isZip: boolean;
+  coinsCost: number;
 }
 
 const QUICK_TAGS = [
@@ -29,7 +34,39 @@ export function DriveResourcesExplorer() {
   const [search, setSearch] = useState("");
   const [onlyZip, setOnlyZip] = useState(true);
 
+  // État du portefeuille
+  const [walletBalance, setWalletBalance] = useState<number>(0);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [unlockedFileIds, setUnlockedFileIds] = useState<string[]>([]);
+  const [packs, setPacks] = useState<CoinPack[]>(COIN_PACKS);
+  const [transactions, setTransactions] = useState<CoinTransaction[]>([]);
+
+  // Modales
+  const [unlockTarget, setUnlockTarget] = useState<DriveResourceFile | null>(null);
+  const [rechargeModalOpen, setRechargeModalOpen] = useState(false);
+
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Charger le solde et les fichiers débloqués
+  async function loadWallet() {
+    try {
+      const res = await fetch("/api/wallet");
+      if (res.ok) {
+        const data = await res.json();
+        setWalletBalance(data.balance ?? 0);
+        setIsAdmin(Boolean(data.isAdmin));
+        setUnlockedFileIds(data.unlockedFileIds ?? []);
+        if (data.packs) setPacks(data.packs);
+        if (data.transactions) setTransactions(data.transactions);
+      }
+    } catch (err) {
+      console.error("[Wallet Fetch Error]", err);
+    }
+  }
+
+  useEffect(() => {
+    loadWallet();
+  }, []);
 
   async function fetchFiles(query: string) {
     const trimmed = query.trim();
@@ -114,7 +151,20 @@ export function DriveResourcesExplorer() {
 
   return (
     <div className="overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[color:var(--neutral-50)] p-6 text-[color:var(--neutral-black)] sm:p-8 shadow-sm">
-      {/* En-tête avec uniquement Collection UI8 */}
+      {/* Widget Portefeuille Coins en haut */}
+      <div className="mb-6">
+        <WalletWidget
+          balance={walletBalance}
+          isAdmin={isAdmin}
+          packs={packs}
+          transactions={transactions}
+          onRefresh={loadWallet}
+          openRechargeModal={rechargeModalOpen}
+          onCloseRechargeModal={() => setRechargeModalOpen(false)}
+        />
+      </div>
+
+      {/* En-tête avec Collection UI8 */}
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
@@ -127,7 +177,7 @@ export function DriveResourcesExplorer() {
             Projets & Ressources ZIP
           </h2>
           <p className="max-w-2xl text-sm text-[color:var(--neutral-600)]">
-            Recherche parmi l&apos;intégralité des milliers de templates, kits UI et archives du dossier partagé de la formation.
+            Recherche parmi l&apos;intégralité des milliers de templates, kits UI et archives du dossier partagé de la formation. Débloque-les avec tes coins et conserve-les à vie.
           </p>
         </div>
 
@@ -169,7 +219,7 @@ export function DriveResourcesExplorer() {
           {search && (
             <button
               onClick={() => handleSearchChange("")}
-              className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-sm text-[color:var(--neutral-400)] hover:text-[color:var(--neutral-700)]"
+              className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-sm text-[color:var(--neutral-400)] hover:text-[color:var(--neutral-700)] cursor-pointer"
               title="Effacer la recherche"
             >
               ✕
@@ -202,7 +252,7 @@ export function DriveResourcesExplorer() {
         </div>
       </div>
 
-      {/* Barre de filtres format (uniquement si une recherche a été effectuée et qu'il y a des résultats) */}
+      {/* Barre de filtres format */}
       {hasQuery && displayedFiles.length > 0 && (
         <div className="mt-5 flex items-center justify-between border-t border-[color:var(--border)] pt-4">
           <p className="text-xs text-[color:var(--neutral-500)]">
@@ -212,7 +262,7 @@ export function DriveResourcesExplorer() {
           <div className="flex items-center gap-1.5 rounded-xl border border-[color:var(--border)] bg-[color:var(--neutral-100)] p-1 text-xs">
             <button
               onClick={() => setOnlyZip(true)}
-              className={`rounded-lg px-3 py-1.5 font-medium transition ${
+              className={`rounded-lg px-3 py-1.5 font-medium transition cursor-pointer ${
                 onlyZip
                   ? "bg-white text-[color:var(--neutral-black)] shadow-xs"
                   : "text-[color:var(--neutral-500)] hover:text-[color:var(--neutral-black)]"
@@ -222,7 +272,7 @@ export function DriveResourcesExplorer() {
             </button>
             <button
               onClick={() => setOnlyZip(false)}
-              className={`rounded-lg px-3 py-1.5 font-medium transition ${
+              className={`rounded-lg px-3 py-1.5 font-medium transition cursor-pointer ${
                 !onlyZip
                   ? "bg-white text-[color:var(--neutral-black)] shadow-xs"
                   : "text-[color:var(--neutral-500)] hover:text-[color:var(--neutral-black)]"
@@ -291,7 +341,7 @@ export function DriveResourcesExplorer() {
             </p>
             <button
               onClick={() => handleSearchChange("")}
-              className="mt-3 inline-flex items-center rounded-lg bg-[color:var(--neutral-100)] px-3 py-1.5 text-xs font-medium text-[color:var(--neutral-700)] hover:bg-[color:var(--neutral-200)]"
+              className="mt-3 inline-flex items-center rounded-lg bg-[color:var(--neutral-100)] px-3 py-1.5 text-xs font-medium text-[color:var(--neutral-700)] hover:bg-[color:var(--neutral-200)] cursor-pointer"
             >
               Effacer la recherche
             </button>
@@ -308,22 +358,29 @@ export function DriveResourcesExplorer() {
                   })
                 : null;
 
+              const isUnlocked = isAdmin || unlockedFileIds.includes(file.id);
+
               return (
                 <div
                   key={file.id}
-                  className="flex flex-col justify-between rounded-xl border border-[color:var(--border)] bg-white p-4 shadow-2xs transition hover:border-[color:var(--accent)] hover:shadow-xs"
+                  className={`flex flex-col justify-between rounded-xl border p-4 shadow-2xs transition ${
+                    isUnlocked
+                      ? "border-emerald-200 bg-emerald-50/20 hover:border-emerald-400"
+                      : "border-[color:var(--border)] bg-white hover:border-amber-400 hover:shadow-xs"
+                  }`}
                 >
                   <div className="flex items-start gap-3">
-                    {/* Icône ZIP */}
-                    <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-[color:var(--accent-lightest)] text-[color:var(--accent-darkest)]">
-                      {file.isZip ? (
+                    {/* Icône */}
+                    <div
+                      className={`flex size-10 shrink-0 items-center justify-center rounded-lg ${
+                        isUnlocked
+                          ? "bg-emerald-100 text-emerald-700"
+                          : "bg-amber-100 text-amber-700"
+                      }`}
+                    >
+                      {isUnlocked ? (
                         <svg className="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={1.75}
-                            d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
-                          />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
                       ) : (
                         <svg className="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -331,7 +388,7 @@ export function DriveResourcesExplorer() {
                             strokeLinecap="round"
                             strokeLinejoin="round"
                             strokeWidth={1.75}
-                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                            d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
                           />
                         </svg>
                       )}
@@ -346,7 +403,7 @@ export function DriveResourcesExplorer() {
                         {file.name}
                       </p>
                       <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[color:var(--neutral-500)]">
-                        <span className="font-mono font-medium text-[color:var(--accent-darkest)]">
+                        <span className="font-mono font-medium text-[color:var(--neutral-700)]">
                           {file.formattedSize}
                         </span>
                         {formattedDate && (
@@ -359,27 +416,46 @@ export function DriveResourcesExplorer() {
                     </div>
                   </div>
 
-                  {/* Bouton de téléchargement direct */}
+                  {/* Pied de carte : Coût / Statut & Action */}
                   <div className="mt-4 flex items-center justify-between border-t border-[color:var(--border)]/60 pt-3">
-                    <span className="font-mono text-[10px] uppercase text-[color:var(--neutral-400)]">
-                      {file.isZip ? "Archive ZIP" : "Ressource"}
-                    </span>
+                    {/* Badge Statut / Prix */}
+                    {isUnlocked ? (
+                      <span className="inline-flex items-center gap-1 rounded-md bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-800">
+                        <span>✓</span> Débloqué à vie
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 rounded-md bg-amber-100 px-2 py-0.5 font-mono text-[11px] font-bold text-amber-900">
+                        <span>🪙</span> {file.coinsCost} Coins
+                      </span>
+                    )}
 
-                    <a
-                      href={`/api/ressources/drive/download/${file.id}`}
-                      download={file.name}
-                      className="inline-flex items-center gap-1.5 rounded-lg bg-[color:var(--accent)] px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition hover:opacity-90 active:scale-95"
-                    >
-                      <svg className="size-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                        />
-                      </svg>
-                      Télécharger
-                    </a>
+                    {/* Bouton Télécharger ou Débloquer */}
+                    {isUnlocked ? (
+                      <a
+                        href={`/api/ressources/drive/download/${file.id}`}
+                        download={file.name}
+                        className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition hover:bg-emerald-700 active:scale-95"
+                      >
+                        <svg className="size-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                          />
+                        </svg>
+                        Télécharger
+                      </a>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setUnlockTarget(file)}
+                        className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500 px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition hover:bg-amber-600 active:scale-95 cursor-pointer"
+                      >
+                        <span>🪙</span>
+                        <span>Débloquer ({file.coinsCost} coins)</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               );
@@ -389,9 +465,24 @@ export function DriveResourcesExplorer() {
       </div>
 
       {/* Note d'information */}
-      <div className="mt-6 border-t border-[color:var(--border)] pt-4 text-xs text-[color:var(--neutral-500)]">
-        💡 <strong>Astuce :</strong> Le téléchargement démarre directement dans ton navigateur de façon optimisée. Tu peux rechercher n&apos;importe quel nom de template parmi les milliers de fichiers du pack de formation.
+      <div className="mt-6 border-t border-[color:var(--border)] pt-4 text-xs text-[color:var(--neutral-500)] flex flex-wrap items-center justify-between gap-2">
+        <div>
+          💡 <strong>Astuce :</strong> Chaque template débloqué avec tes coins reste accessible sans limite de temps. Le coût en coins est calculé automatiquement selon le poids du fichier (ex: 10 coins jusqu&apos;à 50 Mo, 15 coins jusqu&apos;à 100 Mo, etc.).
+        </div>
       </div>
+
+      {/* Modal de Déblocage */}
+      <UnlockConfirmModal
+        file={unlockTarget}
+        balance={walletBalance}
+        onClose={() => setUnlockTarget(null)}
+        onSuccess={(newBalance, fileId) => {
+          setWalletBalance(newBalance);
+          setUnlockedFileIds((prev) => [...prev, fileId]);
+          loadWallet();
+        }}
+        onOpenRecharge={() => setRechargeModalOpen(true)}
+      />
     </div>
   );
 }

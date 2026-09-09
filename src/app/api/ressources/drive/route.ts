@@ -50,6 +50,8 @@ export async function GET(request: Request) {
       pageSize: searchQuery ? 60 : 30,
     });
 
+    const { calculateFileCoinsCost } = await import("@/lib/wallet/pricing");
+
     const files = rawFiles.map((file) => {
       const isZip =
         file.name.toLowerCase().endsWith(".zip") ||
@@ -58,13 +60,17 @@ export async function GET(request: Request) {
         file.name.toLowerCase().endsWith(".7z") ||
         file.mimeType.includes("zip");
 
+      const sizeNum = file.size ? Number.parseInt(file.size, 10) : undefined;
+      const coinsCost = calculateFileCoinsCost(sizeNum);
+
       return {
         id: file.id,
         name: file.name,
-        size: file.size ? Number.parseInt(file.size, 10) : undefined,
+        size: sizeNum,
         formattedSize: formatBytes(file.size),
         modifiedTime: file.modifiedTime,
         isZip,
+        coinsCost,
       };
     });
 

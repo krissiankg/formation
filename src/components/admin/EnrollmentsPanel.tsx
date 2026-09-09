@@ -1,20 +1,39 @@
+"use client";
+
+import { useState } from "react";
 import type { Enrollment } from "@/lib/types";
 import { PageHeader } from "@/components/espace/shared";
 import { EnrollmentRow } from "@/components/admin/EnrollmentRow";
 import { getAdminStats } from "@/components/admin/admin-stats";
 import { formatFcfa } from "@/lib/format";
 import { formation } from "@/lib/config/formation";
+import { GrantCoinsModal } from "@/components/admin/GrantCoinsModal";
 
 export function EnrollmentsPanel({ enrollments }: { enrollments: Enrollment[] }) {
   const stats = getAdminStats(enrollments, []);
+  const [grantTarget, setGrantTarget] = useState<{ id: string; name: string } | "all" | null>(null);
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
-      <PageHeader
-        kicker="Inscrits"
-        title="Liste de la cohorte"
-        description="Tous les apprenants inscrits, leur créneau et le statut du paiement des frais d'inscription."
-      />
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <PageHeader
+          kicker="Inscrits"
+          title="Liste de la cohorte"
+          description="Tous les apprenants inscrits, leur créneau et le statut du paiement des frais d'inscription."
+        />
+
+        {/* Bouton Bonus Promo Globale */}
+        {enrollments.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setGrantTarget("all")}
+            className="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition hover:bg-amber-600 active:scale-95 cursor-pointer"
+          >
+            <span>🎁</span>
+            <span>Bonus Coins Promo (+Tous)</span>
+          </button>
+        )}
+      </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
         <SummaryCard label="Total" value={String(stats.total)} />
@@ -51,13 +70,23 @@ export function EnrollmentsPanel({ enrollments }: { enrollments: Enrollment[] })
               </thead>
               <tbody>
                 {enrollments.map((e) => (
-                  <EnrollmentRow key={e.id} enrollment={e} />
+                  <EnrollmentRow
+                    key={e.id}
+                    enrollment={e}
+                    onGrantCoins={(student) => setGrantTarget(student)}
+                  />
                 ))}
               </tbody>
             </table>
           </div>
         </div>
       )}
+
+      {/* Modal d'octroi de coins */}
+      <GrantCoinsModal
+        target={grantTarget}
+        onClose={() => setGrantTarget(null)}
+      />
     </div>
   );
 }
