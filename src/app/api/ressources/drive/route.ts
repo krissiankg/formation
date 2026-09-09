@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getSessionEnrollment } from "@/lib/auth/session";
 import { ADMIN_SESSION_COOKIE, verifyAdminSessionToken } from "@/lib/auth/admin-session";
-import { listFolderFiles, isDriveConfigured } from "@/lib/drive/google-drive";
+import { searchDriveFiles, isDriveConfigured } from "@/lib/drive/google-drive";
 
 export const dynamic = "force-dynamic";
 
@@ -42,13 +42,15 @@ export async function GET(request: Request) {
   }
 
   const url = new URL(request.url);
-  const searchQuery = (url.searchParams.get("q") ?? "").trim().toLowerCase();
+  const searchQuery = (url.searchParams.get("q") ?? "").trim();
 
   try {
-    const rawFiles = await listFolderFiles();
+    const rawFiles = await searchDriveFiles({
+      query: searchQuery,
+      pageSize: searchQuery ? 60 : 30,
+    });
 
-    // Filtrer et formater
-    let files = rawFiles.map((file) => {
+    const files = rawFiles.map((file) => {
       const isZip =
         file.name.toLowerCase().endsWith(".zip") ||
         file.name.toLowerCase().endsWith(".tar.gz") ||
@@ -66,24 +68,11 @@ export async function GET(request: Request) {
       };
     });
 
-    // Si recherche demandée
-    if (searchQuery) {
-      files = files.filter((f) => f.name.toLowerCase().includes(searchQuery));
-    }
-
-    // Tri : fichiers ZIP en premier, puis par date de modification décroissante
-    files.sort((a, b) => {
-      if (a.isZip && !b.isZip) return -1;
-      if (!a.isZip && b.isZip) return 1;
-      const timeA = a.modifiedTime ? new Date(a.modifiedTime).getTime() : 0;
-      const timeB = b.modifiedTime ? new Date(b.modifiedTime).getTime() : 0;
-      return timeB - timeA;
-    });
-
     return NextResponse.json({
       configured: true,
       files,
       totalCount: files.length,
+      query: searchQuery,
     });
   } catch (err) {
     console.error("[Drive API] Erreur récupération fichiers:", err);

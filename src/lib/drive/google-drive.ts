@@ -4,6 +4,10 @@ import path from "node:path";
 export const GOOGLE_DRIVE_FOLDER_ID =
   process.env.GOOGLE_DRIVE_FOLDER_ID || "1pPMsHu96fsTDiSV5EvRoSjP6fZr4UrOu";
 
+// Propriétaire de la collection partagée UI8 (garantit qu'aucun fichier personnel n'est exposé)
+export const SHARED_COLLECTION_OWNER =
+  process.env.GOOGLE_DRIVE_COLLECTION_OWNER || "contact_us@design-solutionz.co.nz";
+
 export interface DriveFileItem {
   id: string;
   name: string;
@@ -26,9 +30,9 @@ const TOKEN_FILE_PATH = path.join(process.cwd(), "data", "google-drive-token.jso
 // Cache en mémoire pour l'access token
 let memoryToken: StoredToken | null = null;
 
-// Cache en mémoire pour la liste des fichiers (5 minutes)
-let filesCache: { items: DriveFileItem[]; timestamp: number } | null = null;
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+// Cache en mémoire pour les requêtes de recherche (1 minute)
+const searchCache = new Map<string, { items: DriveFileItem[]; timestamp: number }>();
+const CACHE_TTL_MS = 60 * 1000;
 
 function getClientId(): string | undefined {
   return process.env.GOOGLE_CLIENT_ID;
@@ -149,7 +153,6 @@ export async function exchangeOAuthCode(code: string, redirectUri: string) {
     throw new Error(data.error_description || data.error || "Échec de récupération du token");
   }
 
-  // Récupérer l'email connecté si possible
   let connectedEmail: string | undefined;
   if (data.access_token) {
     try {
@@ -173,8 +176,7 @@ export async function exchangeOAuthCode(code: string, redirectUri: string) {
   };
 
   saveStoredToken(stored);
-  // Réinitialise le cache pour forcer la relecture
-  filesCache = null;
+  searchCache.clear();
 
   return stored;
 }
@@ -188,7 +190,6 @@ export async function getValidAccessToken(): Promise<string> {
     throw new Error("Google Drive n'est pas encore connecté. Veuillez lier votre compte dans l'administration.");
   }
 
-  // Si l'access token est encore valide, le réutiliser
   if (stored.accessToken && stored.expiresAt && stored.expiresAt > Date.now()) {
     return stored.accessToken;
   }
@@ -226,24 +227,47 @@ export async function getValidAccessToken(): Promise<string> {
 }
 
 /**
- * Liste les fichiers contenus dans le dossier spécifique partagé (avec cache en mémoire)
+ * Recherche récursive et globale de fichiers dans la collection partagée UI8
  */
-export async function listFolderFiles(forceRefresh = false): Promise<DriveFileItem[]> {
+export async function searchDriveFiles(options?: {
+  query?: string;
+  pageSize?: number;
+}): Promise<DriveFileItem[]> {
+  const search = (options?.query ?? "").trim();
+  const pageSize = options?.pageSize || 100;
+  const cacheKey = `${search.toLowerCase()}_${pageSize}`;
   const now = Date.now();
-  if (!forceRefresh && filesCache && now - filesCache.timestamp < CACHE_TTL_MS) {
-    return filesCache.items;
+
+  const cached = searchCache.get(cacheKey);
+  if (cached && now - cached.timestamp < CACHE_TTL_MS) {
+    return cached.items;
   }
 
   const accessToken = await getValidAccessToken();
 
-  // Requête stricte : uniquement les fichiers ayant pour parent GOOGLE_DRIVE_FOLDER_ID
-  const query = `'${GOOGLE_DRIVE_FOLDER_ID}' in parents and trashed = false`;
+  // Requête stricte : uniquement les fichiers appartenant à la collection partagée (contact_us@design-solutionz.co.nz)
+  // et ignorant les dossiers
+  let q = `'${SHARED_COLLECTION_OWNER}' in owners and mimeType != 'application/vnd.google-apps.folder' and trashed = false`;
+
+  if (search) {
+    const words = search
+      .split(/\s+/)
+      .map((w) => w.trim())
+      .filter((w) => w.length >= 2);
+
+    for (const word of words) {
+      const escaped = word.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+      q += ` and name contains '${escaped}'`;
+    }
+  }
+
   const url = new URL("https://www.googleapis.com/drive/v3/files");
-  url.searchParams.set("q", query);
+  url.searchParams.set("q", q);
   url.searchParams.set("fields", "files(id, name, mimeType, size, modifiedTime, iconLink)");
+  url.searchParams.set("orderBy", "modifiedTime desc");
+  url.searchParams.set("pageSize", String(pageSize));
   url.searchParams.set("supportsAllDrives", "true");
   url.searchParams.set("includeItemsFromAllDrives", "true");
-  url.searchParams.set("pageSize", "1000");
 
   const response = await fetch(url.toString(), {
     headers: {
@@ -261,13 +285,16 @@ export async function listFolderFiles(forceRefresh = false): Promise<DriveFileIt
   const data = (await response.json()) as { files?: DriveFileItem[] };
   const items = data.files || [];
 
-  // Mettre en cache
-  filesCache = {
-    items,
-    timestamp: now,
-  };
-
+  searchCache.set(cacheKey, { items, timestamp: now });
   return items;
+}
+
+/**
+ * Pour compatibilité avec l'existant
+ */
+export async function listFolderFiles(forceRefresh = false): Promise<DriveFileItem[]> {
+  if (forceRefresh) searchCache.clear();
+  return searchDriveFiles({ pageSize: 50 });
 }
 
 /**
@@ -279,18 +306,36 @@ export async function getFileDownloadStream(fileId: string): Promise<{
   contentType: string;
   contentLength?: string;
 }> {
-  // 1. Récupérer la liste des fichiers autorisés
-  const files = await listFolderFiles();
-  const targetFile = files.find((f) => f.id === fileId);
-
-  // SÉCURITÉ ABSOLUE : Si le fileId n'est pas dans le dossier ciblé, refuser net !
-  if (!targetFile) {
-    throw new Error("Accès refusé : fichier introuvable dans le dossier partagé autorisé.");
-  }
-
   const accessToken = await getValidAccessToken();
 
-  // Télécharger le média brut
+  // 1. Récupérer les métadonnées pour vérifier l'appartenance à la collection autorisée
+  const metaUrl = `https://www.googleapis.com/drive/v3/files/${fileId}?fields=id,name,mimeType,size,owners&supportsAllDrives=true`;
+  const metaRes = await fetch(metaUrl, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+
+  if (!metaRes.ok) {
+    throw new Error("Fichier introuvable sur Google Drive.");
+  }
+
+  const fileMeta = (await metaRes.json()) as {
+    id: string;
+    name: string;
+    mimeType: string;
+    size?: string;
+    owners?: Array<{ emailAddress?: string }>;
+  };
+
+  // Sécurité absolue : s'assurer que le fichier appartient bien à la collection autorisée
+  const isOwnerValid = fileMeta.owners?.some(
+    (o) => o.emailAddress === SHARED_COLLECTION_OWNER
+  );
+
+  if (!isOwnerValid) {
+    throw new Error("Accès refusé : ce fichier n'appartient pas à la collection autorisée.");
+  }
+
+  // 2. Télécharger le flux binaire brut
   const downloadUrl = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&supportsAllDrives=true`;
   const response = await fetch(downloadUrl, {
     headers: {
@@ -304,12 +349,12 @@ export async function getFileDownloadStream(fileId: string): Promise<{
 
   const contentType =
     response.headers.get("content-type") ||
-    (targetFile.name.endsWith(".zip") ? "application/zip" : "application/octet-stream");
-  const contentLength = response.headers.get("content-length") || targetFile.size;
+    (fileMeta.name.endsWith(".zip") ? "application/zip" : "application/octet-stream");
+  const contentLength = response.headers.get("content-length") || fileMeta.size;
 
   return {
     stream: response.body,
-    file: targetFile,
+    file: fileMeta,
     contentType,
     contentLength: contentLength || undefined,
   };
