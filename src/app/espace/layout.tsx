@@ -19,7 +19,9 @@ export default async function EspaceLayout({
         firstName,
         fullName: enrollment.fullName,
         email: enrollment.email,
+        phone: enrollment.whatsapp,
         scheduleLabel: formation.schedule[enrollment.schedule].label,
+        avatarUrl: enrollment.avatarUrl || null,
       }}
     >
       {children}

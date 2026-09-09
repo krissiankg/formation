@@ -4,16 +4,16 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
-import { brand, contact } from "@/lib/config/formation";
+import { StudentTopbar } from "@/components/espace/StudentTopbar";
 
 const nav = [
-  { id: "overview", label: "Tableau de bord", href: "/espace" },
-  { id: "programme", label: "Mon programme", href: "/espace/programme" },
-  { id: "tests", label: "Tests & Quiz", href: "/espace/tests" },
-  { id: "projects", label: "Projets SaaS", href: "/espace/projets" },
-  { id: "ressources", label: "Ressources & IA", href: "/espace/ressources" },
-  { id: "avis", label: "Mon avis", href: "/espace/avis" },
-  { id: "paiements", label: "Mes paiements", href: "/espace/paiements" },
+  { id: "overview", label: "Tableau de bord", href: "/espace", icon: "📊" },
+  { id: "programme", label: "Mon programme", href: "/espace/programme", icon: "🗓️" },
+  { id: "tests", label: "Tests & Quiz", href: "/espace/tests", icon: "📝" },
+  { id: "projects", label: "Projets SaaS", href: "/espace/projets", icon: "🚀" },
+  { id: "ressources", label: "Ressources & IA", href: "/espace/ressources", icon: "⚡" },
+  { id: "avis", label: "Mon avis", href: "/espace/avis", icon: "⭐" },
+  { id: "paiements", label: "Mes paiements", href: "/espace/paiements", icon: "💳" },
 ];
 
 function isActive(pathname: string, href: string) {
@@ -33,11 +33,12 @@ export function StudentShell({
     scheduleLabel: string;
     phone?: string;
     isPaid?: boolean;
+    avatarUrl?: string | null;
   };
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
 
   async function logout() {
@@ -54,7 +55,9 @@ export function StudentShell({
   return (
     <div className="min-h-screen bg-[color:var(--neutral-100)]">
       <div className="flex min-h-screen">
+        {/* Barre latérale Bureau (Sidebar) */}
         <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-[color:var(--border)] bg-[color:var(--neutral-50)] lg:flex">
+          {/* Logo & Titre */}
           <div className="border-b border-[color:var(--border)] px-5 py-5">
             <Link href="/" className="flex items-center gap-2.5 group">
               <Image
@@ -73,6 +76,7 @@ export function StudentShell({
             </p>
           </div>
 
+          {/* Navigation unique et sans duplication */}
           <nav className="flex flex-1 flex-col gap-1 p-3">
             {nav.map((item) => {
               const active = isActive(pathname, item.href);
@@ -80,119 +84,97 @@ export function StudentShell({
                 <Link
                   key={item.id}
                   href={item.href}
-                  className={`rounded-xl px-3 py-2.5 text-sm transition ${
+                  className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
                     active
-                      ? "bg-[color:var(--neutral-black)] text-[color:var(--neutral-50)]"
+                      ? "bg-[color:var(--neutral-black)] text-[color:var(--neutral-50)] shadow-xs"
                       : "text-[color:var(--neutral-600)] hover:bg-[color:var(--neutral-100)] hover:text-[color:var(--neutral-black)]"
                   }`}
                 >
-                  {item.label}
+                  <span className="text-base">{item.icon}</span>
+                  <span>{item.label}</span>
                 </Link>
               );
             })}
           </nav>
 
-          <div className="border-t border-[color:var(--border)] p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex size-10 items-center justify-center rounded-full bg-[color:var(--accent-lightest)] text-sm font-semibold text-[color:var(--accent-darkest)]">
-                {student.firstName.slice(0, 1).toUpperCase()}
-              </div>
-              <div className="min-w-0">
-                <p className="truncate text-sm font-medium">{student.fullName}</p>
-                <p className="truncate text-xs text-[color:var(--neutral-500)]">
-                  {student.email}
-                </p>
-              </div>
+          {/* Pied de sidebar moderne et minimaliste */}
+          <div className="border-t border-[color:var(--border)] p-4 text-xs text-[color:var(--neutral-500)]">
+            <div className="flex items-center justify-between">
+              <span className="font-mono text-[10px] uppercase tracking-wider text-[color:var(--neutral-400)]">
+                FORGE IA v1.0
+              </span>
+              <span className="inline-flex items-center gap-1 font-mono text-[10px] text-emerald-600">
+                <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Connecté
+              </span>
             </div>
-            <button
-              type="button"
-              onClick={logout}
-              disabled={loggingOut}
-              className="mt-3 w-full rounded-lg border border-[color:var(--border)] px-3 py-2 text-xs text-[color:var(--neutral-600)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--neutral-black)]"
-            >
-              {loggingOut ? "Déconnexion…" : "Se déconnecter"}
-            </button>
             <Link
               href="/"
-              className="mt-2 block text-center text-xs text-[color:var(--neutral-500)] hover:text-[color:var(--accent-dark)]"
+              className="mt-3 block text-[11px] text-[color:var(--neutral-500)] hover:text-[color:var(--accent-dark)] transition"
             >
-              ← Retour au site
+              ← Retour au site vitrine
             </Link>
           </div>
         </aside>
 
+        {/* Contenu principal & Topbar */}
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-[color:var(--border)] bg-[color:color-mix(in_srgb,var(--neutral-50)_90%,transparent)] px-4 backdrop-blur-xl sm:px-6 lg:h-16">
-            <div className="flex items-center gap-3 lg:hidden">
+          {/* Barre supérieure permanente avec Coins en direct et profil haut-de-gamme */}
+          <div className="relative">
+            {/* Bouton burger mobile */}
+            <div className="lg:hidden absolute left-4 top-3 z-40">
               <button
                 type="button"
-                onClick={() => setOpen((v) => !v)}
-                className="rounded-lg border border-[color:var(--border)] px-3 py-1.5 text-sm"
+                onClick={() => setMobileOpen((v) => !v)}
+                className="rounded-lg border border-[color:var(--border)] bg-white px-2.5 py-1.5 text-xs font-semibold shadow-xs"
                 aria-label="Menu"
               >
-                Menu
+                {mobileOpen ? "✕ Fermer" : "☰ Menu"}
               </button>
-              <Link href="/" className="flex items-center gap-2">
-                <Image
-                  src="/logo-color.png"
-                  alt="Logo FORGEIA"
-                  width={24}
-                  height={24}
-                  className="rounded object-contain"
-                />
-                <span className="font-logo text-sm font-black tracking-wider text-[color:var(--neutral-black)]">
-                  FORGE<span className="text-[color:var(--accent)]">IA</span>
-                </span>
-              </Link>
             </div>
-            <p className="hidden text-sm text-[color:var(--neutral-500)] lg:block">
-              Bonjour,{" "}
-              <span className="font-medium text-[color:var(--neutral-black)]">
-                {student.firstName}
-              </span>
-            </p>
-            <div className="flex items-center gap-2">
-              <span className="hidden rounded-full border border-[color:var(--border)] bg-[color:var(--neutral-50)] px-3 py-1 text-xs text-[color:var(--neutral-600)] sm:inline">
-                {student.scheduleLabel}
-              </span>
-              <a
-                href={contact.whatsappUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-primary !px-3 !py-2 text-xs sm:text-sm"
-              >
-                Aide
-              </a>
-            </div>
-          </header>
 
-          {open ? (
-            <div className="border-b border-[color:var(--border)] bg-[color:var(--neutral-50)] p-3 lg:hidden">
+            <StudentTopbar
+              student={student}
+              onLogout={logout}
+              loggingOut={loggingOut}
+            />
+          </div>
+
+          {/* Drawer mobile */}
+          {mobileOpen && (
+            <div className="border-b border-[color:var(--border)] bg-[color:var(--neutral-50)] p-3 lg:hidden space-y-1 animate-in slide-in-from-top-2">
               {nav.map((item) => (
                 <Link
                   key={item.id}
                   href={item.href}
-                  onClick={() => setOpen(false)}
-                  className={`block rounded-lg px-3 py-2.5 text-sm ${
+                  onClick={() => setMobileOpen(false)}
+                  className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium ${
                     isActive(pathname, item.href)
                       ? "bg-[color:var(--neutral-black)] text-[color:var(--neutral-50)]"
                       : "text-[color:var(--neutral-700)] hover:bg-[color:var(--neutral-100)]"
                   }`}
                 >
-                  {item.label}
+                  <span>{item.icon}</span>
+                  <span>{item.label}</span>
                 </Link>
               ))}
-              <button
-                type="button"
-                onClick={logout}
-                className="mt-2 w-full rounded-lg px-3 py-2.5 text-left text-sm text-[color:var(--neutral-600)]"
-              >
-                Se déconnecter
-              </button>
-            </div>
-          ) : null}
 
-          <div className="flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">{children}</div>
+              <div className="pt-2 border-t border-[color:var(--border)]">
+                <button
+                  type="button"
+                  onClick={logout}
+                  className="w-full text-left rounded-lg px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 cursor-pointer"
+                >
+                  🚪 Se déconnecter
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Corps de page */}
+          <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+            {children}
+          </main>
         </div>
       </div>
     </div>

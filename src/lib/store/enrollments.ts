@@ -1,3 +1,4 @@
+import { randomBytes, scryptSync, timingSafeEqual } from "crypto";
 import type { Enrollment, EnrollmentStatus, PaymentStatus, PaymentKind } from "@/lib/types";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { initStudentProgress } from "@/lib/store/progress";
@@ -9,6 +10,8 @@ type EnrollmentRow = {
   whatsapp: string;
   schedule: "saturday" | "sunday";
   status: EnrollmentStatus;
+  avatar_url?: string | null;
+  password_hash?: string | null;
   payments: Enrollment["payments"];
   created_at: string;
 };
@@ -21,6 +24,8 @@ function mapRow(row: EnrollmentRow): Enrollment {
     whatsapp: row.whatsapp,
     schedule: row.schedule,
     status: row.status,
+    avatarUrl: row.avatar_url ?? undefined,
+    passwordHash: row.password_hash ?? undefined,
     createdAt: row.created_at,
     payments: row.payments ?? [],
   };
@@ -134,4 +139,78 @@ export async function findEnrollmentByEmailAndWhatsapp(
   );
 }
 
+export async function findEnrollmentByEmail(email: string) {
+  const normalizedEmail = email.trim().toLowerCase();
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from("enrollments")
+    .select("*")
+    .eq("email", normalizedEmail)
+    .maybeSingle();
+
+  if (error || !data) return null;
+  return mapRow(data as EnrollmentRow);
+}
+
+export function hashPassword(password: string): string {
+  const salt = randomBytes(16).toString("hex");
+  const derived = scryptSync(password, salt, 64).toString("hex");
+  return `${salt}:${derived}`;
+}
+
+export function verifyPassword(password: string, combined: string): boolean {
+  try {
+    const [salt, key] = combined.split(":");
+    if (!salt || !key) return false;
+    const keyBuffer = Buffer.from(key, "hex");
+    const derivedBuffer = scryptSync(password, salt, 64);
+    return timingSafeEqual(keyBuffer, derivedBuffer);
+  } catch {
+    return false;
+  }
+}
+
+export async function updateEnrollmentProfile(
+  id: string,
+  updates: {
+    fullName?: string;
+    whatsapp?: string;
+    avatarUrl?: string;
+    password?: string;
+  }
+): Promise<Enrollment> {
+  const supabase = getSupabaseAdmin();
+  const payload: Record<string, any> = {};
+
+  if (updates.fullName && updates.fullName.trim().length >= 2) {
+    payload.full_name = updates.fullName.trim();
+  }
+  if (updates.whatsapp && updates.whatsapp.trim().length >= 8) {
+    payload.whatsapp = updates.whatsapp.trim();
+  }
+  if (updates.avatarUrl !== undefined) {
+    payload.avatar_url = updates.avatarUrl;
+  }
+  if (updates.password && updates.password.trim().length >= 6) {
+    payload.password_hash = hashPassword(updates.password.trim());
+  }
+
+  if (Object.keys(payload).length === 0) {
+    const existing = await getEnrollment(id);
+    if (!existing) throw new Error("Inscription introuvable");
+    return existing;
+  }
+
+  const { data, error } = await supabase
+    .from("enrollments")
+    .update(payload)
+    .eq("id", id)
+    .select("*")
+    .single();
+
+  if (error) throw error;
+  return mapRow(data as EnrollmentRow);
+}
+
 export type { PaymentKind };
+
