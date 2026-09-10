@@ -20,9 +20,17 @@ interface StudentTopbarProps {
   };
   onLogout: () => void;
   loggingOut?: boolean;
+  onToggleMobile?: () => void;
+  mobileOpen?: boolean;
 }
 
-export function StudentTopbar({ student, onLogout, loggingOut }: StudentTopbarProps) {
+export function StudentTopbar({
+  student,
+  onLogout,
+  loggingOut,
+  onToggleMobile,
+  mobileOpen = false,
+}: StudentTopbarProps) {
   const [currentUser, setCurrentUser] = useState(student);
   const [balance, setBalance] = useState<number | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -117,12 +125,24 @@ export function StudentTopbar({ student, onLogout, loggingOut }: StudentTopbarPr
 
   return (
     <>
-      <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-[color:var(--border)] bg-[color:color-mix(in_srgb,var(--neutral-50)_92%,transparent)] px-4 backdrop-blur-xl sm:px-6 lg:h-16">
-        {/* Partie Gauche : Salutation + Cohorte */}
-        <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-2">
-            <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
-            <p className="text-sm text-[color:var(--neutral-600)]">
+      <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-[color:var(--border)] bg-[color:color-mix(in_srgb,var(--neutral-50)_92%,transparent)] px-3 backdrop-blur-xl sm:px-6 lg:h-16">
+        {/* Partie Gauche : Burger mobile + Salutation + Cohorte */}
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          {onToggleMobile && (
+            <button
+              type="button"
+              onClick={onToggleMobile}
+              className="lg:hidden shrink-0 inline-flex items-center gap-1.5 rounded-lg border border-[color:var(--border)] bg-white px-2.5 py-1.5 text-xs font-semibold text-[color:var(--neutral-800)] shadow-2xs hover:bg-[color:var(--neutral-100)] transition cursor-pointer"
+              aria-label="Ouvrir le menu de navigation"
+            >
+              <span className="text-sm leading-none">{mobileOpen ? "✕" : "☰"}</span>
+              <span className="hidden xs:inline text-[11px]">{mobileOpen ? "Fermer" : "Menu"}</span>
+            </button>
+          )}
+
+          <div className="hidden sm:flex items-center gap-2 truncate">
+            <span className="size-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+            <p className="text-sm text-[color:var(--neutral-600)] truncate">
               Bonjour,{" "}
               <span className="font-semibold text-[color:var(--neutral-black)]">
                 {currentUser.firstName}
@@ -130,15 +150,15 @@ export function StudentTopbar({ student, onLogout, loggingOut }: StudentTopbarPr
             </p>
           </div>
 
-          <span className="rounded-full border border-[color:var(--border)] bg-white px-2.5 py-0.5 font-mono text-[11px] font-medium text-[color:var(--neutral-600)] shadow-2xs">
+          <span className="hidden md:inline-block shrink-0 rounded-full border border-[color:var(--border)] bg-white px-2.5 py-0.5 font-mono text-[11px] font-medium text-[color:var(--neutral-600)] shadow-2xs">
             {currentUser.scheduleLabel}
           </span>
         </div>
 
         {/* Partie Droite : Coins Pill + Avatar Menu */}
-        <div className="flex items-center gap-2.5 sm:gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           {/* Widget Coins Topbar */}
-          <div className="flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-gradient-to-r from-amber-500/10 to-amber-500/5 py-1 pl-3 pr-1.5 text-xs shadow-2xs">
+          <div className="flex items-center gap-1 sm:gap-1.5 rounded-full border border-amber-500/30 bg-gradient-to-r from-amber-500/10 to-amber-500/5 py-1 pl-2.5 sm:pl-3 pr-1 text-xs shadow-2xs">
             <span className="text-sm">🪙</span>
             <span className="font-display font-bold text-amber-950">
               {balance !== null ? balance : "—"}
@@ -150,10 +170,11 @@ export function StudentTopbar({ student, onLogout, loggingOut }: StudentTopbarPr
             <button
               type="button"
               onClick={() => setRechargeModalOpen(true)}
-              className="ml-1 inline-flex items-center justify-center rounded-full bg-amber-500 px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-wider text-white shadow-xs hover:bg-amber-600 active:scale-95 transition cursor-pointer"
+              className="ml-1 inline-flex items-center justify-center rounded-full bg-amber-500 px-2 sm:px-2.5 py-0.5 sm:py-1 font-mono text-[10px] font-bold uppercase tracking-wider text-white shadow-xs hover:bg-amber-600 active:scale-95 transition cursor-pointer"
               title="Recharger des coins"
             >
-              + Recharger
+              <span className="sm:hidden">+</span>
+              <span className="hidden sm:inline">+ Recharger</span>
             </button>
           </div>
 
