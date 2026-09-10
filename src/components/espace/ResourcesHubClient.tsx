@@ -127,10 +127,10 @@ export function ResourcesHubClient({ studentApiKey, contents }: ResourcesHubClie
                 </div>
 
                 <h3 className="font-display mt-4 text-2xl font-bold tracking-tight text-white">
-                  Forge IA Assistant
+                  Forge IA Assistant (NVIDIA NIM)
                 </h3>
                 <p className="mt-2 text-xs text-white/70 leading-relaxed">
-                  Serveur d&apos;inférence dédié avec modèle DeepSeek V3 / R1 illimité. Conçu pour alimenter vos agents de code, terminaux autonomes et générations de code SaaS.
+                  Passerelle d&apos;inférence haute vitesse propulsée par NVIDIA NIM avec DeepSeek V4 Flash & Kimi K3. Conçue pour alimenter vos extensions VS Code, agents de code autonomes et terminaux.
                 </p>
 
                 {/* Paramètres de connexion */}
@@ -176,8 +176,8 @@ export function ResourcesHubClient({ studentApiKey, contents }: ResourcesHubClie
               </div>
 
               <div className="mt-6 pt-4 border-t border-white/10 flex items-center justify-between text-[11px] text-white/60">
-                <span>Modèle : <strong>deepseek-chat</strong></span>
-                <span className="text-emerald-400">● En ligne 24/7</span>
+                <span>Modèle : <strong>forgeia-coder</strong> ou <strong>deepseek-v4-flash</strong></span>
+                <span className="text-emerald-400">● En ligne 24/7 (NVIDIA)</span>
               </div>
             </div>
 
