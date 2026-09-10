@@ -120,25 +120,13 @@ export function StudentShell({
         {/* Contenu principal & Topbar */}
         <div className="flex min-w-0 flex-1 flex-col">
           {/* Barre supérieure permanente avec Coins en direct et profil haut-de-gamme */}
-          <div className="relative">
-            {/* Bouton burger mobile */}
-            <div className="lg:hidden absolute left-4 top-3 z-40">
-              <button
-                type="button"
-                onClick={() => setMobileOpen((v) => !v)}
-                className="rounded-lg border border-[color:var(--border)] bg-white px-2.5 py-1.5 text-xs font-semibold shadow-xs"
-                aria-label="Menu"
-              >
-                {mobileOpen ? "✕ Fermer" : "☰ Menu"}
-              </button>
-            </div>
-
-            <StudentTopbar
-              student={student}
-              onLogout={logout}
-              loggingOut={loggingOut}
-            />
-          </div>
+          <StudentTopbar
+            student={student}
+            onLogout={logout}
+            loggingOut={loggingOut}
+            onToggleMobile={() => setMobileOpen((v) => !v)}
+            mobileOpen={mobileOpen}
+          />
 
           {/* Drawer mobile */}
           {mobileOpen && (

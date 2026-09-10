@@ -123,7 +123,7 @@ export function WalletWidget({
       {/* Modal de Rechargement de Coins */}
       {isModalVisible && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
-          <div className="w-full max-w-lg rounded-2xl border border-[color:var(--border)] bg-white p-6 shadow-2xl animate-in zoom-in-95">
+          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-[color:var(--border)] bg-white p-5 sm:p-6 shadow-2xl animate-in zoom-in-95">
             {/* Header */}
             <div className="flex items-start justify-between">
               <div>
@@ -230,7 +230,7 @@ export function WalletWidget({
       {/* Modal Historique des transactions */}
       {historyOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
-          <div className="w-full max-w-md rounded-2xl border border-[color:var(--border)] bg-white p-6 shadow-2xl animate-in zoom-in-95">
+          <div className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl border border-[color:var(--border)] bg-white p-5 sm:p-6 shadow-2xl animate-in zoom-in-95">
             <div className="flex items-start justify-between">
               <h3 className="font-display text-lg font-bold text-[color:var(--neutral-black)]">
                 Historique des Coins

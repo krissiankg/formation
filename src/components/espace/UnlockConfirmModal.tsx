@@ -76,7 +76,7 @@ export function UnlockConfirmModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
-      <div className="w-full max-w-md rounded-2xl border border-[color:var(--border)] bg-white p-6 shadow-2xl animate-in zoom-in-95">
+      <div className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl border border-[color:var(--border)] bg-white p-5 sm:p-6 shadow-2xl animate-in zoom-in-95">
         {/* En-tête */}
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2">

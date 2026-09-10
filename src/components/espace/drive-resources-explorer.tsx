@@ -150,7 +150,7 @@ export function DriveResourcesExplorer() {
   const hasQuery = search.trim().length >= 2;
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[color:var(--neutral-50)] p-6 text-[color:var(--neutral-black)] sm:p-8 shadow-sm">
+    <div className="overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[color:var(--neutral-50)] p-4 text-[color:var(--neutral-black)] sm:p-8 shadow-sm">
       {/* Widget Portefeuille Coins en haut */}
       <div className="mb-6">
         <WalletWidget
@@ -254,12 +254,12 @@ export function DriveResourcesExplorer() {
 
       {/* Barre de filtres format */}
       {hasQuery && displayedFiles.length > 0 && (
-        <div className="mt-5 flex items-center justify-between border-t border-[color:var(--border)] pt-4">
+        <div className="mt-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-[color:var(--border)] pt-4">
           <p className="text-xs text-[color:var(--neutral-500)]">
             {searching ? "Recherche en cours dans Google Drive..." : `${displayedFiles.length} ressource(s) trouvée(s)`}
           </p>
 
-          <div className="flex items-center gap-1.5 rounded-xl border border-[color:var(--border)] bg-[color:var(--neutral-100)] p-1 text-xs">
+          <div className="flex items-center gap-1.5 rounded-xl border border-[color:var(--border)] bg-[color:var(--neutral-100)] p-1 text-xs w-fit">
             <button
               onClick={() => setOnlyZip(true)}
               className={`rounded-lg px-3 py-1.5 font-medium transition cursor-pointer ${

@@ -51,11 +51,11 @@ export function SiteHeader() {
           </a>
           <Link
             href="/connexion"
-            className="btn-ghost !px-3 !py-2.5 text-sm sm:!px-4"
+            className="btn-ghost !px-2.5 sm:!px-4 !py-2 sm:!py-2.5 text-xs sm:text-sm"
           >
             Connexion
           </Link>
-          <Link href="/inscription" className="btn-primary text-sm px-4 py-2.5">
+          <Link href="/inscription" className="btn-primary !px-3 sm:!px-4 !py-2 sm:!py-2.5 text-xs sm:text-sm">
             S&apos;inscrire
           </Link>
         </div>

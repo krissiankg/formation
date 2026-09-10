@@ -132,17 +132,17 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
               Cohorte <span className="font-medium text-[color:var(--neutral-black)]">FORGE IA</span>{" "}
               · {brand.tagline}
             </p>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
               <button
                 type="button"
                 onClick={onLogout}
                 disabled={loggingOut}
-                className="btn-ghost !px-3 !py-2 text-xs sm:text-sm"
+                className="btn-ghost !px-2.5 sm:!px-3 !py-1.5 sm:!py-2 text-xs sm:text-sm"
               >
                 {loggingOut ? "Déconnexion…" : "Déconnexion"}
               </button>
-              <Link href="/espace" className="btn-ghost !px-3 !py-2 text-xs sm:text-sm">
-                Voir espace apprenant
+              <Link href="/espace" className="btn-ghost !px-2.5 sm:!px-3 !py-1.5 sm:!py-2 text-xs sm:text-sm">
+                <span className="hidden sm:inline">Espace </span>Apprenant ↗
               </Link>
             </div>
           </header>
