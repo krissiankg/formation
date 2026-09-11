@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { brand } from "@/lib/config/formation";
-import { getStudentContext } from "@/lib/store/student-context";
+import { getSessionEnrollment } from "@/lib/auth/session";
 import { CoinsShopSection } from "@/components/espace/CoinsShopSection";
 
 export const metadata = {
@@ -10,8 +10,8 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function CoinsPage() {
-  const ctx = await getStudentContext();
-  if (!ctx) redirect("/connexion");
+  const enrollment = await getSessionEnrollment();
+  if (!enrollment) redirect("/connexion");
 
   return (
     <div className="mx-auto max-w-5xl py-2">
