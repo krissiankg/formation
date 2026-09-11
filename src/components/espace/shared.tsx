@@ -11,6 +11,7 @@ import type { ContentItem } from "@/lib/store/content";
 import type { FormationSession } from "@/lib/programme/types";
 import { formatSessionDateLabel } from "@/lib/store/sessions";
 import type { ScheduleId } from "@/lib/types";
+import { formatFileSize, getFileIcon } from "@/lib/format";
 
 export function PageHeader({
   kicker,
@@ -199,34 +200,104 @@ export function ProgrammeList({ modules }: { modules: CurriculumModule[] }) {
 
 export function ResourcesPanel({ contents }: { contents: ContentItem[] }) {
   return (
-    <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--neutral-50)] p-5 sm:p-6">
-      <h2 className="font-display text-xl tracking-tight sm:text-2xl">Ressources publiées</h2>
-      {contents.length === 0 ? (
-        <div className="mt-5 rounded-xl border border-dashed border-[color:var(--border)] bg-[color:var(--neutral-100)] px-5 py-10 text-center">
-          <p className="font-medium text-[color:var(--neutral-black)]">
-            Aucune ressource publiée
+    <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--neutral-50)] p-5 sm:p-6 shadow-2xs">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-[color:var(--border)]/60 pb-4">
+        <div>
+          <h2 className="font-display text-xl tracking-tight sm:text-2xl text-[color:var(--neutral-black)]">
+            Supports & Documents de Formation
+          </h2>
+          <p className="mt-1 text-xs text-[color:var(--neutral-600)]">
+            Retrouve ici les supports de cours, packages, exercices et fichiers lourds mis à disposition par ton formateur.
           </p>
-          <p className="mx-auto mt-2 max-w-md text-sm text-[color:var(--neutral-500)]">
-            Dès qu&apos;un outil ou un code est activé, il apparaît ici et tu reçois
-            une alerte WhatsApp.
+        </div>
+        <span className="inline-flex items-center gap-1.5 self-start sm:self-auto rounded-full bg-white px-3 py-1 font-mono text-xs border border-[color:var(--border)] text-[color:var(--neutral-700)] shadow-2xs">
+          📚 {contents.length} ressource{contents.length > 1 ? "s" : ""}
+        </span>
+      </div>
+
+      {contents.length === 0 ? (
+        <div className="mt-6 rounded-2xl border border-dashed border-[color:var(--border)] bg-[color:var(--neutral-100)] px-5 py-12 text-center">
+          <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-white border border-[color:var(--border)] text-xl shadow-2xs mb-3">
+            📚
+          </div>
+          <p className="font-semibold text-sm text-[color:var(--neutral-black)]">
+            Aucun support partagé pour le moment
+          </p>
+          <p className="mx-auto mt-1 max-w-md text-xs text-[color:var(--neutral-500)] leading-relaxed">
+            Dès que le formateur publie un support, un code ou des fichiers joints, ils apparaîtront instantanément ici et tu recevras une alerte WhatsApp.
           </p>
         </div>
       ) : (
-        <ul className="mt-5 space-y-3">
+        <ul className="mt-6 space-y-4">
           {contents.map((c) => (
             <li
               key={c.id}
-              className="flex items-start justify-between gap-4 rounded-xl border border-[color:var(--border)] bg-[color:var(--neutral-100)] p-4"
+              className="rounded-2xl border border-[color:var(--border)] bg-white p-5 sm:p-6 shadow-xs transition hover:border-[color:var(--accent)]/40"
             >
-              <div>
-                <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[color:var(--neutral-500)]">
-                  {c.kind}
-                </p>
-                <p className="mt-1 font-medium">{c.title}</p>
-                <p className="mt-1 whitespace-pre-wrap text-sm text-[color:var(--neutral-600)]">
-                  {c.body}
-                </p>
+              <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[color:var(--border)]/60">
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center rounded-md bg-[color:var(--neutral-100)] px-2.5 py-0.5 font-mono text-[11px] font-semibold uppercase tracking-wider text-[color:var(--neutral-700)]">
+                    {c.kind}
+                  </span>
+                  <span className="text-xs text-[color:var(--neutral-400)]">•</span>
+                  <time className="font-mono text-xs text-[color:var(--neutral-500)]">
+                    {new Date(c.createdAt).toLocaleDateString("fr-FR", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </time>
+                </div>
               </div>
+
+              <h3 className="mt-3 font-display text-lg sm:text-xl font-bold tracking-tight text-[color:var(--neutral-black)]">
+                {c.title}
+              </h3>
+
+              <div className="mt-2 whitespace-pre-wrap text-xs sm:text-sm text-[color:var(--neutral-600)] leading-relaxed">
+                {c.body}
+              </div>
+
+              {/* Pièces jointes téléchargeables */}
+              {c.attachments && c.attachments.length > 0 && (
+                <div className="mt-5 pt-4 border-t border-[color:var(--border)]/70">
+                  <span className="block text-xs font-semibold uppercase tracking-wider text-[color:var(--neutral-500)] mb-3">
+                    📎 Fichiers téléchargeables ({c.attachments.length})
+                  </span>
+
+                  <div className="grid gap-2.5 sm:grid-cols-2">
+                    {c.attachments.map((att) => (
+                      <a
+                        key={att.id}
+                        href={att.url}
+                        download={att.name}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group flex items-center justify-between gap-3 rounded-xl border border-[color:var(--border)] bg-[color:var(--neutral-50)] p-3 hover:bg-[color:var(--accent)]/5 hover:border-[color:var(--accent)] transition shadow-2xs cursor-pointer"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-white border border-[color:var(--border)] text-lg shadow-2xs group-hover:scale-105 transition">
+                            {getFileIcon(att.name)}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-medium text-xs text-[color:var(--neutral-800)] truncate group-hover:text-[color:var(--accent)] transition">
+                              {att.name}
+                            </p>
+                            <p className="font-mono text-[10px] text-[color:var(--neutral-500)] mt-0.5">
+                              {att.formattedSize || formatFileSize(att.size)}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="shrink-0 inline-flex items-center gap-1.5 rounded-lg bg-white px-2.5 py-1.5 text-xs font-semibold text-[color:var(--neutral-700)] border border-[color:var(--border)] group-hover:bg-[color:var(--accent)] group-hover:text-white group-hover:border-transparent transition shadow-2xs">
+                          <span>⬇️</span>
+                          <span className="hidden sm:inline">Télécharger</span>
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
             </li>
           ))}
         </ul>
