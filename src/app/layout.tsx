@@ -7,24 +7,21 @@ import { WhatsAppFloat } from "@/components/WhatsAppFloat";
 const body = Inter({
   variable: "--font-body",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const heading = Orbitron({
   variable: "--font-heading",
   subsets: ["latin"],
   weight: ["500", "600", "700", "800", "900"],
-});
-
-const logoFont = Orbitron({
-  variable: "--font-logo",
-  subsets: ["latin"],
-  weight: ["700", "800", "900"],
+  display: "swap",
 });
 
 const mono = IBM_Plex_Mono({
   variable: "--font-code",
   subsets: ["latin"],
   weight: ["400", "500"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -71,7 +68,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="fr"
-      className={`${body.variable} ${heading.variable} ${mono.variable} ${logoFont.variable} h-full antialiased`}
+      style={{ ["--font-logo" as any]: "var(--font-heading)" }}
+      className={`${body.variable} ${heading.variable} ${mono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col mesh-bg">
         {children}
