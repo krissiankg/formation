@@ -12,6 +12,7 @@ const nav = [
   { id: "tests", label: "Tests & Quiz", href: "/espace/tests", icon: "📝" },
   { id: "projects", label: "Projets SaaS", href: "/espace/projets", icon: "🚀" },
   { id: "ressources", label: "Ressources & IA", href: "/espace/ressources", icon: "⚡" },
+  { id: "coins", label: "Boutique Coins", href: "/espace/coins", icon: "🪙" },
   { id: "avis", label: "Mon avis", href: "/espace/avis", icon: "⭐" },
   { id: "paiements", label: "Mes paiements", href: "/espace/paiements", icon: "💳" },
 ];

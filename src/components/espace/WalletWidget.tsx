@@ -3,7 +3,6 @@
 import { useState } from "react";
 import type { CoinPack, CoinTransaction } from "@/lib/wallet/types";
 import { formatFcfa } from "@/lib/format";
-import { RechargeCoinsModal } from "./RechargeCoinsModal";
 
 interface WalletWidgetProps {
   balance: number;
@@ -21,17 +20,16 @@ export function WalletWidget({
   packs,
   transactions = [],
   onRefresh,
-  openRechargeModal = false,
-  onCloseRechargeModal,
 }: WalletWidgetProps) {
-  const [modalOpen, setModalOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
 
-  const isModalVisible = modalOpen || openRechargeModal;
-
-  function closeModal() {
-    setModalOpen(false);
-    if (onCloseRechargeModal) onCloseRechargeModal();
+  function handleGoToRecharge() {
+    // Si on est dans le Hub, basculer vers l'onglet Boutique Coins
+    window.dispatchEvent(new CustomEvent("open-coins-tab"));
+    // Si la page ne répond pas à l'événement ou si on n'est pas sur /espace/ressources, naviguer vers /espace/coins
+    if (typeof window !== "undefined" && window.location.pathname !== "/espace/ressources") {
+      window.location.href = "/espace/coins";
+    }
   }
 
   return (
@@ -54,7 +52,7 @@ export function WalletWidget({
               )}
             </div>
             <div className="flex items-baseline gap-1.5">
-              <span className="font-display text-xl font-bold text-[color:var(--neutral-black)]">
+              <span className="font-sans text-2xl font-black text-[color:var(--neutral-black)] tabular-nums">
                 {isAdmin ? "∞" : balance}
               </span>
               <span className="text-xs font-semibold text-amber-600">
@@ -70,7 +68,7 @@ export function WalletWidget({
             <button
               type="button"
               onClick={() => setHistoryOpen(true)}
-              className="inline-flex items-center gap-1 rounded-xl border border-[color:var(--border)] bg-[color:var(--neutral-50)] px-3 py-2 text-xs font-medium text-[color:var(--neutral-700)] transition hover:bg-[color:var(--neutral-100)]"
+              className="inline-flex items-center gap-1 rounded-xl border border-[color:var(--border)] bg-[color:var(--neutral-50)] px-3 py-2 text-xs font-medium text-[color:var(--neutral-700)] transition hover:bg-[color:var(--neutral-100)] cursor-pointer"
               title="Historique des transactions"
             >
               <svg className="size-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -84,8 +82,9 @@ export function WalletWidget({
           {!isAdmin && (
             <button
               type="button"
-              onClick={() => setModalOpen(true)}
+              onClick={handleGoToRecharge}
               className="inline-flex items-center gap-1.5 rounded-xl bg-amber-500 px-3.5 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-amber-600 active:scale-95 cursor-pointer"
+              title="Accéder à la boutique de coins"
             >
               <span>+</span>
               <span>Recharger</span>
@@ -93,14 +92,6 @@ export function WalletWidget({
           )}
         </div>
       </div>
-
-      {/* Modal de Rechargement de Coins */}
-      <RechargeCoinsModal
-        isOpen={isModalVisible}
-        onClose={closeModal}
-        currentBalance={balance}
-        packs={packs}
-      />
 
       {/* Modal Historique des transactions */}
       {historyOpen && (

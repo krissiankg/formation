@@ -43,7 +43,6 @@ export function DriveResourcesExplorer() {
 
   // Modales
   const [unlockTarget, setUnlockTarget] = useState<DriveResourceFile | null>(null);
-  const [rechargeModalOpen, setRechargeModalOpen] = useState(false);
 
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -159,8 +158,6 @@ export function DriveResourcesExplorer() {
           packs={packs}
           transactions={transactions}
           onRefresh={loadWallet}
-          openRechargeModal={rechargeModalOpen}
-          onCloseRechargeModal={() => setRechargeModalOpen(false)}
         />
       </div>
 
@@ -481,7 +478,10 @@ export function DriveResourcesExplorer() {
           setUnlockedFileIds((prev) => [...prev, fileId]);
           loadWallet();
         }}
-        onOpenRecharge={() => setRechargeModalOpen(true)}
+        onOpenRecharge={() => {
+          setUnlockTarget(null);
+          window.dispatchEvent(new CustomEvent("open-coins-tab"));
+        }}
       />
     </div>
   );
