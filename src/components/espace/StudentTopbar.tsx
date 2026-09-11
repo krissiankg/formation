@@ -5,9 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { contact } from "@/lib/config/formation";
 import { StudentProfileModal } from "@/components/espace/StudentProfileModal";
-import type { CoinPack } from "@/lib/wallet/types";
-import { COIN_PACKS } from "@/lib/wallet/types";
-import { formatFcfa } from "@/lib/format";
+import { RechargeCoinsModal } from "@/components/espace/RechargeCoinsModal";
 
 interface StudentTopbarProps {
   student: {
@@ -36,8 +34,6 @@ export function StudentTopbar({
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [rechargeModalOpen, setRechargeModalOpen] = useState(false);
-  const [loadingPackId, setLoadingPackId] = useState<string | null>(null);
-  const [rechargeError, setRechargeError] = useState<string | null>(null);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -97,29 +93,6 @@ export function StudentTopbar({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  async function handleBuyPack(pack: CoinPack) {
-    try {
-      setLoadingPackId(pack.id);
-      setRechargeError(null);
-
-      const res = await fetch("/api/wallet/recharge", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ packId: pack.id }),
-      });
-
-      const data = await res.json();
-      if (!res.ok || !data.paymentUrl) {
-        throw new Error(data.error || "Impossible d'initialiser le paiement.");
-      }
-
-      window.location.href = data.paymentUrl;
-    } catch (err) {
-      setRechargeError((err as Error).message || "Erreur de paiement.");
-      setLoadingPackId(null);
-    }
-  }
 
   const initialLetter = currentUser.fullName.trim()[0]?.toUpperCase() || "A";
 
@@ -329,103 +302,11 @@ export function StudentTopbar({
       />
 
       {/* Modal Rechargement rapide des coins */}
-      {rechargeModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
-          <div className="w-full max-w-lg rounded-2xl border border-[color:var(--border)] bg-white p-6 shadow-2xl animate-in zoom-in-95">
-            <div className="flex items-start justify-between">
-              <div>
-                <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2.5 py-0.5 font-mono text-[11px] font-semibold text-amber-600">
-                  <span>🪙</span> Portefeuille Coins
-                </div>
-                <h3 className="font-display mt-2 text-xl font-bold text-[color:var(--neutral-black)]">
-                  Recharger des Coins
-                </h3>
-                <p className="mt-1 text-xs text-[color:var(--neutral-600)]">
-                  Débloque instantanément les templates UI8 et ressources ZIP. Paiement sécurisé FedaPay (MTN, Moov, Orange, Wave, Carte).
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setRechargeModalOpen(false)}
-                className="rounded-lg p-1.5 text-[color:var(--neutral-400)] hover:bg-[color:var(--neutral-100)] cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="mt-4 flex items-center justify-between rounded-xl bg-amber-500/5 border border-amber-500/15 p-3">
-              <span className="text-xs text-amber-800">Solde actuel :</span>
-              <span className="font-mono text-sm font-bold text-amber-900">
-                {balance ?? 0} Coins 🪙
-              </span>
-            </div>
-
-            {rechargeError && (
-              <div className="mt-3 rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700">
-                {rechargeError}
-              </div>
-            )}
-
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              {COIN_PACKS.map((pack) => {
-                const isLoading = loadingPackId === pack.id;
-                return (
-                  <div
-                    key={pack.id}
-                    className={`relative flex flex-col justify-between rounded-xl border p-4 transition ${
-                      pack.popular
-                        ? "border-amber-500 bg-amber-500/5 shadow-xs"
-                        : "border-[color:var(--border)] bg-white hover:border-[color:var(--accent)]"
-                    }`}
-                  >
-                    {pack.badge && (
-                      <span className="absolute -top-2.5 right-3 rounded-full bg-amber-500 px-2 py-0.5 font-mono text-[9px] font-bold uppercase text-white shadow-xs">
-                        {pack.badge}
-                      </span>
-                    )}
-
-                    <div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-lg">🪙</span>
-                        <span className="font-display text-lg font-bold text-[color:var(--neutral-black)]">
-                          {pack.coins} Coins
-                        </span>
-                      </div>
-                      <p className="mt-1 font-mono text-sm font-semibold text-[color:var(--accent-darkest)]">
-                        {formatFcfa(pack.priceFcfa)}
-                      </p>
-                    </div>
-
-                    <button
-                      type="button"
-                      disabled={isLoading}
-                      onClick={() => handleBuyPack(pack)}
-                      className={`mt-4 w-full rounded-lg py-2 text-xs font-semibold transition active:scale-95 cursor-pointer disabled:opacity-50 ${
-                        pack.popular
-                          ? "bg-amber-500 text-white hover:bg-amber-600"
-                          : "bg-[color:var(--neutral-100)] text-[color:var(--neutral-800)] hover:bg-[color:var(--neutral-200)]"
-                      }`}
-                    >
-                      {isLoading ? (
-                        <span className="inline-flex items-center gap-1">
-                          <svg className="size-3 animate-spin" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                          </svg>
-                          Chargement...
-                        </span>
-                      ) : (
-                        `Choisir ce pack`
-                      )}
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
+      <RechargeCoinsModal
+        isOpen={rechargeModalOpen}
+        onClose={() => setRechargeModalOpen(false)}
+        currentBalance={balance ?? 0}
+      />
     </>
   );
 }

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { CoinPack, CoinTransaction } from "@/lib/wallet/types";
 import { formatFcfa } from "@/lib/format";
+import { RechargeCoinsModal } from "./RechargeCoinsModal";
 
 interface WalletWidgetProps {
   balance: number;
@@ -25,39 +26,12 @@ export function WalletWidget({
 }: WalletWidgetProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
-  const [loadingPackId, setLoadingPackId] = useState<string | null>(null);
-  const [rechargeError, setRechargeError] = useState<string | null>(null);
 
   const isModalVisible = modalOpen || openRechargeModal;
 
   function closeModal() {
     setModalOpen(false);
     if (onCloseRechargeModal) onCloseRechargeModal();
-    setRechargeError(null);
-  }
-
-  async function handleBuyPack(pack: CoinPack) {
-    try {
-      setLoadingPackId(pack.id);
-      setRechargeError(null);
-
-      const res = await fetch("/api/wallet/recharge", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ packId: pack.id }),
-      });
-
-      const data = await res.json();
-      if (!res.ok || !data.paymentUrl) {
-        throw new Error(data.error || "Impossible d'initialiser le paiement.");
-      }
-
-      // Redirection vers la page de paiement sécurisée FedaPay
-      window.location.href = data.paymentUrl;
-    } catch (err) {
-      setRechargeError((err as Error).message || "Erreur de paiement.");
-      setLoadingPackId(null);
-    }
   }
 
   return (
@@ -121,111 +95,12 @@ export function WalletWidget({
       </div>
 
       {/* Modal de Rechargement de Coins */}
-      {isModalVisible && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
-          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-[color:var(--border)] bg-white p-5 sm:p-6 shadow-2xl animate-in zoom-in-95">
-            {/* Header */}
-            <div className="flex items-start justify-between">
-              <div>
-                <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2.5 py-0.5 font-mono text-[11px] font-semibold text-amber-600">
-                  <span>🪙</span> Portefeuille Étudiant
-                </div>
-                <h3 className="font-display mt-2 text-xl font-bold text-[color:var(--neutral-black)]">
-                  Recharger des Coins
-                </h3>
-                <p className="mt-1 text-xs text-[color:var(--neutral-600)]">
-                  Utilise tes coins pour débloquer les templates et kits UI8 de la formation. Paiement sécurisé par Mobile Money (MTN, Moov, Orange, Wave) ou Carte via FedaPay.
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={closeModal}
-                className="rounded-lg p-1.5 text-[color:var(--neutral-400)] hover:bg-[color:var(--neutral-100)] hover:text-[color:var(--neutral-700)] cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Solde actuel dans la modale */}
-            <div className="mt-4 flex items-center justify-between rounded-xl bg-amber-500/5 border border-amber-500/15 p-3">
-              <span className="text-xs text-amber-800">Solde disponible :</span>
-              <span className="font-mono text-sm font-bold text-amber-900">
-                {balance} Coins 🪙
-              </span>
-            </div>
-
-            {rechargeError && (
-              <div className="mt-3 rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700">
-                {rechargeError}
-              </div>
-            )}
-
-            {/* Grille des packs */}
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              {packs.map((pack) => {
-                const isLoading = loadingPackId === pack.id;
-                return (
-                  <div
-                    key={pack.id}
-                    className={`relative flex flex-col justify-between rounded-xl border p-4 transition ${
-                      pack.popular
-                        ? "border-amber-500 bg-amber-500/5 shadow-xs"
-                        : "border-[color:var(--border)] bg-white hover:border-[color:var(--accent)]"
-                    }`}
-                  >
-                    {pack.badge && (
-                      <span className="absolute -top-2.5 right-3 rounded-full bg-amber-500 px-2 py-0.5 font-mono text-[9px] font-bold uppercase text-white shadow-xs">
-                        {pack.badge}
-                      </span>
-                    )}
-
-                    <div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-lg">🪙</span>
-                        <span className="font-display text-lg font-bold text-[color:var(--neutral-black)]">
-                          {pack.coins} Coins
-                        </span>
-                      </div>
-                      <p className="mt-1 font-mono text-sm font-semibold text-[color:var(--accent-darkest)]">
-                        {formatFcfa(pack.priceFcfa)}
-                      </p>
-                    </div>
-
-                    <button
-                      type="button"
-                      disabled={isLoading}
-                      onClick={() => handleBuyPack(pack)}
-                      className={`mt-4 w-full rounded-lg py-2 text-xs font-semibold transition active:scale-95 cursor-pointer disabled:opacity-50 ${
-                        pack.popular
-                          ? "bg-amber-500 text-white hover:bg-amber-600"
-                          : "bg-[color:var(--neutral-100)] text-[color:var(--neutral-800)] hover:bg-[color:var(--neutral-200)]"
-                      }`}
-                    >
-                      {isLoading ? (
-                        <span className="inline-flex items-center gap-1">
-                          <svg className="size-3 animate-spin" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                          </svg>
-                          Chargement...
-                        </span>
-                      ) : (
-                        `Choisir ce pack`
-                      )}
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Note d'information */}
-            <div className="mt-5 rounded-xl border border-[color:var(--border)] bg-[color:var(--neutral-50)] p-3 text-[11px] text-[color:var(--neutral-600)]">
-              🔒 <strong>Paiement sécurisé :</strong> Tes coins sont crédités instantanément sur ton compte dès la validation du paiement FedaPay. Les fichiers débloqués restent accessibles à vie.
-            </div>
-          </div>
-        </div>
-      )}
+      <RechargeCoinsModal
+        isOpen={isModalVisible}
+        onClose={closeModal}
+        currentBalance={balance}
+        packs={packs}
+      />
 
       {/* Modal Historique des transactions */}
       {historyOpen && (
