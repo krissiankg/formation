@@ -1,20 +1,37 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DriveResourcesExplorer } from "@/components/espace/drive-resources-explorer";
 import { ResourcesPanel } from "@/components/espace/shared";
+import { CoinsShopSection } from "@/components/espace/CoinsShopSection";
 
 interface ResourcesHubClientProps {
   studentApiKey: string;
   contents: any[];
 }
 
-type TabType = "templates" | "devtools" | "course-docs";
+type TabType = "templates" | "devtools" | "course-docs" | "coins";
 
 export function ResourcesHubClient({ studentApiKey, contents }: ResourcesHubClientProps) {
   const [activeTab, setActiveTab] = useState<TabType>("templates");
   const [copiedKey, setCopiedKey] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("tab") === "coins") {
+        setActiveTab("coins");
+      }
+    }
+
+    function handleOpenCoins() {
+      setActiveTab("coins");
+    }
+
+    window.addEventListener("open-coins-tab", handleOpenCoins);
+    return () => window.removeEventListener("open-coins-tab", handleOpenCoins);
+  }, []);
 
   function copyToClipboard(text: string, type: "key" | "url") {
     navigator.clipboard.writeText(text);
@@ -101,6 +118,19 @@ export function ResourcesHubClient({ studentApiKey, contents }: ResourcesHubClie
           <span>📚</span>
           <span>Supports<span className="hidden sm:inline"> du Formateur</span> {publishedCount > 0 ? `(${publishedCount})` : ""}</span>
         </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("coins")}
+          className={`flex-1 min-w-fit inline-flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold transition whitespace-nowrap cursor-pointer ${
+            activeTab === "coins"
+              ? "bg-amber-500 text-white shadow-xs font-bold"
+              : "text-[color:var(--neutral-600)] hover:text-amber-800 hover:bg-amber-500/10"
+          }`}
+        >
+          <span>🪙</span>
+          <span>Boutique Coins</span>
+        </button>
       </div>
 
       {/* Contenu de l'onglet actif */}
@@ -109,6 +139,13 @@ export function ResourcesHubClient({ studentApiKey, contents }: ResourcesHubClie
         {activeTab === "templates" && (
           <div className="animate-in fade-in zoom-in-98 duration-200">
             <DriveResourcesExplorer />
+          </div>
+        )}
+
+        {/* ONGLET 4 : Boutique & Recharge de Coins */}
+        {activeTab === "coins" && (
+          <div className="animate-in fade-in zoom-in-98 duration-200">
+            <CoinsShopSection />
           </div>
         )}
 

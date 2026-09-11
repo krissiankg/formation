@@ -5,7 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { contact } from "@/lib/config/formation";
 import { StudentProfileModal } from "@/components/espace/StudentProfileModal";
-import { RechargeCoinsModal } from "@/components/espace/RechargeCoinsModal";
 
 interface StudentTopbarProps {
   student: {
@@ -33,7 +32,6 @@ export function StudentTopbar({
   const [balance, setBalance] = useState<number | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
-  const [rechargeModalOpen, setRechargeModalOpen] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -132,23 +130,28 @@ export function StudentTopbar({
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           {/* Widget Coins Topbar */}
           <div className="flex items-center gap-1 sm:gap-1.5 rounded-full border border-amber-500/30 bg-gradient-to-r from-amber-500/10 to-amber-500/5 py-1 pl-2.5 sm:pl-3 pr-1 text-xs shadow-2xs">
-            <span className="text-sm">🪙</span>
-            <span className="font-display font-bold text-amber-950">
-              {balance !== null ? balance : "—"}
-            </span>
-            <span className="hidden sm:inline text-[11px] font-medium text-amber-800">
-              Coins
-            </span>
+            <Link
+              href="/espace/coins"
+              className="flex items-center gap-1.5 hover:opacity-80 transition cursor-pointer"
+              title="Accéder à la boutique et voir mon solde"
+            >
+              <span className="text-sm">🪙</span>
+              <span className="font-sans font-extrabold text-amber-950 tabular-nums">
+                {balance !== null ? balance : "—"}
+              </span>
+              <span className="hidden sm:inline text-[11px] font-semibold text-amber-800">
+                Coins
+              </span>
+            </Link>
 
-            <button
-              type="button"
-              onClick={() => setRechargeModalOpen(true)}
+            <Link
+              href="/espace/coins"
               className="ml-1 inline-flex items-center justify-center rounded-full bg-amber-500 px-2 sm:px-2.5 py-0.5 sm:py-1 font-mono text-[10px] font-bold uppercase tracking-wider text-white shadow-xs hover:bg-amber-600 active:scale-95 transition cursor-pointer"
               title="Recharger des coins"
             >
               <span className="sm:hidden">+</span>
               <span className="hidden sm:inline">+ Recharger</span>
-            </button>
+            </Link>
           </div>
 
           {/* Séparateur discret */}
@@ -229,6 +232,15 @@ export function StudentTopbar({
                   </button>
 
                   <Link
+                    href="/espace/coins"
+                    onClick={() => setDropdownOpen(false)}
+                    className="flex items-center gap-2 rounded-lg px-2.5 py-2 transition hover:bg-amber-50 text-amber-900 font-medium"
+                  >
+                    <span>🪙</span>
+                    <span>Boutique & Recharge Coins</span>
+                  </Link>
+
+                  <Link
                     href="/espace/paiements"
                     onClick={() => setDropdownOpen(false)}
                     className="flex items-center gap-2 rounded-lg px-2.5 py-2 transition hover:bg-[color:var(--neutral-100)]"
@@ -299,13 +311,6 @@ export function StudentTopbar({
             avatarUrl: updated.avatarUrl,
           }));
         }}
-      />
-
-      {/* Modal Rechargement rapide des coins */}
-      <RechargeCoinsModal
-        isOpen={rechargeModalOpen}
-        onClose={() => setRechargeModalOpen(false)}
-        currentBalance={balance ?? 0}
       />
     </>
   );
