@@ -2,7 +2,9 @@
 FROM node:22-bookworm-slim AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci
+# npm install (et non npm ci) : le lockfile généré sous Windows omet des dépendances
+# optionnelles propres à Linux (@emnapi/*) ; npm install respecte le lock et les complète.
+RUN npm install --no-audit --no-fund
 
 FROM node:22-bookworm-slim AS builder
 WORKDIR /app
