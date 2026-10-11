@@ -1,0 +1,14 @@
+.git
+.env*
+.data
+data
+node_modules
+.next
+extension
+public/uploads
+infra
+docs
+deploy
+scripts
+*.tsbuildinfo
+npm-debug.log*
