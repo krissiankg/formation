@@ -93,7 +93,7 @@ export class ForgeiaWebStack extends cdk.Stack {
 
     const taskDef = new ecs.FargateTaskDefinition(this, "WebTask", {
       family: "forgeia-web",
-      cpu: 512,
+      cpu: 256,
       memoryLimitMiB: 1024,
       runtimePlatform: {
         cpuArchitecture: ecs.CpuArchitecture.X86_64,
