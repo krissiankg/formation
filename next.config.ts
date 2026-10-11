@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Serveur autonome minimal pour l'image Docker (ECS Fargate)
+  output: "standalone",
+
   // Compression native Next.js
   compress: true,
 

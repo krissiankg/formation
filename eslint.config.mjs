@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Infrastructure AWS CDK (projet séparé)
+    "infra/**",
   ]),
 ]);
 
