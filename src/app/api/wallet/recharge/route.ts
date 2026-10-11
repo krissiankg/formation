@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getSessionEnrollment } from "@/lib/auth/session";
 import { COIN_PACKS, calculateCoinsPriceFcfa } from "@/lib/wallet/types";
 import { createFedapayTransaction } from "@/lib/integrations";
+import { getPublicOrigin } from "@/lib/http/public-origin";
 
 export const dynamic = "force-dynamic";
 
@@ -51,9 +52,8 @@ export async function POST(request: Request) {
       );
     }
 
-    const host = request.headers.get("x-forwarded-host") || request.headers.get("host") || "forgeia.guelichweb.store";
-    const proto = request.headers.get("x-forwarded-proto") || "https";
-    const callbackUrl = `${proto}://${host}/espace/ressources?recharge=success&pack=${coins}`;
+    const origin = getPublicOrigin(request, "forgeia.guelichweb.store");
+    const callbackUrl = `${origin}/espace/ressources?recharge=success&pack=${coins}`;
 
     const names = student.fullName.trim().split(/\s+/);
     const firstname = names[0] || "Apprenant";

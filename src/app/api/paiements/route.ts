@@ -3,6 +3,7 @@ import { getSessionEnrollment } from "@/lib/auth/session";
 import { getEnrollment } from "@/lib/store/enrollments";
 import { formation } from "@/lib/config/formation";
 import { createFedapayTransaction } from "@/lib/integrations";
+import { getPublicOrigin } from "@/lib/http/public-origin";
 import type { PaymentKind } from "@/lib/types";
 
 export async function POST(request: Request) {
@@ -33,7 +34,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Cette tranche a déjà été réglée." }, { status: 400 });
     }
 
-    const origin = new URL(request.url).origin;
+    const origin = getPublicOrigin(request, "forgeia.guelichweb.store");
     const callbackUrl = `${origin}/espace/paiements?status=success&kind=${kind}`;
 
     const [firstname, ...rest] = enrollment.fullName.trim().split(/\s+/);

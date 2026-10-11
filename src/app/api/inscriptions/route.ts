@@ -9,6 +9,7 @@ import {
   notifyAdminWhatsApp,
 } from "@/lib/integrations";
 import { formatFcfa } from "@/lib/format";
+import { getPublicOrigin } from "@/lib/http/public-origin";
 
 export async function POST(request: Request) {
   try {
@@ -46,12 +47,7 @@ export async function POST(request: Request) {
       ],
     });
 
-    const host =
-      request.headers.get("x-forwarded-host") ||
-      request.headers.get("host") ||
-      "forgeia.guelichweb.store";
-    const proto = request.headers.get("x-forwarded-proto") || "https";
-    const origin = `${proto}://${host}`;
+    const origin = getPublicOrigin(request, "forgeia.guelichweb.store");
     const callbackUrl = `${origin}/inscription/confirmation?id=${enrollment.id}`;
 
     const [firstname, ...rest] = data.fullName.trim().split(/\s+/);
