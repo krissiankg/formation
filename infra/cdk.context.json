@@ -1,0 +1,13 @@
+{
+  "availability-zones:account=555968473975:region=eu-west-3": [
+    "eu-west-3a",
+    "eu-west-3b",
+    "eu-west-3c"
+  ],
+  "cc-api-provider:account=555968473975:expectedMatchCount=exactly-one:propertiesToReturn.0=PrefixListId:propertyMatch.PrefixListName=com.amazonaws.global.cloudfront.origin-facing:region=eu-west-3:typeName=AWS$:$:EC2$:$:PrefixList": [
+    {
+      "PrefixListId": "pl-75b1541c",
+      "Identifier": "pl-75b1541c"
+    }
+  ]
+}
