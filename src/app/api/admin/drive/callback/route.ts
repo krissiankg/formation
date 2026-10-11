@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { ADMIN_SESSION_COOKIE, verifyAdminSessionToken } from "@/lib/auth/admin-session";
 import { exchangeOAuthCode } from "@/lib/drive/google-drive";
+import { getPublicOrigin } from "@/lib/http/public-origin";
 
 export const dynamic = "force-dynamic";
 
@@ -11,9 +12,7 @@ export async function GET(request: Request) {
   const isAuth = await verifyAdminSessionToken(token);
 
   const url = new URL(request.url);
-  const host = request.headers.get("x-forwarded-host") || request.headers.get("host") || url.host;
-  const proto = request.headers.get("x-forwarded-proto") || url.protocol.replace(":", "");
-  const baseUrl = `${proto}://${host}`;
+  const baseUrl = getPublicOrigin(request);
   const redirectUri = `${baseUrl}/api/admin/drive/callback`;
 
   if (!isAuth) {
