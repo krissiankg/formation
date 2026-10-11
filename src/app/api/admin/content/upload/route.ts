@@ -4,6 +4,7 @@ import fs from "fs";
 import { pipeline } from "stream/promises";
 import { Readable } from "stream";
 import { formatFileSize } from "@/lib/format";
+import { buildResourceFileName } from "@/lib/storage/resource-key";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -24,18 +25,7 @@ export async function POST(request: Request) {
 
     // Nettoyage et sécurisation du nom de fichier
     const originalName = file.name || "fichier";
-    const ext = path.extname(originalName);
-    const rawBase = path
-      .basename(originalName, ext)
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9_-]/g, "_")
-      .slice(0, 60);
-
-    const safeBase = rawBase || "document";
-    const uniqueId = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
-    const safeFileName = `${safeBase}_${uniqueId}${ext}`;
+    const { id: uniqueId, fileName: safeFileName } = buildResourceFileName(originalName);
     const destinationPath = path.join(uploadDir, safeFileName);
 
     // Écriture en flux direct (Streaming) pour supporter les gros fichiers sans saturer la RAM
