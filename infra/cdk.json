@@ -1,0 +1,13 @@
+{
+  "app": "npx tsx bin/forgeia.ts",
+  "context": {
+    "account": "555968473975",
+    "region": "eu-west-3",
+    "alertEmail": "krissiankg@gmail.com",
+    "domainNames": [
+      "forgeia.guelichweb.store",
+      "forgia.guelichweb.store",
+      "aws-test.guelichweb.store"
+    ]
+  }
+}
