@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { getSupabaseAdmin, isSupabaseConfigured } from "@/lib/supabase/admin";
 
 export const GOOGLE_DRIVE_FOLDER_ID =
   process.env.GOOGLE_DRIVE_FOLDER_ID || "1pPMsHu96fsTDiSV5EvRoSjP6fZr4UrOu";
@@ -42,15 +43,62 @@ function getClientSecret(): string | undefined {
   return process.env.GOOGLE_CLIENT_SECRET;
 }
 
+const SETTINGS_KEY = "google_drive_token";
+
+async function readTokenFromDb(): Promise<StoredToken | null> {
+  if (!isSupabaseConfigured()) return null;
+  try {
+    const { data, error } = await getSupabaseAdmin()
+      .from("app_settings")
+      .select("value")
+      .eq("key", SETTINGS_KEY)
+      .maybeSingle();
+    if (error) {
+      console.error("[Drive] Erreur lecture jeton en base:", error.message);
+      return null;
+    }
+    const value = data?.value as StoredToken | undefined;
+    return value?.refreshToken ? value : null;
+  } catch (err) {
+    console.error("[Drive] Erreur lecture jeton en base:", err);
+    return null;
+  }
+}
+
+async function writeTokenToDb(tokenData: StoredToken): Promise<boolean> {
+  if (!isSupabaseConfigured()) return false;
+  try {
+    const { error } = await getSupabaseAdmin()
+      .from("app_settings")
+      .upsert({ key: SETTINGS_KEY, value: tokenData, updated_at: new Date().toISOString() });
+    if (error) {
+      console.error("[Drive] Erreur écriture jeton en base:", error.message);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error("[Drive] Erreur écriture jeton en base:", err);
+    return false;
+  }
+}
+
 /**
- * Charge le token stocké (soit depuis les variables d'environnement, soit depuis le fichier data/google-drive-token.json)
+ * Charge le token stocké : mémoire, puis base (app_settings, survit aux redéploiements),
+ * puis variable d'environnement, puis fichier data/google-drive-token.json.
  */
-export function getStoredToken(): StoredToken | null {
+export async function getStoredToken(): Promise<StoredToken | null> {
   if (memoryToken?.refreshToken) {
     return memoryToken;
   }
 
-  // 1. Depuis .env
+  // 1. Depuis la base
+  const dbToken = await readTokenFromDb();
+  if (dbToken) {
+    memoryToken = dbToken;
+    return memoryToken;
+  }
+
+  // 2. Depuis .env
   if (process.env.GOOGLE_REFRESH_TOKEN) {
     memoryToken = {
       refreshToken: process.env.GOOGLE_REFRESH_TOKEN,
@@ -58,7 +106,7 @@ export function getStoredToken(): StoredToken | null {
     return memoryToken;
   }
 
-  // 2. Depuis le fichier data/google-drive-token.json
+  // 3. Depuis le fichier data/google-drive-token.json
   try {
     if (fs.existsSync(TOKEN_FILE_PATH)) {
       const content = fs.readFileSync(TOKEN_FILE_PATH, "utf-8");
@@ -76,10 +124,13 @@ export function getStoredToken(): StoredToken | null {
 }
 
 /**
- * Sauvegarde le refresh token de manière persistante
+ * Sauvegarde le refresh token de manière persistante (base, et fichier local en secours)
  */
-export function saveStoredToken(tokenData: StoredToken) {
+export async function saveStoredToken(tokenData: StoredToken) {
   memoryToken = { ...tokenData };
+  if (await writeTokenToDb(tokenData)) {
+    return;
+  }
   try {
     const dir = path.dirname(TOKEN_FILE_PATH);
     if (!fs.existsSync(dir)) {
@@ -94,10 +145,10 @@ export function saveStoredToken(tokenData: StoredToken) {
 /**
  * Vérifie si les identifiants requis sont présents et si un refresh token est enregistré
  */
-export function isDriveConfigured(): boolean {
+export async function isDriveConfigured(): Promise<boolean> {
   const clientId = getClientId();
   const clientSecret = getClientSecret();
-  const token = getStoredToken();
+  const token = await getStoredToken();
   return Boolean(clientId && clientSecret && token?.refreshToken);
 }
 
@@ -175,7 +226,7 @@ export async function exchangeOAuthCode(code: string, redirectUri: string) {
     connectedEmail,
   };
 
-  saveStoredToken(stored);
+  await saveStoredToken(stored);
   searchCache.clear();
 
   return stored;
@@ -185,7 +236,7 @@ export async function exchangeOAuthCode(code: string, redirectUri: string) {
  * Obtient un access_token valide (renouvelle automatiquement avec le refresh_token si expiré)
  */
 export async function getValidAccessToken(): Promise<string> {
-  const stored = getStoredToken();
+  const stored = await getStoredToken();
   if (!stored?.refreshToken) {
     throw new Error("Google Drive n'est pas encore connecté. Veuillez lier votre compte dans l'administration.");
   }
@@ -221,7 +272,7 @@ export async function getValidAccessToken(): Promise<string> {
 
   stored.accessToken = data.access_token;
   stored.expiresAt = Date.now() + (data.expires_in || 3600) * 1000 - 60000;
-  saveStoredToken(stored);
+  await saveStoredToken(stored);
 
   return data.access_token;
 }
