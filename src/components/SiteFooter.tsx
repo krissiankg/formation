@@ -42,6 +42,12 @@ export function SiteFooter() {
           <Link href="/admin" className="hover:text-white transition-colors">
             Admin
           </Link>
+          <Link href="/condition" className="hover:text-white transition-colors">
+            Conditions
+          </Link>
+          <Link href="/politique" className="hover:text-white transition-colors">
+            Confidentialité
+          </Link>
         </div>
       </div>
     </footer>
