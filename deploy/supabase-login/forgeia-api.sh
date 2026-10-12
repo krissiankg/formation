@@ -4,6 +4,7 @@ set -euo pipefail
 TOKEN_FILE=/root/forgeia-gate-token
 PROXY_DIR=/www/server/panel/vhost/nginx/proxy/supabase.guelichweb.store
 CONF="$PROXY_DIR/forgeia-api.conf"
+NGINX=/www/server/nginx/sbin/nginx  # nginx d'aaPanel (pas celui du système)
 BACKUP=/root/nginx-backup-supabase-$(date +%Y%m%d%H%M%S).tgz
 
 sudo -n tar czf "$BACKUP" /www/server/panel/vhost/nginx/supabase.guelichweb.store.conf "$PROXY_DIR" 2>/dev/null
@@ -33,8 +34,8 @@ location ^~ /rest/v1/ {
 EOF
 sudo -n chmod 600 "$CONF"
 
-if sudo -n nginx -t 2>&1 | tail -2; then
-  sudo -n nginx -s reload && echo RELOAD_OK
+if sudo -n $NGINX -t 2>&1 | tail -2; then
+  sudo -n $NGINX -s reload && echo RELOAD_OK
 else
   echo "NGINX_TEST_FAILED -> rollback"; sudo -n rm -f "$CONF"; exit 1
 fi
