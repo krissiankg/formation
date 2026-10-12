@@ -21,10 +21,10 @@ export async function GET() {
 
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-  const storedToken = getStoredToken();
+  const storedToken = await getStoredToken();
 
   const hasCredentials = Boolean(clientId && clientSecret);
-  const isConnected = isDriveConfigured();
+  const isConnected = await isDriveConfigured();
 
   let fileCount = 0;
   let testError: string | null = null;

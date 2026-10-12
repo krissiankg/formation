@@ -33,7 +33,7 @@ export async function GET(request: Request) {
   }
 
   // 2. Vérifier si Google Drive est configuré
-  if (!isDriveConfigured()) {
+  if (!(await isDriveConfigured())) {
     return NextResponse.json({
       configured: false,
       files: [],
