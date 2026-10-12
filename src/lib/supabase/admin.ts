@@ -16,11 +16,15 @@ export function getSupabaseAdmin() {
   }
 
   if (!adminClient) {
+    // Hors VPS (AWS), le domaine public Supabase est derrière une page de login nginx :
+    // l'en-tête X-Forgeia-Gate ouvre l'accès à /rest/v1/ (voir deploy/supabase-login/forgeia-api.sh).
+    const gateToken = process.env.SUPABASE_GATE_TOKEN;
     adminClient = createClient(url, key, {
       auth: {
         autoRefreshToken: false,
         persistSession: false,
       },
+      global: gateToken ? { headers: { "X-Forgeia-Gate": gateToken } } : undefined,
     });
   }
 
