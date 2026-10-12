@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import { formation } from "@/lib/config/formation";
 import type { ScheduleId } from "@/lib/types";
@@ -245,8 +246,17 @@ export function InscriptionForm() {
           }
         />
         <span>
-          Je confirme mon choix de créneau et je m&apos;engage à payer{" "}
-          {promoApplied ? "0 FCFA" : formatFcfa(formation.registrationFee)} pour réserver ma place.
+          Je confirme mon choix de créneau, je m&apos;engage à payer{" "}
+          {promoApplied ? "0 FCFA" : formatFcfa(formation.registrationFee)} (non remboursables) pour réserver
+          ma place et j&apos;accepte les{" "}
+          <Link href="/condition" target="_blank" className="accent-text underline">
+            conditions d&apos;utilisation
+          </Link>{" "}
+          et la{" "}
+          <Link href="/politique" target="_blank" className="accent-text underline">
+            politique de confidentialité
+          </Link>
+          .
         </span>
       </label>
 
