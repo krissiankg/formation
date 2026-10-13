@@ -59,7 +59,24 @@ Chaque projet a une **grille critériée** (4 niveaux par critère) publiée dè
 
 ## 5. Déroulé (Stage 3)
 
-**Gabarit de séance (4 h 30)** : rappel flash 15 min → démo commentée 60 min → pratique guidée 45 min → pause 15 min → défi chronométré 40 min → atelier projet 60 min → bilan & mission 15 min.
+**Principe : la pratique d'abord.** Au moins 70 % du temps de séance se passe sur le clavier ; la démo elle-même est faite « en code-along » (les apprenants reproduisent en même temps).
+
+**Gabarit de séance (4 h 30)** : rappel flash 15 min → démo en code-along 45 min → pratique guidée 50 min → **atelier outil IA 20 min** → pause 15 min → défi chronométré 40 min → atelier projet 70 min → bilan & mission 10 min.
+
+**Ouverture du programme (lecture + 25 min au début de S1)**
+- **Ton formateur** : Christian GUEGUELIGUE — Full-Stack Engineer, AI Automation Architect & Vibe Coder, 11+ ans d'expérience ; fondateur de GUELICHWEB (agence digitale, depuis 2023) ; consultant stratégie digitale & développeur web (Alliance Bioversity-CIAT et clients divers, depuis 2017) ; formateur (DR Computer, SNB, particuliers) ; stack Next.js, React, TypeScript, WordPress, Supabase, Cursor, Antigravity, n8n, Figma, AWS. Source : gchristian.online.
+- **Brève histoire du code et de l'IA** : des cartes perforées aux langages (assembleur, C, web, frameworks) ; le web et WordPress (démocratisation) ; le no-code ; l'IA de Turing aux réseaux de neurones, aux Transformers (2017) puis aux LLM et ChatGPT (2022) ; des assistants de complétion aux **agents** qui lisent un projet, planifient et exécutent (2024–2026). Leçon à retenir : chaque vague a rendu la création plus accessible et a récompensé ceux qui maîtrisent la *méthode*, pas seulement l'outil.
+
+**Boîte à outils IA (4 guides pratiques, type `outil`, + 1 atelier de 20 min par séance)**
+Chaque guide suit le même plan : à quoi il sert / quand le choisir · installation et coût · les gestes de base · **les méthodes pro** (ce qu'on ne trouve pas dans les tutos YouTube) · pièges et sécurité · mini-exercice.
+- **FORGEIA CODE** (outil par défaut, extension VS Code + DeepSeek via la passerelle FORGE IA).
+- **Cursor** : modes Ask / Agent / Plan, édition en ligne, `@`-mentions de fichiers et de docs, règles projet (`.cursor/rules`), relecture des diffs, plans sauvegardés.
+- **Claude Code** : agent en ligne de commande ; `CLAUDE.md` comme mémoire du projet, `/init`, mode plan, permissions, `/clear` et `/compact`, retour arrière, commandes personnalisées, sous-agents, MCP.
+- **Antigravity** : IDE « agent-first » de Google ; éditeur + Manager (plusieurs agents en parallèle), mode Plan, Artifacts (plans, captures, traces navigateur) à commenter, vérification dans le navigateur.
+
+**Méthodes pro transversales** (reprises dans chaque guide et atelier) : un commit Git avant chaque demande à l'IA (filet de sécurité) ; plan avant code ; une tâche petite et vérifiable à la fois ; fichier de règles/mémoire du projet (contexte permanent) ; donner les *design tokens* (couleurs, typos, espacements) extraits de Figma plutôt que « fais joli » ; développement piloté par captures d'écran ; faire expliquer et critiquer son propre diff par l'IA ; repartir d'une conversation propre quand le contexte dérive ; modèle économique pour le répétitif, modèle fort pour la planification et le débogage ; bibliothèque personnelle de consignes qui marchent ; ne jamais coller de secrets dans une conversation IA.
+
+**Ateliers outil par séance** : S1 FORGEIA CODE (installation, premières consignes) · S2 Cursor (édition en ligne, `@`, règles) · S3 Cursor (mode Plan, relecture de diff) · S4 Claude Code (`/init`, `CLAUDE.md`, mode plan) · S5 Claude Code (commandes perso, sous-agents, retour arrière) · S6 Antigravity (Manager, Plan, Artifacts) · S7 Antigravity (vérification navigateur, débogage multi-agents) · S8 « ta stack » : choisir ses outils selon budget et projet.
 
 **Mois 1 — Apprendre la méthode sur des sites**
 - **S1 Ton atelier IA** : installation (VS Code, Git/GitHub, Node, FORGEIA CODE ; démo Cursor) ; ADAPT ; anatomie d'une consigne. Démo : landing de la bibliothèque modifiée en direct. Défi : couleurs + textes + nouvelle section en 30 min. Recherche : 3 templates de landing + licence → choix du template P1.
@@ -77,6 +94,7 @@ Chaque projet a une **grille critériée** (4 niveaux par critère) publiée dè
 
 ## 6. Intégration dans l'application
 
+- **Module 0 « Bienvenue »** : leçon d'ouverture (formateur + histoire du code et de l'IA) et les 4 guides de la boîte à outils IA, accessibles dès l'inscription.
 - **Programme** : remplace le programme 3 mois (données d'exemple) par 2 modules, chacun avec, par séance : une leçon `séance` (contenu complet : objectifs, déroulé, ressources, checklist), une leçon `défi`, une leçon `recherche`, un quiz de 10 questions (avec explications) ; plus 3 leçons « grille d'évaluation » (projets 1–3) et le quiz final de 20 questions.
 - **Nouveaux types de leçon** `défi` et `recherche` : contrainte SQL étendue, badges/icônes dans l'espace apprenant et l'admin.
 - **Calendrier** : 16 séances (8 samedi, 8 dimanche) liées à leur leçon ; chaque apprenant voit celles de sa classe.
