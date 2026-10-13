@@ -1,0 +1,76 @@
+# Déploiement continu : chaque push sur main construit l'image Docker et met à jour l'appli sur AWS.
+# Authentification AWS par OIDC (rôle forgeia-github-deploy) : aucune clé AWS stockée dans GitHub.
+name: Déploiement AWS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+# Un seul déploiement à la fois ; un nouveau push attend la fin du précédent.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: eu-west-3
+  ECR_REPOSITORY: forgeia-web
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Identifiants AWS (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Connexion au registre ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Construction et envoi de l'image
+        id: image
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+          NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        run: |
+          TAG="${GITHUB_SHA::7}"
+          IMAGE="$REGISTRY/$ECR_REPOSITORY:$TAG"
+          docker build \
+            --build-arg NEXT_PUBLIC_APP_URL="$NEXT_PUBLIC_APP_URL" \
+            --build-arg NEXT_PUBLIC_SUPABASE_URL="$NEXT_PUBLIC_SUPABASE_URL" \
+            --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY="$NEXT_PUBLIC_SUPABASE_ANON_KEY" \
+            -t "$IMAGE" .
+          # Test de fumée : le conteneur démarre et répond sur /api/health
+          docker run -d --name smoke -p 3000:3000 "$IMAGE"
+          for i in $(seq 1 20); do curl -fsS http://localhost:3000/api/health && break; sleep 2; done
+          curl -fsS http://localhost:3000/api/health
+          docker rm -f smoke
+          docker push "$IMAGE"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Dépendances CDK
+        working-directory: infra
+        # npm install plutôt que npm ci : le lockfile est généré sous Windows (cf. Dockerfile).
+        run: npm install --no-audit --no-fund
+
+      - name: Mise à jour de l'appli sur ECS
+        working-directory: infra
+        run: >
+          npx cdk deploy ForgeiaWebStack --exclusively --require-approval never
+          -c imageTag=${{ steps.image.outputs.tag }}
