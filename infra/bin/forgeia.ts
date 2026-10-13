@@ -14,7 +14,7 @@ cdk.Tags.of(app).add("project", "forgeia");
 const base = new ForgeiaBaseStack(app, "ForgeiaBaseStack", {
   env,
   alertEmail: app.node.tryGetContext("alertEmail") as string,
-  githubRepo: app.node.tryGetContext("githubRepo") as string,
+  githubOidcSubjectPrefix: app.node.tryGetContext("githubOidcSubjectPrefix") as string,
 });
 
 // Le stack web n'est synthétisé que lorsque l'image et le certificat existent.

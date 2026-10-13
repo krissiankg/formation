@@ -9,8 +9,12 @@ import { Construct } from "constructs";
 
 export interface ForgeiaBaseStackProps extends cdk.StackProps {
   alertEmail: string;
-  /** Dépôt GitHub autorisé à déployer, au format "propriétaire/nom". */
-  githubRepo: string;
+  /**
+   * Préfixe du claim `sub` OIDC du dépôt autorisé à déployer. Le dépôt utilise le format
+   * immuable de GitHub ("repo:<owner>@<ownerId>/<repo>@<repoId>"), visible via
+   * `gh api repos/<owner>/<repo>/actions/oidc/customization/sub` (sub_claim_prefix).
+   */
+  githubOidcSubjectPrefix: string;
 }
 
 /**
@@ -81,7 +85,7 @@ export class ForgeiaBaseStack extends cdk.Stack {
       ],
     });
 
-    // Déploiement continu : GitHub Actions (branche main de props.githubRepo uniquement) obtient
+    // Déploiement continu : GitHub Actions (branche main du dépôt autorisé uniquement) obtient
     // des identifiants temporaires via OIDC — aucune clé AWS stockée dans GitHub.
     const githubOidc = new iam.OpenIdConnectProvider(this, "GithubOidc", {
       url: "https://token.actions.githubusercontent.com",
@@ -94,7 +98,7 @@ export class ForgeiaBaseStack extends cdk.Stack {
       assumedBy: new iam.WebIdentityPrincipal(githubOidc.openIdConnectProviderArn, {
         StringEquals: {
           "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
-          "token.actions.githubusercontent.com:sub": `repo:${props.githubRepo}:ref:refs/heads/main`,
+          "token.actions.githubusercontent.com:sub": `${props.githubOidcSubjectPrefix}:ref:refs/heads/main`,
         },
       }),
     });
