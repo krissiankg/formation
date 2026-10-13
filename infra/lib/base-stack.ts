@@ -1,6 +1,7 @@
 import * as cdk from "aws-cdk-lib";
 import * as budgets from "aws-cdk-lib/aws-budgets";
 import * as ecr from "aws-cdk-lib/aws-ecr";
+import * as iam from "aws-cdk-lib/aws-iam";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import * as sns from "aws-cdk-lib/aws-sns";
 import * as subs from "aws-cdk-lib/aws-sns-subscriptions";
@@ -8,6 +9,8 @@ import { Construct } from "constructs";
 
 export interface ForgeiaBaseStackProps extends cdk.StackProps {
   alertEmail: string;
+  /** Dépôt GitHub autorisé à déployer, au format "propriétaire/nom". */
+  githubRepo: string;
 }
 
 /**
@@ -78,6 +81,33 @@ export class ForgeiaBaseStack extends cdk.Stack {
       ],
     });
 
+    // Déploiement continu : GitHub Actions (branche main de props.githubRepo uniquement) obtient
+    // des identifiants temporaires via OIDC — aucune clé AWS stockée dans GitHub.
+    const githubOidc = new iam.OpenIdConnectProvider(this, "GithubOidc", {
+      url: "https://token.actions.githubusercontent.com",
+      clientIds: ["sts.amazonaws.com"],
+    });
+    const deployRole = new iam.Role(this, "GithubDeployRole", {
+      roleName: "forgeia-github-deploy",
+      description: "Deploiement FORGE IA depuis GitHub Actions (branche main)",
+      maxSessionDuration: cdk.Duration.hours(1),
+      assumedBy: new iam.WebIdentityPrincipal(githubOidc.openIdConnectProviderArn, {
+        StringEquals: {
+          "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
+          "token.actions.githubusercontent.com:sub": `repo:${props.githubRepo}:ref:refs/heads/main`,
+        },
+      }),
+    });
+    this.repository.grantPullPush(deployRole);
+    // cdk deploy passe par les rôles créés par `cdk bootstrap` dans ce compte/région.
+    deployRole.addToPolicy(
+      new iam.PolicyStatement({
+        actions: ["sts:AssumeRole"],
+        resources: [`arn:aws:iam::${this.account}:role/cdk-hnb659fds-*-${this.account}-${this.region}`],
+      }),
+    );
+
     new cdk.CfnOutput(this, "RepositoryUri", { value: this.repository.repositoryUri });
+    new cdk.CfnOutput(this, "GithubDeployRoleArn", { value: deployRole.roleArn });
   }
 }

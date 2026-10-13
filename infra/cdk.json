@@ -4,6 +4,8 @@
     "account": "555968473975",
     "region": "eu-west-3",
     "alertEmail": "krissiankg@gmail.com",
+    "githubRepo": "krissiankg/formation",
+    "certificateArn": "arn:aws:acm:us-east-1:555968473975:certificate/00cf4a2a-b6ff-48f3-adf3-8ad86a959553",
     "domainNames": [
       "forgeia.guelichweb.store",
       "forgia.guelichweb.store",
