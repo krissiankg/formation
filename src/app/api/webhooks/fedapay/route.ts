@@ -11,8 +11,8 @@ export const runtime = "nodejs";
 const installmentLabels: Record<string, string> = {
   registration: "Frais d'inscription",
   start: "Tranche 1 (Démarrage)",
-  month1: "Tranche 2 (Fin 1er mois)",
-  month3: "Tranche 3 (Début 3e mois - Solde)",
+  month1: "Tranche 2 (Solde)",
+  month3: "Tranche 3 (ancien échéancier)",
 };
 
 /**

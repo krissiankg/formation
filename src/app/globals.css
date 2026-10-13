@@ -423,3 +423,93 @@ h1, h2, h3, h4, h5, h6, nav {
 .legal-content li + li {
   margin-top: 0.5rem;
 }
+
+/* —— Contenu des leçons (Markdown) —— */
+.lesson-content {
+  line-height: 1.7;
+  color: var(--neutral-600);
+}
+.lesson-content > * + * {
+  margin-top: 1rem;
+}
+.lesson-content h2 {
+  margin-top: 2rem;
+  font-family: var(--font-heading), sans-serif;
+  font-size: 1.35rem;
+  color: var(--neutral-black);
+}
+.lesson-content h3 {
+  margin-top: 1.5rem;
+  font-family: var(--font-heading), sans-serif;
+  font-size: 1.1rem;
+  color: var(--neutral-black);
+}
+.lesson-content strong {
+  color: var(--neutral-black);
+}
+.lesson-content a {
+  color: var(--accent-dark);
+  text-decoration: underline;
+}
+.lesson-content ul,
+.lesson-content ol {
+  padding-left: 1.4rem;
+}
+.lesson-content ul {
+  list-style: disc;
+}
+.lesson-content ol {
+  list-style: decimal;
+}
+.lesson-content li + li {
+  margin-top: 0.35rem;
+}
+.lesson-content li > input[type="checkbox"] {
+  margin-right: 0.5rem;
+}
+.lesson-content blockquote {
+  border-left: 3px solid var(--accent);
+  background: var(--accent-lightest);
+  padding: 0.75rem 1rem;
+  border-radius: 0 0.75rem 0.75rem 0;
+  color: var(--neutral-black);
+}
+.lesson-content code {
+  font-size: 0.875em;
+  background: var(--neutral-200);
+  padding: 0.1rem 0.35rem;
+  border-radius: 0.3rem;
+}
+.lesson-content pre {
+  overflow-x: auto;
+  background: #171d17;
+  color: #f4f2e8;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  font-size: 0.85rem;
+  line-height: 1.55;
+}
+.lesson-content pre code {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+}
+.lesson-table {
+  overflow-x: auto;
+}
+.lesson-content table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.lesson-content th,
+.lesson-content td {
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.65rem;
+  text-align: left;
+  vertical-align: top;
+}
+.lesson-content th {
+  background: var(--neutral-200);
+  color: var(--neutral-black);
+}

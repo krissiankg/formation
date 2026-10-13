@@ -1,15 +1,8 @@
-import { formation } from "@/lib/config/formation";
 import type { Enrollment, PaymentKind } from "@/lib/types";
 import { formatFcfa } from "@/lib/format";
+import { getInstallmentLabel } from "@/lib/programme/installments";
 
 const paymentOrder: PaymentKind[] = ["registration", "start", "month1", "month3"];
-
-const paymentLabels: Record<PaymentKind, string> = {
-  registration: "Inscription",
-  start: formation.installments[0].label,
-  month1: formation.installments[1].label,
-  month3: formation.installments[2].label,
-};
 
 export type PaymentDisplayItem = {
   kind: PaymentKind;
@@ -38,7 +31,7 @@ export function getPaymentSchedule(enrollment: Enrollment): PaymentDisplayItem[]
 
     return {
       kind: payment.kind,
-      label: paymentLabels[payment.kind],
+      label: getInstallmentLabel(payment.kind),
       amount: formatFcfa(payment.amount),
       status,
     };

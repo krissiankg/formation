@@ -1,5 +1,5 @@
 export type ModuleStatus = "completed" | "current" | "locked" | "upcoming";
-export type LessonType = "séance" | "outil" | "code" | "test";
+export type LessonType = "séance" | "outil" | "code" | "test" | "défi" | "recherche";
 export type SessionSchedule = "saturday" | "sunday" | "both";
 
 export type FormationModule = {

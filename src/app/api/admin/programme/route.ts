@@ -9,6 +9,7 @@ import {
   updateLesson,
   updateModule,
 } from "@/lib/store/programme";
+import type { LessonType } from "@/lib/programme/types";
 
 export async function GET() {
   try {
@@ -53,7 +54,7 @@ export async function POST(request: Request) {
         const lesson = await createLesson({
           moduleId: body.moduleId,
           title: body.title,
-          type: body.type as "séance" | "outil" | "code" | "test",
+          type: body.type as LessonType,
           duration: body.duration,
           body: body.body,
           sortOrder: body.sortOrder,
@@ -73,7 +74,7 @@ export async function POST(request: Request) {
         if (!body.id) return NextResponse.json({ error: "ID requis" }, { status: 400 });
         const lesson = await updateLesson(body.id, {
           title: body.title,
-          type: body.type as "séance" | "outil" | "code" | "test" | undefined,
+          type: body.type as LessonType | undefined,
           duration: body.duration,
           body: body.body,
           sortOrder: body.sortOrder,

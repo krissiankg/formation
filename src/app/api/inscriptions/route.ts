@@ -29,21 +29,11 @@ export async function POST(request: Request) {
           amount: formation.registrationFee,
           status: "pending",
         },
-        {
-          kind: "start",
-          amount: formation.installments[0].amount,
-          status: "pending",
-        },
-        {
-          kind: "month1",
-          amount: formation.installments[1].amount,
-          status: "pending",
-        },
-        {
-          kind: "month3",
-          amount: formation.installments[2].amount,
-          status: "pending",
-        },
+        ...formation.installments.map((inst) => ({
+          kind: inst.id,
+          amount: inst.amount,
+          status: "pending" as const,
+        })),
       ],
     });
 

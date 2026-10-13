@@ -4,6 +4,7 @@ import { getEnrollment } from "@/lib/store/enrollments";
 import { formation } from "@/lib/config/formation";
 import { createFedapayTransaction } from "@/lib/integrations";
 import { getPublicOrigin } from "@/lib/http/public-origin";
+import { getInstallmentLabel, PAYABLE_INSTALLMENTS } from "@/lib/programme/installments";
 import type { PaymentKind } from "@/lib/types";
 
 export async function POST(request: Request) {
@@ -16,7 +17,7 @@ export async function POST(request: Request) {
     const body = (await request.json()) as { kind?: PaymentKind };
     const kind = body.kind;
 
-    if (!kind || !["start", "month1", "month3"].includes(kind)) {
+    if (!kind || !(PAYABLE_INSTALLMENTS as string[]).includes(kind)) {
       return NextResponse.json({ error: "Tranche invalide" }, { status: 400 });
     }
 
@@ -40,13 +41,7 @@ export async function POST(request: Request) {
     const [firstname, ...rest] = enrollment.fullName.trim().split(/\s+/);
     const lastname = rest.join(" ") || firstname;
 
-    const installmentConfig = formation.installments.find(
-      (inst) => (inst.id === "start" && kind === "start") ||
-                (inst.id === "month1" && kind === "month1") ||
-                (inst.id === "month3" && kind === "month3")
-    );
-
-    const description = `${installmentConfig?.label || kind} — ${formation.title}`;
+    const description = `${getInstallmentLabel(kind)} — ${formation.title}`;
 
     const tx = await createFedapayTransaction({
       amount: paymentEntry.amount,
