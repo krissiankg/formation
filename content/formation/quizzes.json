@@ -1,0 +1,180 @@
+[
+  {
+    "id": "f0000000-0000-4000-8000-000000000001",
+    "lessonId": "e1000000-0000-4000-8000-000000000012",
+    "module": "mois-1",
+    "order": 12,
+    "title": "Quiz — Séance 1 : ton atelier IA",
+    "description": "Git, la méthode ADAPT et l'anatomie d'une bonne consigne.",
+    "durationMinutes": 10,
+    "questions": [
+      { "question": "Que signifie le premier « A » de la méthode ADAPT ?", "options": ["Analyser le code", "Acquérir un template et vérifier sa licence", "Automatiser le déploiement", "Ajouter des animations"], "correct": 1, "explanation": "A = Acquérir : on trouve le bon point de départ (UI8, Figma, WordPress) et on vérifie qu'on a le droit de l'utiliser." },
+      { "question": "Pourquoi faire un commit Git AVANT chaque demande à l'IA ?", "options": ["Pour que l'IA comprenne mieux le projet", "Parce que GitHub l'exige", "Pour pouvoir revenir instantanément en arrière si l'IA casse quelque chose", "Pour accélérer l'IA"], "correct": 2, "explanation": "Le commit est ton filet de sécurité : `git restore .` te ramène à l'état propre en 2 secondes." },
+      { "question": "Quelle consigne est la mieux construite ?", "options": ["« Fais un beau site »", "« Améliore la page »", "« Tu es intégrateur. Dans @index.html, change le bouton principal en #791d3e, ne touche à rien d'autre, puis liste les lignes modifiées. »", "« Change les couleurs comme tu veux »"], "correct": 2, "explanation": "Elle contient rôle, contexte, tâche précise, contrainte et vérification." },
+      { "question": "Dans FORGEIA CODE, à quoi sert le mode Plan ?", "options": ["À réfléchir et proposer sans modifier les fichiers", "À dessiner des maquettes", "À planifier les séances", "À exécuter les commandes plus vite"], "correct": 0, "explanation": "En Plan, l'agent analyse et propose ; tu valides, puis tu passes en Act pour exécuter." },
+      { "question": "Que permet le symbole @ dans une demande à l'agent ?", "options": ["Mentionner un collègue", "Ajouter un fichier, un dossier ou une doc comme contexte", "Envoyer un e-mail", "Accélérer le modèle"], "correct": 1, "explanation": "@fichier donne à l'IA le contexte exact : meilleur résultat, moins d'inventions." },
+      { "question": "Quelle commande enregistre tes modifications dans l'historique Git ?", "options": ["git push", "git init", "git commit -m \"message\"", "npm run dev"], "correct": 2, "explanation": "git commit enregistre une étape dans l'historique local ; git push envoie cet historique sur GitHub." },
+      { "question": "À quoi sert le fichier .clinerules à la racine d'un projet ?", "options": ["À stocker les mots de passe", "À donner des règles permanentes à l'agent (stack, conventions, interdits)", "À lister les bugs", "À configurer GitHub"], "correct": 1, "explanation": "L'agent relit ces règles à chaque demande : tu n'as plus à te répéter." },
+      { "question": "Que dois-tu faire si l'agent propose une commande terminal que tu ne comprends pas ?", "options": ["L'approuver, il sait ce qu'il fait", "Lui demander d'abord d'expliquer la commande", "Redémarrer l'ordinateur", "Supprimer le projet"], "correct": 1, "explanation": "On n'approuve jamais une commande qu'on ne comprend pas, surtout si elle supprime ou force quelque chose." },
+      { "question": "Quelle information ne dois-tu JAMAIS coller dans une conversation avec l'IA ?", "options": ["Une capture d'écran du design", "Le contenu d'un fichier HTML", "Une clé secrète ou un mot de passe", "Un message d'erreur"], "correct": 2, "explanation": "Les secrets vont dans .env, jamais dans une conversation ni dans le code commité." },
+      { "question": "Quel est le rythme de travail enseigné en séance 1 ?", "options": ["Demande → commit → vérifie", "Commit → demande → vérifie → commit", "Vérifie → demande → push", "Demande → push → commit"], "correct": 1, "explanation": "Commit avant, demande, vérification, puis commit de la version qui marche." }
+    ]
+  },
+  {
+    "id": "f0000000-0000-4000-8000-000000000002",
+    "lessonId": "e1000000-0000-4000-8000-000000000022",
+    "module": "mois-1",
+    "order": 22,
+    "title": "Quiz — Séance 2 : décortiquer un design",
+    "description": "Figma, design tokens, composants, Tailwind et Cursor.",
+    "durationMinutes": 10,
+    "questions": [
+      { "question": "Que sont les « design tokens » ?", "options": ["Des jetons pour payer les templates", "Les valeurs de base d'un design : couleurs, typographies, espacements, rayons", "Les images du design", "Les mots de passe Figma"], "correct": 1, "explanation": "Les tokens sont les valeurs de référence ; les donner à l'IA garantit un résultat fidèle et cohérent." },
+      { "question": "Dans Figma, quel panneau donne les tailles, couleurs et polices exactes d'un élément ?", "options": ["Le panneau Inspect / mode Dev", "Le panneau Prototype", "Le menu Fichier", "Le panneau Commentaires"], "correct": 0, "explanation": "Inspect (ou le mode Dev) affiche les valeurs précises à transmettre à l'IA." },
+      { "question": "Pourquoi découper une page en composants AVANT de coder ?", "options": ["Pour que la page soit plus lourde", "Pour repérer ce qui se répète et faire des demandes petites et vérifiables", "Parce que Figma l'impose", "Pour éviter Git"], "correct": 1, "explanation": "Chaque élément répété devient un composant réutilisable, et chaque composant = une demande claire à l'IA." },
+      { "question": "Que signifie la classe Tailwind `md:grid-cols-3` ?", "options": ["3 colonnes sur tous les écrans", "3 colonnes à partir de la taille tablette", "Une grille de 3 pixels", "3 lignes en mobile"], "correct": 1, "explanation": "Le préfixe md: applique la classe à partir de la largeur tablette ; en dessous, la grille reste sur une colonne." },
+      { "question": "Dans Cursor, quel geste est le plus adapté pour changer la couleur d'un seul bouton ?", "options": ["Lancer l'Agent sur tout le projet", "Sélectionner le code puis Ctrl+K", "Créer un nouveau projet", "Réinstaller Cursor"], "correct": 1, "explanation": "Ctrl+K est l'outil chirurgical : rapide, ciblé, sans effet de bord." },
+      { "question": "Où placer les règles de projet dans Cursor ?", "options": ["Dans le dossier .cursor/rules/", "Dans le fichier package.json", "Dans un e-mail", "Dans .env"], "correct": 0, "explanation": "Les règles dans .cursor/rules/ sont appliquées à chaque demande et versionnées avec le projet." },
+      { "question": "Quelle demande donne le résultat le plus fidèle à un design ?", "options": ["« Fais un titre joli »", "« Titre 48 px, Inter Bold, #171D17, 24 px de marge en dessous »", "« Comme sur l'image à peu près »", "« Un grand titre »"], "correct": 1, "explanation": "Des valeurs exactes plutôt que des adjectifs : l'IA n'a rien à deviner." },
+      { "question": "Que fait `npx create-next-app@latest projet-1 --typescript --tailwind --app` ?", "options": ["Met le site en ligne", "Crée un nouveau projet Next.js avec TypeScript et Tailwind", "Installe Figma", "Supprime le projet 1"], "correct": 1, "explanation": "C'est la commande qui crée la base de ton projet 1." },
+      { "question": "Rappel séance 1 — Que doit contenir une bonne consigne, en plus de la tâche ?", "options": ["Uniquement la tâche", "Rôle, contexte, contraintes et vérification", "Des émojis", "Le mot « vite »"], "correct": 1, "explanation": "Rôle, contexte, tâche, contraintes, vérification : les 5 éléments d'une consigne efficace." },
+      { "question": "Rappel séance 1 — Quelle commande ramène le projet à l'état du dernier commit ?", "options": ["git restore .", "git push", "npm install", "git init"], "correct": 0, "explanation": "git restore . annule les modifications non commitées : ton filet de sécurité." }
+    ]
+  },
+  {
+    "id": "f0000000-0000-4000-8000-000000000003",
+    "lessonId": "e1000000-0000-4000-8000-000000000032",
+    "module": "mois-1",
+    "order": 32,
+    "title": "Quiz — Séance 3 : vérifier et livrer",
+    "description": "Responsive, checklist du pro, mise en ligne et mode Plan.",
+    "durationMinutes": 10,
+    "questions": [
+      { "question": "Quelles largeurs d'écran vérifies-tu au minimum ?", "options": ["Seulement 1440 px", "375 px, 768 px et 1440 px", "Seulement 375 px", "1024 px uniquement"], "correct": 1, "explanation": "Téléphone, tablette et ordinateur : les trois tailles de la checklist du pro." },
+      { "question": "Où vois-tu les erreurs JavaScript d'une page ?", "options": ["Dans la console du navigateur (F12)", "Dans Figma", "Dans le README", "Dans les paramètres Wi-Fi"], "correct": 0, "explanation": "F12 → Console : aucune ligne rouge ne doit rester avant la livraison." },
+      { "question": "Une fois le projet relié à Vercel ou Netlify, comment mets-tu le site à jour ?", "options": ["En renvoyant les fichiers par e-mail", "En faisant un git push : le site se met à jour automatiquement", "En recréant le projet", "Impossible de le mettre à jour"], "correct": 1, "explanation": "Chaque push sur GitHub déclenche une nouvelle mise en ligne." },
+      { "question": "Que vérifie `npm run build` ?", "options": ["Que le design est beau", "Que le projet se compile sans erreur pour la mise en ligne", "La vitesse de ta connexion", "Le nombre de commits"], "correct": 1, "explanation": "Si le build échoue en local, la mise en ligne échouera aussi." },
+      { "question": "Pourquoi relire le plan dans le mode Plan de Cursor avant de lancer ?", "options": ["Pour perdre du temps", "Parce que corriger un plan coûte 30 secondes, corriger 20 fichiers coûte une heure", "Parce que Cursor l'interdit sinon", "Pour changer de modèle"], "correct": 1, "explanation": "Le plan est le moment le moins cher pour corriger l'IA." },
+      { "question": "Dans un diff, que signifie une ligne en rouge ?", "options": ["Une ligne ajoutée", "Une ligne supprimée", "Une erreur de syntaxe", "Un commentaire"], "correct": 1, "explanation": "Rouge = supprimé, vert = ajouté. Une suppression inattendue doit être refusée." },
+      { "question": "Quel élément fait partie de la checklist « Qualité » ?", "options": ["Chaque image a un texte alternatif", "Le site a 50 pages", "Le code est en anglais", "Il y a une vidéo"], "correct": 0, "explanation": "Le texte alternatif sert à l'accessibilité et au référencement." },
+      { "question": "Comment décrire un bug pour qu'il soit facile à corriger ?", "options": ["« Ça marche pas »", "Où, quoi, et comment le reproduire", "Une capture floue sans texte", "En majuscules"], "correct": 1, "explanation": "Un bug bien décrit est un bug à moitié corrigé — pour toi comme pour l'IA." },
+      { "question": "Rappel séance 2 — Que fais-tu des éléments qui se répètent dans un design ?", "options": ["Je les copie-colle", "J'en fais un composant réutilisable", "Je les supprime", "Je les mets en image"], "correct": 1, "explanation": "Un composant réutilisable = moins de code, et une seule correction pour tous les endroits." },
+      { "question": "Rappel séance 1 — Que faire si tu bloques plus de 15 minutes ?", "options": ["Abandonner", "Demander de l'aide", "Tout recommencer", "Changer de projet"], "correct": 1, "explanation": "Règle du jeu n° 4 : on demande et on partage." }
+    ]
+  },
+  {
+    "id": "f0000000-0000-4000-8000-000000000004",
+    "lessonId": "e1000000-0000-4000-8000-000000000042",
+    "module": "mois-1",
+    "order": 42,
+    "title": "Quiz — Séance 4 : WordPress → code et Claude Code",
+    "description": "Analyse d'un thème, inspecteur, licences et Claude Code.",
+    "durationMinutes": 10,
+    "questions": [
+      { "question": "Quel outil du navigateur permet de lire la police, la taille et la couleur d'un élément ?", "options": ["L'inspecteur (clic droit → Inspecter)", "L'historique", "Les favoris", "Le gestionnaire de téléchargements"], "correct": 0, "explanation": "L'inspecteur (onglet Éléments, pipette, onglet Réseau) révèle les styles d'un site existant." },
+      { "question": "Qu'est-ce qu'un « gabarit » dans l'analyse d'un site ?", "options": ["Une image de fond", "Une structure de page partagée par plusieurs pages", "Un mot de passe", "Un plugin WordPress"], "correct": 1, "explanation": "Repérer les gabarits permet de créer une mise en page commune au lieu de répéter le code." },
+      { "question": "Avec un thème GPL, que ne dois-tu PAS réutiliser tel quel pour un client ?", "options": ["La structure de la page", "Les images, logos et textes de la démo", "Les idées de mise en page", "Le plan du site"], "correct": 1, "explanation": "Les images et textes de démo ont souvent leur propre licence : remplace-les toujours." },
+      { "question": "Que crée la commande `/init` dans Claude Code ?", "options": ["Un nouveau projet Next.js", "Un fichier CLAUDE.md qui sert de mémoire du projet", "Un compte GitHub", "Une base de données"], "correct": 1, "explanation": "CLAUDE.md est relu à chaque session : stack, commandes, conventions, pièges." },
+      { "question": "Comment passer en mode plan dans Claude Code ?", "options": ["Ctrl+K", "Shift+Tab jusqu'au mode plan", "F12", "Taper « plan » dans Google"], "correct": 1, "explanation": "Shift+Tab fait défiler les modes : normal, acceptation automatique, plan." },
+      { "question": "Que fait la touche Échap pendant que Claude Code travaille ?", "options": ["Elle ferme l'ordinateur", "Elle interrompt l'agent pour que tu puisses le recadrer", "Elle supprime le projet", "Elle lance le build"], "correct": 1, "explanation": "Interromps tôt quand l'agent part dans une mauvaise direction." },
+      { "question": "Pourquoi un site recodé peut-il être plus rentable qu'un WordPress pour un petit commerce ?", "options": ["Il est plus lourd", "Il est léger, rapide et peut être hébergé gratuitement sans maintenance de plugins", "Il ne peut pas être modifié", "Il est obligatoire"], "correct": 1, "explanation": "Moins de maintenance, plus de vitesse, hébergement gratuit : un vrai argument de vente." },
+      { "question": "Pour un client, combien de licences ThemeForest faut-il en général ?", "options": ["Aucune", "Une licence par client / projet final", "Une seule pour tous les clients", "Dix"], "correct": 1, "explanation": "La licence ThemeForest standard couvre un projet final : un client = une licence." },
+      { "question": "Rappel séance 3 — Que vérifie-t-on dans la console du navigateur ?", "options": ["Qu'il n'y a aucune erreur", "Le nombre de visiteurs", "La couleur du site", "Les commits"], "correct": 0, "explanation": "Une console sans erreur fait partie de la checklist du pro." },
+      { "question": "Rappel séance 2 — Que contient le fichier design-tokens.md ?", "options": ["Les mots de passe", "Les couleurs, typographies et espacements du design", "Les textes du client", "La liste des bugs"], "correct": 1, "explanation": "Les tokens sont la source de vérité visuelle que l'IA doit respecter." }
+    ]
+  },
+  {
+    "id": "f0000000-0000-4000-8000-000000000005",
+    "lessonId": "e2000000-0000-4000-8000-000000000052",
+    "module": "mois-2",
+    "order": 52,
+    "title": "Quiz — Séance 5 : un site qui travaille",
+    "description": "Formulaire, WhatsApp, référencement, vitesse et commandes Claude Code.",
+    "durationMinutes": 10,
+    "questions": [
+      { "question": "Quelle est la forme d'un lien WhatsApp avec message pré-rempli ?", "options": ["https://wa.me/229XXXXXXXX?text=Bonjour", "whatsapp://appel", "mailto:229XXXXXXXX", "https://facebook.com/whatsapp"], "correct": 0, "explanation": "wa.me + numéro au format international + paramètre text encodé." },
+      { "question": "À quoi servent les métadonnées Open Graph ?", "options": ["À accélérer le serveur", "À afficher un titre, une description et une image quand on partage le lien", "À protéger le site", "À traduire le site"], "correct": 1, "explanation": "C'est l'aperçu qui apparaît dans WhatsApp, Facebook ou LinkedIn." },
+      { "question": "Quelle taille d'image est recommandée pour un aperçu de partage ?", "options": ["100 x 100", "1200 x 630", "4000 x 4000", "640 x 1136"], "correct": 1, "explanation": "1200 x 630 est le format standard des aperçus." },
+      { "question": "Quel outil gratuit mesure la performance d'une page ?", "options": ["PageSpeed Insights", "Photoshop", "Excel", "WhatsApp"], "correct": 0, "explanation": "pagespeed.web.dev donne un score et des pistes d'amélioration." },
+      { "question": "Quelle action améliore souvent le plus la vitesse d'un site vitrine ?", "options": ["Ajouter des vidéos", "Compresser et redimensionner les images (WebP)", "Ajouter des polices", "Mettre plus d'animations"], "correct": 1, "explanation": "Les images trop lourdes sont la première cause de lenteur." },
+      { "question": "Où crée-t-on une commande personnalisée dans Claude Code ?", "options": ["Dans un fichier Markdown du dossier .claude/commands/", "Dans package.json", "Dans Figma", "Dans .env"], "correct": 0, "explanation": "Un fichier .md dans .claude/commands/ devient une commande /nom." },
+      { "question": "À quoi sert un sous-agent ?", "options": ["À payer moins cher l'abonnement", "À confier une sous-tâche dans un contexte séparé pour garder la conversation principale propre", "À remplacer Git", "À créer un compte"], "correct": 1, "explanation": "Le sous-agent travaille à part et ne rapporte que le résultat." },
+      { "question": "Pourquoi chaque page doit-elle avoir son propre titre et sa description ?", "options": ["Pour le référencement et pour que chaque page soit bien présentée dans Google", "Pour faire joli dans le code", "Ce n'est pas utile", "Pour le formulaire"], "correct": 0, "explanation": "Des titres et descriptions uniques aident Google à comprendre et afficher chaque page." },
+      { "question": "Rappel séance 4 — Que contient le fichier CLAUDE.md ?", "options": ["Les mots de passe", "La mémoire du projet : stack, commandes, conventions, pièges", "Les images", "Les factures"], "correct": 1, "explanation": "Un bon CLAUDE.md vaut mieux que 100 prompts parfaits." },
+      { "question": "Rappel séance 3 — Comment un site relié à Vercel se met-il à jour ?", "options": ["À chaque git push", "Jamais", "Une fois par mois", "En appelant le support"], "correct": 0, "explanation": "Push = mise en ligne automatique." }
+    ]
+  },
+  {
+    "id": "f0000000-0000-4000-8000-000000000006",
+    "lessonId": "e2000000-0000-4000-8000-000000000062",
+    "module": "mois-2",
+    "order": 62,
+    "title": "Quiz — Séance 6 : données, connexion et Antigravity",
+    "description": "Modèle de données, Supabase, RLS, clés et Antigravity.",
+    "durationMinutes": 10,
+    "questions": [
+      { "question": "Que faut-il faire AVANT de demander du code pour les données d'un SaaS ?", "options": ["Choisir les couleurs", "Décrire les tables, leurs colonnes et leurs liens", "Acheter un nom de domaine", "Écrire le pitch"], "correct": 1, "explanation": "Décrire ses données d'abord rend les demandes à l'IA précises et évite les refontes." },
+      { "question": "À quoi servent les règles RLS dans Supabase ?", "options": ["À accélérer la base", "À garantir que chaque utilisateur ne voit et ne modifie que ses propres lignes", "À traduire les tables", "À sauvegarder la base"], "correct": 1, "explanation": "Sans RLS, n'importe qui disposant de la clé publique peut lire tes tables." },
+      { "question": "Où doit se trouver la clé secrète service_role de Supabase ?", "options": ["Dans le code du navigateur", "Uniquement côté serveur, dans une variable d'environnement", "Dans le README", "Sur GitHub"], "correct": 1, "explanation": "La clé service_role contourne toutes les règles : jamais côté navigateur, jamais commitée." },
+      { "question": "Comment vérifier que tes règles de sécurité fonctionnent ?", "options": ["En testant avec deux comptes différents", "En regardant le design", "En faisant un git push", "En redémarrant l'ordinateur"], "correct": 0, "explanation": "Chaque compte ne doit voir que ses propres données." },
+      { "question": "Quel fichier ne doit JAMAIS être envoyé sur GitHub ?", "options": ["README.md", ".env.local", "page.tsx", "package.json"], "correct": 1, "explanation": ".env.local contient tes clés : vérifie qu'il est dans .gitignore." },
+      { "question": "Dans Antigravity, que sont les « Artifacts » ?", "options": ["Des bugs", "Les productions de l'agent : plan, liste de tâches, captures, enregistrements, résultats", "Des templates payants", "Des mots de passe"], "correct": 1, "explanation": "Tu peux commenter les Artifacts comme un document partagé pour guider l'agent." },
+      { "question": "Quand lancer plusieurs agents en parallèle dans le Manager d'Antigravity ?", "options": ["Sur le même fichier", "Sur des parties indépendantes du projet", "Jamais", "Pour chaque ligne de code"], "correct": 1, "explanation": "Deux agents sur le même fichier = conflits. 2 à 3 agents sur des parties indépendantes, c'est l'idéal." },
+      { "question": "Quelle est la meilleure façon de corriger un plan d'Antigravity ?", "options": ["Tout réécrire", "Commenter directement l'étape du plan concernée", "Fermer l'application", "Attendre qu'il finisse"], "correct": 1, "explanation": "Commenter l'Artifact ajuste le plan sans repartir de zéro." },
+      { "question": "Rappel séance 5 — Quel est souvent le bouton le plus cliqué d'un site de commerce local ?", "options": ["Le bouton WhatsApp", "Le bouton « À propos »", "Le logo", "Le pied de page"], "correct": 0, "explanation": "Le contact direct par WhatsApp est le réflexe de la plupart des clients." },
+      { "question": "Rappel séance 4 — Que fait Échap Échap dans Claude Code ?", "options": ["Revenir à un message précédent de la conversation", "Fermer le terminal", "Supprimer le projet", "Changer de modèle"], "correct": 0, "explanation": "Tu reviens en arrière dans la conversation pour repartir sur une meilleure direction." }
+    ]
+  },
+  {
+    "id": "f0000000-0000-4000-8000-000000000007",
+    "lessonId": "e2000000-0000-4000-8000-000000000072",
+    "module": "mois-2",
+    "order": 72,
+    "title": "Quiz — Séance 7 : paiement, débogage et mise en ligne",
+    "description": "FedaPay, webhook, méthode de débogage, variables d'environnement et prix.",
+    "durationMinutes": 10,
+    "questions": [
+      { "question": "Où crée-t-on la transaction FedaPay ?", "options": ["Dans le navigateur de l'utilisateur", "Côté serveur (route API), avec la clé secrète", "Dans Figma", "Dans le README"], "correct": 1, "explanation": "La clé secrète FedaPay ne doit jamais être exposée dans le navigateur." },
+      { "question": "Pourquoi utiliser un webhook pour confirmer un paiement ?", "options": ["Parce que c'est plus joli", "Parce que le retour du navigateur peut ne jamais arriver (page fermée), alors que le webhook arrive toujours", "Pour payer moins de frais", "Pour envoyer des e-mails"], "correct": 1, "explanation": "C'est le serveur qui doit valider le paiement, pas le navigateur." },
+      { "question": "Quelle est la PREMIÈRE étape de la méthode de débogage du pro ?", "options": ["Tout réécrire", "Lire l'erreur en entier", "Changer d'outil IA", "Supprimer le fichier"], "correct": 1, "explanation": "La réponse est souvent dans l'erreur : première ligne ou ligne qui cite ton fichier." },
+      { "question": "Que faire après 3 tentatives de correction ratées avec l'IA ?", "options": ["Insister encore 10 fois", "Ouvrir une nouvelle conversation avec ce que tu as appris", "Abandonner le projet", "Supprimer Git"], "correct": 1, "explanation": "Une conversation qui dérive pollue le contexte : repartir propre est plus efficace." },
+      { "question": "Où renseigner les clés Supabase et FedaPay pour le SaaS en ligne ?", "options": ["Dans les variables d'environnement de l'hébergeur (Vercel)", "Dans le code source", "Dans un commentaire", "Dans le titre de la page"], "correct": 0, "explanation": "Les variables d'environnement de l'hébergeur remplacent .env.local en production." },
+      { "question": "Que faut-il mettre à jour dans FedaPay après la mise en ligne ?", "options": ["Le logo", "L'adresse du webhook avec l'adresse en ligne du site", "Le mot de passe", "Rien"], "correct": 1, "explanation": "Sinon FedaPay continue d'appeler une adresse locale inaccessible." },
+      { "question": "Comment fixer un prix pertinent pour ton SaaS ?", "options": ["Le moins cher possible", "Une fraction claire de ce que le problème coûte au client", "Le même prix que Netflix", "Au hasard"], "correct": 1, "explanation": "Le prix se justifie par la valeur : temps ou argent économisé." },
+      { "question": "Combien d'offres proposer au lancement ?", "options": ["Une dizaine", "2 maximum : gratuite limitée + payante", "Aucune", "Une par client"], "correct": 1, "explanation": "Simple à comprendre = simple à acheter." },
+      { "question": "Rappel séance 6 — Quel fichier ne doit jamais aller sur GitHub ?", "options": [".env.local", "page.tsx", "README.md", "tailwind.config"], "correct": 0, "explanation": "Il contient tes clés secrètes." },
+      { "question": "Rappel séance 6 — À quoi servent les règles RLS ?", "options": ["À limiter chaque utilisateur à ses propres données", "À changer la couleur des tables", "À accélérer le site", "À traduire les textes"], "correct": 0, "explanation": "Sans RLS, les données de tous les utilisateurs sont exposées." }
+    ]
+  },
+  {
+    "id": "f0000000-0000-4000-8000-000000000008",
+    "lessonId": "e2000000-0000-4000-8000-000000000082",
+    "module": "mois-2",
+    "order": 82,
+    "title": "Quiz final — Toute la formation",
+    "description": "20 questions sur la méthode ADAPT, les outils IA et tes 3 projets.",
+    "durationMinutes": 20,
+    "questions": [
+      { "question": "Que signifie le « D » de ADAPT ?", "options": ["Déployer", "Décortiquer", "Dessiner", "Dupliquer"], "correct": 1, "explanation": "Décortiquer : analyser structure, composants et styles avant de demander du code." },
+      { "question": "Que signifie le « P » de ADAPT ?", "options": ["Payer", "Programmer", "Personnaliser", "Publier"], "correct": 2, "explanation": "Personnaliser : marque, textes, images et fonctionnalités du projet." },
+      { "question": "Quel est le réflexe n° 1 avant toute demande à l'IA ?", "options": ["Faire un commit Git", "Redémarrer l'éditeur", "Changer de modèle", "Fermer le navigateur"], "correct": 0, "explanation": "Le commit est le filet de sécurité qui rend l'expérimentation sans risque." },
+      { "question": "Quel outil choisir pour une retouche visuelle très précise ?", "options": ["Antigravity Manager avec 3 agents", "Cursor Ctrl+K ou FORGEIA CODE", "Supabase", "FedaPay"], "correct": 1, "explanation": "Pour le chirurgical, l'édition ciblée est la plus rapide." },
+      { "question": "Quel outil est le plus adapté pour lancer plusieurs chantiers en parallèle ?", "options": ["Antigravity (Manager)", "Le bloc-notes", "Figma", "GitHub"], "correct": 0, "explanation": "Le Manager d'Antigravity supervise plusieurs agents à la fois." },
+      { "question": "Quel fichier sert de mémoire du projet pour Claude Code ?", "options": ["CLAUDE.md", "memory.json", ".env", "index.html"], "correct": 0, "explanation": "CLAUDE.md est relu à chaque session." },
+      { "question": "Pourquoi donner des valeurs exactes plutôt que des adjectifs à l'IA ?", "options": ["Pour qu'elle n'ait rien à deviner et respecte le design", "Parce que les adjectifs sont interdits", "Pour aller plus lentement", "Ça ne change rien"], "correct": 0, "explanation": "« 48 px, #171D17 » ne laisse aucune place à l'interprétation." },
+      { "question": "Que livre-t-on au projet 1 ?", "options": ["Un SaaS", "Une landing page issue d'un template UI8/Figma, en ligne", "Une application mobile", "Un thème WordPress"], "correct": 1, "explanation": "Projet 1 = template transformé en landing page en ligne." },
+      { "question": "Que livre-t-on au projet 2 ?", "options": ["Un site vitrine recodé à partir d'un thème WordPress", "Un logo", "Une vidéo", "Un tableur"], "correct": 0, "explanation": "Projet 2 = analyse d'un thème WordPress puis site moderne de plusieurs pages." },
+      { "question": "Quels éléments sont indispensables au projet 3 ?", "options": ["Animations 3D", "Données, connexion des utilisateurs et paiement test", "Une vidéo de présentation uniquement", "Un blog"], "correct": 1, "explanation": "Le SaaS doit enregistrer des données, gérer des comptes et encaisser." },
+      { "question": "Où vérifie-t-on les erreurs JavaScript d'une page ?", "options": ["Console du navigateur (F12)", "Figma", "WhatsApp", "PageSpeed"], "correct": 0, "explanation": "Une console propre fait partie de la checklist du pro." },
+      { "question": "Pour une licence ThemeForest standard, un client =", "options": ["Aucune licence", "Une licence", "Dix licences", "Une licence pour toute la vie"], "correct": 1, "explanation": "Une licence par projet final." },
+      { "question": "Que garantissent les règles RLS de Supabase ?", "options": ["Que chaque utilisateur ne voit que ses données", "Que le site est rapide", "Que le design est fidèle", "Que les paiements sont gratuits"], "correct": 0, "explanation": "Elles protègent les données au niveau de chaque ligne." },
+      { "question": "Où la clé secrète FedaPay doit-elle être utilisée ?", "options": ["Côté serveur uniquement", "Dans le navigateur", "Dans un fichier public", "Dans le titre de la page"], "correct": 0, "explanation": "Une clé secrète exposée permet à n'importe qui d'agir sur ton compte." },
+      { "question": "Pourquoi un webhook pour confirmer un paiement ?", "options": ["Il arrive même si l'utilisateur ferme son navigateur", "Il est plus joli", "Il est obligatoire pour le design", "Il remplace Supabase"], "correct": 0, "explanation": "Seul le serveur peut confirmer un paiement de façon fiable." },
+      { "question": "Quelle est la bonne réaction après 3 corrections ratées par l'IA ?", "options": ["Nouvelle conversation, demande reformulée", "Continuer encore et encore", "Tout supprimer", "Changer d'ordinateur"], "correct": 0, "explanation": "Un contexte pollué produit de mauvaises réponses." },
+      { "question": "Comment décrire un bug efficacement ?", "options": ["Où, quoi, comment le reproduire", "« Ça marche pas »", "Avec un émoji", "En une capture floue"], "correct": 0, "explanation": "La reproduction précise est la moitié de la solution." },
+      { "question": "Qu'est-ce qui fait un bon SaaS au lancement ?", "options": ["Une seule fonctionnalité cœur très bien faite pour une cible précise", "Le plus de fonctionnalités possible", "Un nom en anglais", "Un logo animé"], "correct": 0, "explanation": "Simple, ciblé, utile : c'est ce qui se vend." },
+      { "question": "Dans la démo du Demo Day, que montre-t-on en priorité ?", "options": ["Le parcours principal en direct, du début à la fin", "Toutes les pages une par une", "Le code source", "Les réglages"], "correct": 0, "explanation": "Le jury veut voir la valeur : le parcours principal, qui fonctionne." },
+      { "question": "Quelle règle reste vraie quel que soit l'outil IA ?", "options": ["Tu restes le chef de projet : l'IA propose, tu décides et tu vérifies", "L'IA a toujours raison", "Plus le prompt est long, mieux c'est", "Il ne faut jamais lire le code"], "correct": 0, "explanation": "C'est le cœur de la méthode : diriger, découper, vérifier." }
+    ]
+  }
+]
