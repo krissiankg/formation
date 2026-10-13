@@ -95,8 +95,9 @@ export async function initStudentProgress(enrollmentId: string) {
   const rows = await getLessonProgressRows(enrollmentId);
   if (rows.length > 0) return;
 
-  const lessons = await listLessons();
-  const first = [...lessons].sort((a, b) => a.sortOrder - b.sortOrder)[0];
+  // Première leçon du premier module (ordre module puis leçon).
+  const [modules, lessons] = await Promise.all([listModules(), listLessons()]);
+  const first = buildStudentProgress(modules, lessons, []).modules.flatMap((m) => m.lessons)[0];
   if (!first) return;
 
   const supabase = getSupabaseAdmin();

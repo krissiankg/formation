@@ -6,8 +6,9 @@ const marqueeItems = [
   "Applications",
   "Sites web",
   "Mobile Money",
+  "Méthode ADAPT",
   "Présentiel",
-  "Oct → Déc 2026",
+  "Nov → Déc 2026",
   "Samedi ou Dimanche",
   "Outils & codes",
 ];

@@ -85,7 +85,7 @@ function ProofStrip() {
         </Reveal>
         <div className="mt-8 grid gap-4 sm:grid-cols-3">
           {[
-            { label: "Durée", value: "3 mois" },
+            { label: "Durée", value: `${formation.durationMonths} mois` },
             { label: "Créneaux", value: "Sam ou Dim · 9h–14h" },
             { label: "Total", value: formatFcfa(formation.totalPrice) },
           ].map((item, i) => (
@@ -149,10 +149,10 @@ function Programme() {
         <Reveal>
           <p className="section-kicker">02 — Parcours mis en avant</p>
           <h2 className="font-display mt-3 text-3xl tracking-tight sm:text-4xl">
-            Trois mois. Une trajectoire claire.
+            Deux mois. Une méthode, trois projets.
           </h2>
         </Reveal>
-        <div className="mt-10 grid gap-6 lg:grid-cols-3">
+        <div className="mt-10 grid gap-6 lg:grid-cols-2">
           {formation.months.map((m, i) => (
             <Reveal key={m.month} delay={i * 90}>
               <article className="h-full rounded-2xl border border-[color:var(--border)] bg-[color:var(--neutral-50)] p-6">
@@ -225,7 +225,7 @@ function Pricing() {
         <Reveal>
           <p className="section-kicker">04 — Investissement</p>
           <h2 className="font-display mt-3 text-3xl tracking-tight sm:text-4xl">
-            {formatFcfa(formation.totalPrice)} pour 3 mois.
+            {formatFcfa(formation.totalPrice)} pour {formation.durationMonths} mois.
           </h2>
           <p className="mt-4 max-w-2xl text-[color:var(--neutral-600)]">
             Tu démarres avec {formatFcfa(formation.registrationFee)} pour

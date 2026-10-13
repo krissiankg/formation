@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { contact, formation } from "@/lib/config/formation";
 import type { PaymentDisplayItem } from "@/lib/programme/payments";
+import { LESSON_TYPE_LABELS } from "@/lib/programme/lesson-types";
 import type {
   CurriculumLesson,
   CurriculumModule,
@@ -103,9 +104,9 @@ export function LessonRow({ lesson }: { lesson: CurriculumLesson }) {
   const locked = lesson.status === "locked" || lesson.status === "upcoming";
   const current = lesson.status === "current";
 
-  return (
-    <li
-      className={`flex items-center gap-3 px-5 py-3.5 ${locked ? "opacity-60" : ""} ${
+  const row = (
+    <div
+      className={`flex items-center gap-3 px-5 py-3.5 ${locked ? "opacity-60" : "transition-colors hover:bg-[color:var(--accent-lightest)]/40"} ${
         current ? "bg-[color:var(--accent-lightest)]/50" : ""
       }`}
     >
@@ -132,7 +133,7 @@ export function LessonRow({ lesson }: { lesson: CurriculumLesson }) {
           {lesson.title}
         </p>
         <p className="mt-0.5 text-xs text-[color:var(--neutral-500)]">
-          {lesson.type} · {lesson.duration}
+          {LESSON_TYPE_LABELS[lesson.type] ?? lesson.type} · {lesson.duration}
         </p>
       </div>
       <span
@@ -146,6 +147,12 @@ export function LessonRow({ lesson }: { lesson: CurriculumLesson }) {
       >
         {locked ? "Bientôt" : current ? "En cours" : "Terminé"}
       </span>
+    </div>
+  );
+
+  return (
+    <li>
+      {locked ? row : <Link href={`/espace/programme/${lesson.id}`}>{row}</Link>}
     </li>
   );
 }

@@ -15,8 +15,8 @@ export const dynamic = "force-dynamic";
 const kindTitles: Record<PaymentKind, string> = {
   registration: "Frais d'inscription & réservation de place",
   start: "1ère Tranche — Démarrage de la formation",
-  month1: "2ème Tranche — Fin du 1er mois",
-  month3: "3ème Tranche & Solde — Début du 3ème mois",
+  month1: "2ème Tranche — Solde de la formation",
+  month3: "3ème Tranche — Ancien échéancier",
 };
 
 export default async function RecuPage({

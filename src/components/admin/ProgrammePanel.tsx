@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { PageHeader } from "@/components/espace/shared";
+import { LESSON_TYPES, LESSON_TYPE_LABELS } from "@/lib/programme/lesson-types";
 import type { FormationLesson, FormationModule } from "@/lib/programme/types";
 
 export function ProgrammePanel({
@@ -123,10 +124,11 @@ export function ProgrammePanel({
                     }))
                   }
                 >
-                  <option value="séance">Séance</option>
-                  <option value="outil">Outil</option>
-                  <option value="code">Code</option>
-                  <option value="test">Test</option>
+                  {LESSON_TYPES.map((t) => (
+                    <option key={t} value={t}>
+                      {LESSON_TYPE_LABELS[t]}
+                    </option>
+                  ))}
                 </select>
                 <input
                   className="input-field"
