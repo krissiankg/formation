@@ -6,6 +6,8 @@ import {
   deleteModule,
   listLessons,
   listModules,
+  moveLesson,
+  moveModule,
   updateLesson,
   updateModule,
 } from "@/lib/store/programme";
@@ -33,9 +35,19 @@ export async function POST(request: Request) {
       body?: string;
       sortOrder?: number;
       id?: string;
+      direction?: number;
     };
 
     switch (body.action) {
+      case "moveModule":
+      case "moveLesson": {
+        if (!body.id || (body.direction !== 1 && body.direction !== -1)) {
+          return NextResponse.json({ error: "ID et direction requis" }, { status: 400 });
+        }
+        if (body.action === "moveModule") await moveModule(body.id, body.direction);
+        else await moveLesson(body.id, body.direction);
+        return NextResponse.json({ ok: true });
+      }
       case "createModule": {
         if (!body.monthLabel || !body.title) {
           return NextResponse.json({ error: "Champs requis manquants" }, { status: 400 });

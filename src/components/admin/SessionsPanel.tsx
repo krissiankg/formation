@@ -54,6 +54,41 @@ export function SessionsPanel({
     }
   }
 
+  const [editing, setEditing] = useState<{
+    id: string;
+    title: string;
+    sessionDate: string;
+    hours: string;
+    location: string;
+    schedule: FormationSession["schedule"];
+    lessonId: string;
+  } | null>(null);
+  const [editError, setEditError] = useState<string | null>(null);
+
+  async function saveSession() {
+    if (!editing) return;
+    setLoading(true);
+    setEditError(null);
+    try {
+      const res = await fetch("/api/admin/sessions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "update", ...editing, lessonId: editing.lessonId || null }),
+      });
+      if (!res.ok) {
+        const data = (await res.json().catch(() => ({}))) as { error?: string };
+        setEditError(data.error ?? "Enregistrement impossible.");
+        return;
+      }
+      setEditing(null);
+      router.refresh();
+    } catch {
+      setEditError("Erreur réseau.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function deleteSession(id: string) {
     if (!confirm("Supprimer cette séance ?")) return;
     setLoading(true);
@@ -148,7 +183,74 @@ export function SessionsPanel({
               <p className="font-medium">Aucune séance planifiée</p>
             </div>
           ) : (
-            sessions.map((session) => (
+            sessions.map((session) =>
+              editing?.id === session.id ? (
+              <article
+                key={session.id}
+                className="grid gap-2 rounded-2xl border border-[color:var(--accent)] bg-[color:var(--neutral-50)] p-5"
+              >
+                <input
+                  className="input-field"
+                  value={editing.title}
+                  onChange={(e) => setEditing({ ...editing, title: e.target.value })}
+                />
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <input
+                    type="date"
+                    className="input-field"
+                    value={editing.sessionDate}
+                    onChange={(e) => setEditing({ ...editing, sessionDate: e.target.value })}
+                  />
+                  <input
+                    className="input-field"
+                    value={editing.hours}
+                    onChange={(e) => setEditing({ ...editing, hours: e.target.value })}
+                  />
+                </div>
+                <input
+                  className="input-field"
+                  value={editing.location}
+                  onChange={(e) => setEditing({ ...editing, location: e.target.value })}
+                />
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <select
+                    className="input-field"
+                    value={editing.schedule}
+                    onChange={(e) => setEditing({ ...editing, schedule: e.target.value as FormationSession["schedule"] })}
+                  >
+                    <option value="both">Samedi & dimanche</option>
+                    <option value="saturday">Samedi seulement</option>
+                    <option value="sunday">Dimanche seulement</option>
+                  </select>
+                  <select
+                    className="input-field"
+                    value={editing.lessonId}
+                    onChange={(e) => setEditing({ ...editing, lessonId: e.target.value })}
+                  >
+                    <option value="">Aucune leçon liée</option>
+                    {lessons.map((l) => (
+                      <option key={l.id} value={l.id}>
+                        {l.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {editError ? <p className="text-sm text-[color:var(--error)]">{editError}</p> : null}
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    className="btn-primary !py-2 text-sm"
+                    disabled={loading || !editing.title || !editing.sessionDate}
+                    onClick={() => void saveSession()}
+                  >
+                    Enregistrer
+                  </button>
+                  <button type="button" className="text-sm hover:underline" onClick={() => setEditing(null)}>
+                    Annuler
+                  </button>
+                </div>
+              </article>
+              ) : (
               <article
                 key={session.id}
                 className="rounded-2xl border border-[color:var(--accent)] bg-[color:var(--accent-lightest)] p-5"
@@ -164,20 +266,41 @@ export function SessionsPanel({
                     </p>
                     <h3 className="mt-1 text-lg font-semibold">{session.title}</h3>
                     <p className="mt-2 text-sm text-[color:var(--neutral-600)]">
-                      {formatSessionDateLabel(session.sessionDate, "saturday")} · {session.hours}
+                      {formatSessionDateLabel(session.sessionDate, session.schedule === "sunday" ? "sunday" : "saturday")} · {session.hours}
                     </p>
                     <p className="text-sm text-[color:var(--neutral-500)]">{session.location}</p>
                   </div>
-                  <button
-                    type="button"
-                    className="text-xs text-[color:var(--error)] hover:underline"
-                    onClick={() => deleteSession(session.id)}
-                  >
-                    Supprimer
-                  </button>
+                  <div className="flex shrink-0 gap-3">
+                    <button
+                      type="button"
+                      className="text-xs accent-text hover:underline"
+                      onClick={() => {
+                        setEditError(null);
+                        setEditing({
+                          id: session.id,
+                          title: session.title,
+                          sessionDate: session.sessionDate,
+                          hours: session.hours,
+                          location: session.location,
+                          schedule: session.schedule,
+                          lessonId: session.lessonId ?? "",
+                        });
+                      }}
+                    >
+                      Modifier
+                    </button>
+                    <button
+                      type="button"
+                      className="text-xs text-[color:var(--error)] hover:underline"
+                      onClick={() => deleteSession(session.id)}
+                    >
+                      Supprimer
+                    </button>
+                  </div>
                 </div>
               </article>
-            ))
+              ),
+            )
           )}
         </section>
       </div>

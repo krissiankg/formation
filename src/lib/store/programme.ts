@@ -72,7 +72,7 @@ export async function createModule(input: {
 }) {
   const supabase = getSupabaseAdmin();
   const modules = await listModules();
-  const sortOrder = input.sortOrder ?? modules.length + 1;
+  const sortOrder = input.sortOrder ?? Math.max(0, ...modules.map((m) => m.sortOrder)) + 1;
 
   const { data, error } = await supabase
     .from("formation_modules")
@@ -125,7 +125,7 @@ export async function createLesson(input: {
 }) {
   const supabase = getSupabaseAdmin();
   const lessons = (await listLessons()).filter((l) => l.moduleId === input.moduleId);
-  const sortOrder = input.sortOrder ?? lessons.length + 1;
+  const sortOrder = input.sortOrder ?? Math.max(0, ...lessons.map((l) => l.sortOrder)) + 1;
 
   const { data, error } = await supabase
     .from("formation_lessons")
@@ -179,4 +179,28 @@ export async function deleteLesson(id: string) {
   const supabase = getSupabaseAdmin();
   const { error } = await supabase.from("formation_lessons").delete().eq("id", id);
   if (error) throw error;
+}
+
+/** Échange l'ordre d'un module avec son voisin (direction -1 = monter, 1 = descendre). */
+export async function moveModule(id: string, direction: -1 | 1) {
+  const modules = [...(await listModules())].sort((a, b) => a.sortOrder - b.sortOrder);
+  const index = modules.findIndex((m) => m.id === id);
+  const neighbor = modules[index + direction];
+  if (index === -1 || !neighbor) return;
+  const current = modules[index];
+  await updateModule(current.id, { sortOrder: neighbor.sortOrder });
+  await updateModule(neighbor.id, { sortOrder: current.sortOrder });
+}
+
+/** Échange l'ordre d'une leçon avec sa voisine dans le même module. */
+export async function moveLesson(id: string, direction: -1 | 1) {
+  const all = await listLessons();
+  const lesson = all.find((l) => l.id === id);
+  if (!lesson) return;
+  const siblings = all.filter((l) => l.moduleId === lesson.moduleId).sort((a, b) => a.sortOrder - b.sortOrder);
+  const index = siblings.findIndex((l) => l.id === id);
+  const neighbor = siblings[index + direction];
+  if (!neighbor) return;
+  await updateLesson(lesson.id, { sortOrder: neighbor.sortOrder });
+  await updateLesson(neighbor.id, { sortOrder: lesson.sortOrder });
 }

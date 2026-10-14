@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/espace/shared";
 import { ContentKindBadge } from "@/components/admin/ContentKindBadge";
 import { DriveConnectionCard } from "@/components/admin/DriveConnectionCard";
 import { formatFileSize, getFileIcon } from "@/lib/format";
+import { uploadFile } from "@/lib/client/upload-file";
 
 export function ContentPanel({ contents }: { contents: ContentItem[] }) {
   const router = useRouter();
@@ -28,100 +29,6 @@ export function ContentPanel({ contents }: { contents: ContentItem[] }) {
   const [loading, setLoading] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  async function uploadSingleFile(file: File): Promise<ContentAttachment> {
-    const res = await fetch("/api/admin/content/upload-url", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: file.name, type: file.type, size: file.size }),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      throw new Error(data.error || `Erreur HTTP ${res.status}`);
-    }
-    if (data.mode === "s3") {
-      return uploadToS3(file, data.uploadUrl, data.attachment);
-    }
-    return uploadToServer(file);
-  }
-
-  // Envoi direct navigateur → S3 (production AWS), avec progression
-  function uploadToS3(
-    file: File,
-    uploadUrl: string,
-    attachment: ContentAttachment
-  ): Promise<ContentAttachment> {
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-
-      xhr.upload.onprogress = (event) => {
-        if (event.lengthComputable) {
-          setUploadProgress(Math.round((event.loaded / event.total) * 100));
-        }
-      };
-
-      xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          resolve(attachment);
-        } else {
-          reject(new Error(`Erreur stockage ${xhr.status}`));
-        }
-      };
-
-      xhr.onerror = () => {
-        reject(new Error("Erreur réseau pendant le téléversement"));
-      };
-
-      xhr.open("PUT", uploadUrl);
-      xhr.setRequestHeader("Content-Type", attachment.type || "application/octet-stream");
-      xhr.send(file);
-    });
-  }
-
-  // Envoi via le serveur Next.js (développement local, sans S3)
-  function uploadToServer(file: File): Promise<ContentAttachment> {
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      const formData = new FormData();
-      formData.append("file", file);
-
-      xhr.upload.onprogress = (event) => {
-        if (event.lengthComputable) {
-          const percent = Math.round((event.loaded / event.total) * 100);
-          setUploadProgress(percent);
-        }
-      };
-
-      xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          try {
-            const res = JSON.parse(xhr.responseText);
-            if (res.error) {
-              reject(new Error(res.error));
-            } else {
-              resolve(res);
-            }
-          } catch {
-            reject(new Error("Réponse serveur invalide"));
-          }
-        } else {
-          try {
-            const res = JSON.parse(xhr.responseText);
-            reject(new Error(res.error || `Erreur HTTP ${xhr.status}`));
-          } catch {
-            reject(new Error(`Erreur HTTP ${xhr.status}`));
-          }
-        }
-      };
-
-      xhr.onerror = () => {
-        reject(new Error("Erreur réseau pendant le téléversement"));
-      };
-
-      xhr.open("POST", "/api/admin/content/upload");
-      xhr.send(formData);
-    });
-  }
-
   async function handleFiles(files: FileList | File[]) {
     const fileArray = Array.from(files);
     if (fileArray.length === 0) return;
@@ -135,7 +42,7 @@ export function ContentPanel({ contents }: { contents: ContentItem[] }) {
       setUploadProgress(0);
 
       try {
-        const att = await uploadSingleFile(file);
+        const att = await uploadFile(file, setUploadProgress);
         setAttachments((prev) => [...prev, att]);
       } catch (err: any) {
         setUploadError(`Erreur lors de l'envoi de ${file.name} : ${err?.message || "Échec"}`);
