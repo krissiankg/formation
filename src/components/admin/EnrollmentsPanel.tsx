@@ -27,7 +27,7 @@ export function EnrollmentsPanel({
         <PageHeader
           kicker="Inscrits"
           title="Liste de la cohorte"
-          description="Tous les apprenants inscrits, leur créneau et le statut du paiement des frais d'inscription."
+          description="Tous les apprenants inscrits : créneau, avancement des paiements, coins et accès au cours."
         />
 
         {/* Bouton Bonus Promo Globale */}
@@ -67,15 +67,14 @@ export function EnrollmentsPanel({
             <table className="min-w-full text-left text-sm">
               <thead className="bg-[color:var(--neutral-100)] font-mono text-[10px] uppercase tracking-[0.14em] text-[color:var(--neutral-500)]">
                 <tr>
-                  <th className="px-4 py-3 font-medium">Apprenant</th>
-                  <th className="px-4 py-3 font-medium">WhatsApp</th>
-                  <th className="px-4 py-3 font-medium">Créneau</th>
-                  <th className="px-4 py-3 font-medium">Statut</th>
-                  <th className="px-4 py-3 font-medium">Montant</th>
-                  <th className="px-4 py-3 font-medium">Accès cours</th>
-                  <th className="px-4 py-3 font-medium">Coins</th>
-                  <th className="px-4 py-3 font-medium">Date</th>
-                  <th className="px-4 py-3 font-medium">Action</th>
+                  <th className="whitespace-nowrap px-4 py-3 font-medium">Apprenant</th>
+                  <th className="whitespace-nowrap px-4 py-3 font-medium">WhatsApp</th>
+                  <th className="whitespace-nowrap px-4 py-3 font-medium">Créneau</th>
+                  <th className="whitespace-nowrap px-4 py-3 font-medium">Paiements</th>
+                  <th className="whitespace-nowrap px-4 py-3 font-medium">Coins</th>
+                  <th className="whitespace-nowrap px-4 py-3 font-medium">Inscrit le</th>
+                  <th className="whitespace-nowrap px-4 py-3 font-medium">Accès cours</th>
+                  <th className="whitespace-nowrap px-4 py-3 font-medium">Action</th>
                 </tr>
               </thead>
               <tbody>
