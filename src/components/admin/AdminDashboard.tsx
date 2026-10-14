@@ -111,13 +111,14 @@ export function AdminDashboard({
             <h2 className="font-display text-xl">Actions rapides</h2>
             <ul className="mt-4 space-y-2">
               {[
-                { href: "/admin/contenus", label: "Publier un outil ou une annonce" },
-                { href: "/admin/programme", label: "Modifier le programme" },
-                { href: "/admin/seances", label: "Planifier une séance" },
-                { href: "/admin/inscrits", label: "Voir les inscrits" },
+                { href: "/admin/programme", label: "Modifier une leçon" },
+                { href: "/admin/projets", label: "Évaluer les projets" },
+                { href: "/admin/seances", label: "Gérer le calendrier des séances" },
+                { href: "/admin/contenus", label: "Publier une ressource ou une annonce" },
+                { href: "/admin/inscrits", label: "Voir les inscrits & paiements" },
                 {
-                  href: "https://supabase.guelichweb.store/login/",
-                  label: "Ouvrir Supabase (BDD)",
+                  href: "https://supabase.com/dashboard/project/xnoaghfvrccbihksttfe",
+                  label: "Ouvrir la base de données (Supabase)",
                   external: true,
                 },
               ].map((item) => (
