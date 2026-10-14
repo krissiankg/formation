@@ -147,6 +147,12 @@ h1, h2, h3, h4, h5, h6, nav {
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
+/* Une liste déroulante aux options longues ne doit pas élargir la page sur mobile. */
+select.input-field {
+  min-width: 0;
+  text-overflow: ellipsis;
+}
+
 .input-field:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);

@@ -179,7 +179,7 @@ export function InscriptionForm() {
               setPromoChecked("idle");
             }}
             placeholder="Entrez votre code"
-            className="flex-1 rounded-xl border border-[color:var(--border)] bg-[color:var(--neutral-50)] px-4 py-3 text-[color:var(--neutral-black)] uppercase outline-none transition focus:border-[color:var(--accent)]"
+            className="min-w-0 flex-1 rounded-xl border border-[color:var(--border)] bg-[color:var(--neutral-50)] px-4 py-3 text-[color:var(--neutral-black)] uppercase outline-none transition focus:border-[color:var(--accent)]"
           />
           <button
             type="button"

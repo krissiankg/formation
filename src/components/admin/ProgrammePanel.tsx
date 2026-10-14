@@ -69,7 +69,7 @@ export function ProgrammePanel({
         description="C'est exactement ce que les apprenants voient dans Mon programme. Clique sur une leçon pour modifier son contenu."
       />
 
-      <div className="grid gap-6 xl:grid-cols-[1fr_1.4fr]">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_1.4fr] [&>*]:min-w-0">
         <section className="space-y-6">
           <FormCard title="Nouvelle leçon">
             <div className="grid gap-3">
@@ -90,7 +90,7 @@ export function ProgrammePanel({
                 value={lessonForm.title}
                 onChange={(e) => setLessonForm((f) => ({ ...f, title: e.target.value }))}
               />
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-3 sm:grid-cols-2 [&>*]:min-w-0">
                 <select
                   className="input-field"
                   value={lessonForm.type}

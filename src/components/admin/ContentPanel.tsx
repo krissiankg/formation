@@ -142,7 +142,7 @@ export function ContentPanel({ contents }: { contents: ContentItem[] }) {
       {/* 🚀 Passerelle Google Drive pour les fichiers ZIP */}
       <DriveConnectionCard />
 
-      <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
+      <div className="grid gap-6 xl:grid-cols-[1fr_1fr] [&>*]:min-w-0">
         <section className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--neutral-50)] p-5 sm:p-6">
           <h2 className="font-display text-xl tracking-tight">Nouveau contenu</h2>
           <form onSubmit={createContent} className="mt-5 grid gap-4">

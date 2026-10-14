@@ -93,7 +93,7 @@ export function PaymentsClient({ items }: { items: PaymentDisplayItem[] }) {
                       type="button"
                       onClick={() => handlePay(item.kind)}
                       disabled={loadingKind === item.kind}
-                      className="btn-primary !px-4 !py-2 text-xs !bg-[color:var(--accent)] !text-[color:var(--neutral-black)] hover:!bg-[color:var(--accent-light)] font-medium"
+                      className="btn-primary !px-4 !py-2 text-xs !bg-[color:var(--accent)] !text-white hover:!bg-[color:var(--accent-dark)] font-medium"
                     >
                       {loadingKind === item.kind ? "Redirection…" : "Payer par Mobile Money"}
                     </button>

@@ -21,7 +21,7 @@ export function AdminDashboard({
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
-      <section className="grid gap-4 lg:grid-cols-[1.4fr_0.8fr]">
+      <section className="grid gap-4 lg:grid-cols-[1.4fr_0.8fr] [&>*]:min-w-0">
         <div className="relative overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[color:var(--neutral-50)] p-6 sm:p-7">
           <div className="pointer-events-none absolute -right-10 -top-12 size-44 rounded-full bg-[color:color-mix(in_srgb,var(--accent)_22%,transparent)] blur-3xl" />
           <p className="section-kicker">Administration</p>
@@ -82,7 +82,7 @@ export function AdminDashboard({
         />
       </section>
 
-      <div className="grid gap-6 xl:grid-cols-[1.55fr_0.95fr]">
+      <div className="grid gap-6 xl:grid-cols-[1.55fr_0.95fr] [&>*]:min-w-0">
         <section className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--neutral-50)] p-5 sm:p-6">
           <div className="flex items-center justify-between gap-3">
             <h2 className="font-display text-xl tracking-tight">Dernières inscriptions</h2>

@@ -234,7 +234,7 @@ function Pricing() {
           </p>
         </Reveal>
 
-        <div className="mt-10 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+        <div className="mt-10 grid gap-6 lg:grid-cols-[0.9fr_1.1fr] [&>*]:min-w-0">
           <Reveal>
             <div className="rounded-2xl border border-[color:var(--accent)] bg-[color:var(--accent-lightest)] p-6">
               <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-[color:var(--neutral-500)]">

@@ -112,7 +112,7 @@ export function SessionsPanel({
         description="Les apprenants voient la prochaine séance sur leur tableau de bord, filtrée par créneau (samedi / dimanche)."
       />
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_1fr]">
+      <div className="grid gap-6 lg:grid-cols-[1fr_1fr] [&>*]:min-w-0">
         <section className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--neutral-50)] p-5 sm:p-6">
           <h2 className="font-display text-xl">Nouvelle séance</h2>
           <div className="mt-4 grid gap-3">
