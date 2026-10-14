@@ -43,7 +43,7 @@ export function EnrollmentsPanel({
         )}
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
         <SummaryCard label="Total" value={String(stats.total)} />
         <SummaryCard label="Payés" value={String(stats.paidCount)} accent />
         <SummaryCard
@@ -62,7 +62,19 @@ export function EnrollmentsPanel({
           </p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[color:var(--neutral-50)]">
+        <>
+        <ul className="grid gap-3 md:grid-cols-2 xl:hidden">
+          {enrollments.map((e) => (
+            <EnrollmentRow
+              key={e.id}
+              variant="card"
+              enrollment={e}
+              coins={coinBalances[e.id]}
+              onGrantCoins={(student) => setGrantTarget(student)}
+            />
+          ))}
+        </ul>
+        <div className="hidden overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[color:var(--neutral-50)] xl:block">
           <div className="overflow-x-auto">
             <table className="min-w-full text-left text-sm">
               <thead className="bg-[color:var(--neutral-100)] font-mono text-[10px] uppercase tracking-[0.14em] text-[color:var(--neutral-500)]">
@@ -88,6 +100,7 @@ export function EnrollmentsPanel({
             </table>
           </div>
         </div>
+        </>
       )}
 
       {/* Modal d'octroi de coins */}
@@ -113,17 +126,17 @@ function SummaryCard({
 }) {
   return (
     <div
-      className={`rounded-2xl border p-5 ${
+      className={`min-w-0 rounded-2xl border p-3 sm:p-5 ${
         accent
           ? "border-[color:var(--accent)] bg-[color:var(--accent-lightest)]"
           : "border-[color:var(--border)] bg-[color:var(--neutral-50)]"
       }`}
     >
-      <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[color:var(--neutral-500)]">
+      <p className="truncate font-mono text-[9px] uppercase tracking-[0.1em] text-[color:var(--neutral-500)] sm:text-[10px] sm:tracking-[0.14em]">
         {label}
       </p>
-      <p className="mt-2 text-2xl font-semibold tracking-tight">{value}</p>
-      {hint ? <p className="mt-1 text-xs text-[color:var(--neutral-500)]">{hint}</p> : null}
+      <p className="mt-2 text-lg font-semibold tracking-tight sm:text-2xl">{value}</p>
+      {hint ? <p className="mt-1 hidden text-xs sm:block text-[color:var(--neutral-500)]">{hint}</p> : null}
     </div>
   );
 }

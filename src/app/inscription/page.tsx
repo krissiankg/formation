@@ -14,7 +14,7 @@ export default function InscriptionPage() {
   return (
     <>
       <SiteHeader />
-      <main className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-12 sm:px-6 lg:grid-cols-[0.95fr_1.05fr] lg:py-16">
+      <main className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-10 px-4 py-12 sm:px-6 lg:grid-cols-[0.95fr_1.05fr] [&>*]:min-w-0 lg:py-16">
         <div>
           <p className="section-kicker">10 — Démarrer l&apos;inscription</p>
           <h1 className="font-display mt-3 text-3xl tracking-tight sm:text-4xl">
@@ -37,7 +37,7 @@ export default function InscriptionPage() {
             </Link>
           </p>
         </div>
-        <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--neutral-50)] p-6 shadow-[0_20px_60px_rgba(23,29,23,0.06)] sm:p-8">
+        <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--neutral-50)] p-5 shadow-[0_20px_60px_rgba(23,29,23,0.06)] sm:p-8">
           <InscriptionForm />
         </div>
       </main>

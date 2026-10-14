@@ -45,7 +45,7 @@ export function SiteHeader() {
             href={contact.whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="btn-ghost hidden !px-4 !py-2.5 text-sm lg:inline-flex"
+            className="btn-ghost !hidden !px-4 !py-2.5 text-sm lg:!inline-flex"
           >
             WhatsApp
           </a>

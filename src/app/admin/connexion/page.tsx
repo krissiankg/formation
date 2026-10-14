@@ -22,7 +22,7 @@ export default function AdminConnexionPage() {
           </p>
         </div>
 
-        <div className="grid gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
+        <div className="grid gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center [&>*]:min-w-0">
           <div>
             <p className="section-kicker">Connexion admin</p>
             <h1 className="font-display mt-3 text-3xl tracking-tight sm:text-4xl">
