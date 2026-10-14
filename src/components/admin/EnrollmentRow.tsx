@@ -104,67 +104,64 @@ export function EnrollmentRow({
     );
   }
 
+  const inscritLe = new Date(enrollment.createdAt).toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+
   return (
-    <tr className="border-t border-[color:var(--border)] transition hover:bg-[color:var(--neutral-100)]/80">
-      <td className="px-4 py-4">
+    <tr className="border-t border-[color:var(--border)] align-top transition hover:bg-[color:var(--neutral-100)]/80">
+      <td className="px-3 py-4">
         <div className="font-medium text-[color:var(--neutral-black)]">{enrollment.fullName}</div>
-        <div className="text-xs text-[color:var(--neutral-500)]">{enrollment.email}</div>
-      </td>
-      <td className="px-4 py-4 text-sm font-mono">
+        <div className="break-all text-xs text-[color:var(--neutral-500)]">{enrollment.email}</div>
         <a
           href={waLink}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-[color:var(--accent-dark)] hover:underline inline-flex items-center gap-1"
+          className="mt-1 inline-flex items-center gap-1 font-mono text-xs text-[color:var(--accent-dark)] hover:underline"
           title="Ouvrir sur WhatsApp"
         >
-          {enrollment.whatsapp}
-          <span className="text-xs">↗</span>
+          {enrollment.whatsapp} <span aria-hidden>↗</span>
         </a>
       </td>
-      <td className="whitespace-nowrap px-4 py-4 text-sm">
-        {formation.schedule[enrollment.schedule].label}
+      <td className="px-3 py-4 text-sm">
+        <div>{formation.schedule[enrollment.schedule].label}</div>
+        <div className="mt-1 text-xs text-[color:var(--neutral-500)]">Inscrit le {inscritLe}</div>
       </td>
-      <td className="px-4 py-4">
-        <div className="whitespace-nowrap text-sm font-medium text-[color:var(--neutral-black)]">
+      <td className="px-3 py-4">
+        <div className="text-sm font-medium text-[color:var(--neutral-black)]">
           {paidTotal.toLocaleString("fr-FR")}
           <span className="font-normal text-[color:var(--neutral-500)]"> / {formatFcfa(formation.totalPrice)}</span>
         </div>
-        <div className="mt-1.5 h-1.5 w-32 overflow-hidden rounded-full bg-[color:var(--neutral-200)]">
+        <div className="mt-1.5 h-1.5 w-full max-w-36 overflow-hidden rounded-full bg-[color:var(--neutral-200)]">
           <div
             className={`h-full rounded-full ${stage.done ? "bg-[#2e7d32]" : "bg-[color:var(--accent)]"}`}
             style={{ width: `${paidPercent}%` }}
           />
         </div>
-        <div className={`mt-1 whitespace-nowrap text-[11px] ${stage.done ? "text-[#2e5a36]" : "text-[color:var(--neutral-500)]"}`}>
+        <div className={`mt-1 text-[11px] ${stage.done ? "text-[#2e5a36]" : "text-[color:var(--neutral-500)]"}`}>
           {stage.label}
         </div>
       </td>
-      <td className="whitespace-nowrap px-4 py-4 text-sm">
+      <td className="px-3 py-4 text-sm">
         {coins === undefined ? (
           <span className="text-[color:var(--neutral-400)]" title="Portefeuille pas encore ouvert">
             —
           </span>
         ) : (
-          <span className="inline-flex items-center gap-1 font-semibold text-amber-700">
+          <span className="inline-flex items-center gap-1 whitespace-nowrap font-semibold text-amber-700">
             <span aria-hidden>🪙</span>
             {coins.toLocaleString("fr-FR")}
           </span>
         )}
       </td>
-      <td className="whitespace-nowrap px-4 py-4 text-xs text-[color:var(--neutral-500)]">
-        {new Date(enrollment.createdAt).toLocaleDateString("fr-FR", {
-          day: "numeric",
-          month: "short",
-          year: "numeric",
-        })}
-      </td>
-      <td className="px-4 py-4 text-xs">
+      <td className="px-3 py-4 text-xs">
         <select
           value={override}
           disabled={savingAccess}
           onChange={(e) => handleAccessChange(e.target.value as "auto" | AccessOverride)}
-          className="rounded-lg border border-[color:var(--border)] bg-[color:var(--neutral-50)] px-2 py-1.5 text-xs font-medium text-[color:var(--neutral-black)] disabled:opacity-50"
+          className="w-full max-w-44 rounded-lg border border-[color:var(--border)] bg-[color:var(--neutral-50)] px-2 py-1.5 text-xs font-medium text-[color:var(--neutral-black)] disabled:opacity-50"
           title="Accès au cours de cet apprenant"
         >
           <option value="auto">Automatique</option>
@@ -183,19 +180,19 @@ export function EnrollmentRow({
           {accessError ? `❌ ${accessError}` : access.label}
         </div>
       </td>
-      <td className="px-4 py-4 text-xs">
-        <div className="flex items-center gap-1.5 whitespace-nowrap">
+      <td className="px-3 py-4 text-xs">
+        <div className="flex flex-col items-stretch gap-1.5">
           {statusMsg ? (
-            <span className="font-medium text-xs text-[color:var(--accent-dark)]">{statusMsg}</span>
+            <span className="font-medium text-[color:var(--accent-dark)]">{statusMsg}</span>
           ) : (
             <button
               type="button"
               disabled={sending}
               onClick={() => handleRemind(paid ? "payment" : "registration")}
-              className="inline-flex items-center gap-1 rounded-lg border border-[color:var(--border)] bg-[color:var(--neutral-50)] px-2.5 py-1.5 font-medium text-[color:var(--neutral-black)] transition hover:border-[color:var(--accent)] hover:bg-[color:var(--accent-lightest)] disabled:opacity-50 cursor-pointer"
+              className="inline-flex cursor-pointer items-center justify-center gap-1 whitespace-nowrap rounded-lg border border-[color:var(--border)] bg-[color:var(--neutral-50)] px-2.5 py-1.5 font-medium text-[color:var(--neutral-black)] transition hover:border-[color:var(--accent)] hover:bg-[color:var(--accent-lightest)] disabled:opacity-50"
               title={paid ? "Relancer paiement tranches suivantes" : "Relancer paiement inscription"}
             >
-              <span>💬</span>
+              <span aria-hidden>💬</span>
               <span>{paid ? "Relance solde" : "Relancer"}</span>
             </button>
           )}
@@ -204,10 +201,10 @@ export function EnrollmentRow({
             <button
               type="button"
               onClick={() => onGrantCoins({ id: enrollment.id, name: enrollment.fullName })}
-              className="inline-flex items-center gap-1 rounded-lg border border-amber-300 bg-amber-50 px-2 py-1.5 font-medium text-amber-900 transition hover:bg-amber-100 active:scale-95 cursor-pointer shadow-2xs"
+              className="inline-flex cursor-pointer items-center justify-center gap-1 whitespace-nowrap rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-1.5 font-medium text-amber-900 shadow-2xs transition hover:bg-amber-100 active:scale-95"
               title="Offrir des coins bonus pour les templates UI8"
             >
-              <span>🪙</span>
+              <span aria-hidden>🪙</span>
               <span className="font-semibold">+Coins</span>
             </button>
           )}
