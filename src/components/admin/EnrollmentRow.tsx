@@ -10,10 +10,13 @@ import { PaymentStatusBadge } from "@/components/admin/PaymentStatusBadge";
 export function EnrollmentRow({
   enrollment,
   compact = false,
+  coins,
   onGrantCoins,
 }: {
   enrollment: Enrollment;
   compact?: boolean;
+  /** Solde du portefeuille ; absent si l'apprenant ne l'a pas encore ouvert. */
+  coins?: number;
   onGrantCoins?: (student: { id: string; name: string }) => void;
 }) {
   const [sending, setSending] = useState(false);
@@ -141,6 +144,15 @@ export function EnrollmentRow({
         >
           {accessError ? `❌ ${accessError}` : access.label}
         </div>
+      </td>
+      <td className="px-4 py-4 text-sm">
+        {coins === undefined ? (
+          <span className="text-[color:var(--neutral-400)]" title="Portefeuille pas encore ouvert">
+            —
+          </span>
+        ) : (
+          <span className="font-semibold text-amber-700">🪙 {coins.toLocaleString("fr-FR")}</span>
+        )}
       </td>
       <td className="px-4 py-4 text-xs text-[color:var(--neutral-500)]">
         {new Date(enrollment.createdAt).toLocaleDateString("fr-FR", {

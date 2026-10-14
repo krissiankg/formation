@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import type { Enrollment } from "@/lib/types";
 import { PageHeader } from "@/components/espace/shared";
 import { EnrollmentRow } from "@/components/admin/EnrollmentRow";
@@ -9,7 +10,14 @@ import { formatFcfa } from "@/lib/format";
 import { formation } from "@/lib/config/formation";
 import { GrantCoinsModal } from "@/components/admin/GrantCoinsModal";
 
-export function EnrollmentsPanel({ enrollments }: { enrollments: Enrollment[] }) {
+export function EnrollmentsPanel({
+  enrollments,
+  coinBalances,
+}: {
+  enrollments: Enrollment[];
+  coinBalances: Record<string, number>;
+}) {
+  const router = useRouter();
   const stats = getAdminStats(enrollments, []);
   const [grantTarget, setGrantTarget] = useState<{ id: string; name: string } | "all" | null>(null);
 
@@ -65,6 +73,7 @@ export function EnrollmentsPanel({ enrollments }: { enrollments: Enrollment[] })
                   <th className="px-4 py-3 font-medium">Statut</th>
                   <th className="px-4 py-3 font-medium">Montant</th>
                   <th className="px-4 py-3 font-medium">Accès cours</th>
+                  <th className="px-4 py-3 font-medium">Coins</th>
                   <th className="px-4 py-3 font-medium">Date</th>
                   <th className="px-4 py-3 font-medium">Action</th>
                 </tr>
@@ -74,6 +83,7 @@ export function EnrollmentsPanel({ enrollments }: { enrollments: Enrollment[] })
                   <EnrollmentRow
                     key={e.id}
                     enrollment={e}
+                    coins={coinBalances[e.id]}
                     onGrantCoins={(student) => setGrantTarget(student)}
                   />
                 ))}
@@ -87,6 +97,7 @@ export function EnrollmentsPanel({ enrollments }: { enrollments: Enrollment[] })
       <GrantCoinsModal
         target={grantTarget}
         onClose={() => setGrantTarget(null)}
+        onSuccess={() => router.refresh()}
       />
     </div>
   );

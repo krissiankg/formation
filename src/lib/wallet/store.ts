@@ -3,6 +3,13 @@ import type { StudentWallet, CoinTransaction, UnlockedFile } from "@/lib/wallet/
 
 const WELCOME_BONUS_COINS = 20;
 
+/** Solde en coins de chaque apprenant qui a déjà un portefeuille (clé = enrollment_id). */
+export async function listWalletBalances(): Promise<Record<string, number>> {
+  const { data, error } = await getSupabaseAdmin().from("student_wallets").select("enrollment_id, balance_coins");
+  if (error) throw error;
+  return Object.fromEntries((data ?? []).map((w) => [w.enrollment_id, w.balance_coins]));
+}
+
 /**
  * Récupère le portefeuille d'un étudiant. S'il n'existe pas encore, il est créé avec 20 coins offerts.
  */
