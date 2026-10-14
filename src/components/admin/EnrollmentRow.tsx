@@ -28,6 +28,16 @@ export function EnrollmentRow({
 
   const reg = enrollment.payments.find((p) => p.kind === "registration");
   const paid = reg?.status === "paid";
+  const isPaidKind = (kind: string) => enrollment.payments.some((p) => p.kind === kind && p.status === "paid");
+  const paidTotal = enrollment.payments.filter((p) => p.status === "paid").reduce((sum, p) => sum + p.amount, 0);
+  const paidPercent = Math.min(100, Math.round((paidTotal / formation.totalPrice) * 100));
+  const stage = isPaidKind("month1")
+    ? { label: "Soldé ✓", done: true }
+    : isPaidKind("start")
+      ? { label: "1re tranche payée", done: false }
+      : paid
+        ? { label: "Inscription payée", done: false }
+        : { label: "Inscription en attente", done: false };
   const access = getCourseAccess({
     payments: enrollment.payments,
     accessOverride: override === "auto" ? undefined : override,
@@ -112,14 +122,42 @@ export function EnrollmentRow({
           <span className="text-xs">↗</span>
         </a>
       </td>
-      <td className="px-4 py-4 text-sm">
+      <td className="whitespace-nowrap px-4 py-4 text-sm">
         {formation.schedule[enrollment.schedule].label}
       </td>
       <td className="px-4 py-4">
-        <PaymentStatusBadge paid={paid} />
+        <div className="whitespace-nowrap text-sm font-medium text-[color:var(--neutral-black)]">
+          {paidTotal.toLocaleString("fr-FR")}
+          <span className="font-normal text-[color:var(--neutral-500)]"> / {formatFcfa(formation.totalPrice)}</span>
+        </div>
+        <div className="mt-1.5 h-1.5 w-32 overflow-hidden rounded-full bg-[color:var(--neutral-200)]">
+          <div
+            className={`h-full rounded-full ${stage.done ? "bg-[#2e7d32]" : "bg-[color:var(--accent)]"}`}
+            style={{ width: `${paidPercent}%` }}
+          />
+        </div>
+        <div className={`mt-1 whitespace-nowrap text-[11px] ${stage.done ? "text-[#2e5a36]" : "text-[color:var(--neutral-500)]"}`}>
+          {stage.label}
+        </div>
       </td>
-      <td className="px-4 py-4 text-sm text-[color:var(--neutral-600)]">
-        {paid ? formatFcfa(reg?.amount ?? formation.registrationFee) : "—"}
+      <td className="whitespace-nowrap px-4 py-4 text-sm">
+        {coins === undefined ? (
+          <span className="text-[color:var(--neutral-400)]" title="Portefeuille pas encore ouvert">
+            —
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1 font-semibold text-amber-700">
+            <span aria-hidden>🪙</span>
+            {coins.toLocaleString("fr-FR")}
+          </span>
+        )}
+      </td>
+      <td className="whitespace-nowrap px-4 py-4 text-xs text-[color:var(--neutral-500)]">
+        {new Date(enrollment.createdAt).toLocaleDateString("fr-FR", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        })}
       </td>
       <td className="px-4 py-4 text-xs">
         <select
@@ -145,24 +183,8 @@ export function EnrollmentRow({
           {accessError ? `❌ ${accessError}` : access.label}
         </div>
       </td>
-      <td className="px-4 py-4 text-sm">
-        {coins === undefined ? (
-          <span className="text-[color:var(--neutral-400)]" title="Portefeuille pas encore ouvert">
-            —
-          </span>
-        ) : (
-          <span className="font-semibold text-amber-700">🪙 {coins.toLocaleString("fr-FR")}</span>
-        )}
-      </td>
-      <td className="px-4 py-4 text-xs text-[color:var(--neutral-500)]">
-        {new Date(enrollment.createdAt).toLocaleDateString("fr-FR", {
-          day: "numeric",
-          month: "short",
-          year: "numeric",
-        })}
-      </td>
       <td className="px-4 py-4 text-xs">
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 whitespace-nowrap">
           {statusMsg ? (
             <span className="font-medium text-xs text-[color:var(--accent-dark)]">{statusMsg}</span>
           ) : (

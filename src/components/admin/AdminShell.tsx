@@ -36,10 +36,10 @@ const sections: { title: string | null; items: NavItem[] }[] = [
 ];
 
 const externalLinks = [
-  { label: "Voir l'espace apprenant", href: "/espace", external: false },
-  { label: "Base de données (Supabase)", href: "https://supabase.com/dashboard/project/xnoaghfvrccbihksttfe", external: true },
-  { label: "WhatsApp (Evolution)", href: "https://evolution.guelichweb.store/manager", external: true },
-  { label: "Site public", href: "/", external: false },
+  { label: "Voir l'espace apprenant", href: "/espace" },
+  { label: "Base de données (Supabase)", href: "https://supabase.com/dashboard/project/xnoaghfvrccbihksttfe" },
+  { label: "WhatsApp (Evolution)", href: "https://evolution.guelichweb.store/manager" },
+  { label: "Site public", href: "/" },
 ];
 
 function isActive(pathname: string, href: string) {
@@ -108,7 +108,8 @@ function FooterLinks({ onLogout, loggingOut }: { onLogout: () => void; loggingOu
         <a
           key={link.href}
           href={link.href}
-          {...(link.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+          target="_blank"
+          rel="noopener noreferrer"
           className="block rounded-lg px-3 py-1.5 text-xs text-[color:var(--neutral-600)] transition hover:bg-[color:var(--neutral-100)] hover:text-[color:var(--neutral-black)]"
         >
           {link.label} ↗
