@@ -67,14 +67,12 @@ export function EnrollmentsPanel({
             <table className="min-w-full text-left text-sm">
               <thead className="bg-[color:var(--neutral-100)] font-mono text-[10px] uppercase tracking-[0.14em] text-[color:var(--neutral-500)]">
                 <tr>
-                  <th className="whitespace-nowrap px-4 py-3 font-medium">Apprenant</th>
-                  <th className="whitespace-nowrap px-4 py-3 font-medium">WhatsApp</th>
-                  <th className="whitespace-nowrap px-4 py-3 font-medium">Créneau</th>
-                  <th className="whitespace-nowrap px-4 py-3 font-medium">Paiements</th>
-                  <th className="whitespace-nowrap px-4 py-3 font-medium">Coins</th>
-                  <th className="whitespace-nowrap px-4 py-3 font-medium">Inscrit le</th>
-                  <th className="whitespace-nowrap px-4 py-3 font-medium">Accès cours</th>
-                  <th className="whitespace-nowrap px-4 py-3 font-medium">Action</th>
+                  <th className="px-3 py-3 font-medium">Apprenant</th>
+                  <th className="px-3 py-3 font-medium">Créneau</th>
+                  <th className="px-3 py-3 font-medium">Paiements</th>
+                  <th className="px-3 py-3 font-medium">Coins</th>
+                  <th className="px-3 py-3 font-medium">Accès cours</th>
+                  <th className="px-3 py-3 font-medium">Action</th>
                 </tr>
               </thead>
               <tbody>
