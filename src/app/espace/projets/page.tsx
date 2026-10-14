@@ -4,7 +4,7 @@ import { StudentProjectsClient } from "@/components/espace/StudentProjectsClient
 import { getStudentContext } from "@/lib/store/student-context";
 
 export const metadata = {
-  title: "Mes Projets SaaS — FORGEIA",
+  title: "Mes projets — FORGEIA",
 };
 
 export const dynamic = "force-dynamic";

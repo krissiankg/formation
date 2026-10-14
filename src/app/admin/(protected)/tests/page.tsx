@@ -4,7 +4,7 @@ import { listLessons } from "@/lib/store/programme";
 import { brand } from "@/lib/config/formation";
 
 export const metadata = {
-  title: `Tests & Quiz — Admin ${brand.name}`,
+  title: `Quiz — Admin ${brand.name}`,
 };
 
 export const dynamic = "force-dynamic";

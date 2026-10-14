@@ -19,6 +19,8 @@ interface StudentTopbarProps {
   loggingOut?: boolean;
   onToggleMobile?: () => void;
   mobileOpen?: boolean;
+  /** Affiche une pastille sur le bouton Menu mobile quand une action attend l'apprenant. */
+  menuBadge?: boolean;
 }
 
 export function StudentTopbar({
@@ -27,6 +29,7 @@ export function StudentTopbar({
   loggingOut,
   onToggleMobile,
   mobileOpen = false,
+  menuBadge = false,
 }: StudentTopbarProps) {
   const [currentUser, setCurrentUser] = useState(student);
   const [balance, setBalance] = useState<number | null>(null);
@@ -103,9 +106,12 @@ export function StudentTopbar({
             <button
               type="button"
               onClick={onToggleMobile}
-              className="lg:hidden shrink-0 inline-flex items-center gap-1.5 rounded-lg border border-[color:var(--border)] bg-white px-2.5 py-1.5 text-xs font-semibold text-[color:var(--neutral-800)] shadow-2xs hover:bg-[color:var(--neutral-100)] transition cursor-pointer"
+              className="relative lg:hidden shrink-0 inline-flex items-center gap-1.5 rounded-lg border border-[color:var(--border)] bg-white px-2.5 py-1.5 text-xs font-semibold text-[color:var(--neutral-800)] shadow-2xs hover:bg-[color:var(--neutral-100)] transition cursor-pointer"
               aria-label="Ouvrir le menu de navigation"
             >
+              {menuBadge && !mobileOpen ? (
+                <span className="absolute -right-1 -top-1 size-2.5 rounded-full bg-[color:var(--accent)] ring-2 ring-white" aria-hidden />
+              ) : null}
               <span className="text-sm leading-none">{mobileOpen ? "✕" : "☰"}</span>
               <span className="hidden xs:inline text-[11px]">{mobileOpen ? "Fermer" : "Menu"}</span>
             </button>

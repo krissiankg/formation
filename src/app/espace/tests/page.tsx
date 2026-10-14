@@ -6,7 +6,7 @@ import { getStudentContext } from "@/lib/store/student-context";
 import { getStudentQuizzes } from "@/lib/quiz/store";
 
 export const metadata = {
-  title: `Tests & Quiz — ${brand.name}`,
+  title: `Quiz — ${brand.name}`,
 };
 
 export const dynamic = "force-dynamic";

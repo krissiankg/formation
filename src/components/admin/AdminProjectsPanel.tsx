@@ -58,7 +58,7 @@ export function AdminProjectsPanel({ initialProjects }: { initialProjects: Stude
             Projets &amp; Livrables SaaS des Apprenants
           </h2>
           <p className="mt-1 text-sm text-[color:var(--neutral-600)]">
-            Évaluez les projets SaaS soumis, donnez un score, un feedback et notifiez l'élève automatiquement par WhatsApp.
+            Évaluez les projets soumis (landing page, site vitrine, SaaS), donnez un score, un feedback et notifiez l'élève automatiquement par WhatsApp.
           </p>
         </div>
       </div>

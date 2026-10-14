@@ -39,12 +39,14 @@ export const formation = {
       label: "Au démarrage",
       amount: 25_000,
       due: "Premier jour de formation (31 octobre / 1er novembre 2026)",
+      dueDate: "2026-10-31",
     },
     {
       id: "month1",
       label: "Solde",
       amount: 50_000,
       due: "Première semaine de décembre 2026",
+      dueDate: "2026-12-01",
     },
   ],
   outcomes: [
