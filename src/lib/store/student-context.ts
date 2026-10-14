@@ -1,3 +1,4 @@
+import { getCourseAccess } from "@/lib/access/course-access";
 import { getSessionEnrollment } from "@/lib/auth/session";
 import { listPublishedContent } from "@/lib/store/content";
 import { getStudentProgress, initStudentProgress } from "@/lib/store/progress";
@@ -16,12 +17,14 @@ export async function getStudentContext() {
     await initStudentProgress(enrollment.id);
   }
 
+  const access = getCourseAccess(enrollment);
+
   const [progress, nextSession, todos, contents] = await Promise.all([
-    getStudentProgress(enrollment.id),
+    getStudentProgress(enrollment.id, access),
     getNextSession(enrollment.schedule),
     getStudentTodos(enrollment.id),
     listPublishedContent(),
   ]);
 
-  return { enrollment, progress, nextSession, todos, contents, isPaid };
+  return { enrollment, progress, nextSession, todos, contents, isPaid, access };
 }

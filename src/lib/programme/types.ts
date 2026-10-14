@@ -48,6 +48,8 @@ export type CurriculumModule = FormationModule & {
   progress: number;
   status: ModuleStatus;
   lessons: CurriculumLesson[];
+  /** Présent si le module est verrouillé par l'accès (paiement ou choix admin) : ce qui le débloquera. */
+  lockMessage?: string;
 };
 
 export type StudentProgress = {

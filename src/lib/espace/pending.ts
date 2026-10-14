@@ -1,3 +1,4 @@
+import { getCourseAccess } from "@/lib/access/course-access";
 import { getInstallmentConfig } from "@/lib/programme/installments";
 import { getStudentQuizzes } from "@/lib/quiz/store";
 import { getStudentProgress } from "@/lib/store/progress";
@@ -31,7 +32,7 @@ export async function getStudentPending(enrollment: Enrollment): Promise<Student
   const paymentDue = isPaymentDue(enrollment);
   try {
     const [progress, quizzes] = await Promise.all([
-      getStudentProgress(enrollment.id),
+      getStudentProgress(enrollment.id, getCourseAccess(enrollment)),
       getStudentQuizzes(enrollment.id),
     ]);
     const unlocked = new Set(

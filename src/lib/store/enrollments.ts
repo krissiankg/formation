@@ -1,5 +1,5 @@
 import { randomBytes, scryptSync, timingSafeEqual } from "crypto";
-import type { Enrollment, EnrollmentStatus, PaymentStatus, PaymentKind } from "@/lib/types";
+import type { AccessOverride, Enrollment, EnrollmentStatus, PaymentStatus, PaymentKind } from "@/lib/types";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { initStudentProgress } from "@/lib/store/progress";
 
@@ -12,6 +12,7 @@ type EnrollmentRow = {
   status: EnrollmentStatus;
   avatar_url?: string | null;
   password_hash?: string | null;
+  access_override?: AccessOverride | null;
   payments: Enrollment["payments"];
   created_at: string;
 };
@@ -26,6 +27,7 @@ function mapRow(row: EnrollmentRow): Enrollment {
     status: row.status,
     avatarUrl: row.avatar_url ?? undefined,
     passwordHash: row.password_hash ?? undefined,
+    accessOverride: row.access_override ?? undefined,
     createdAt: row.created_at,
     payments: row.payments ?? [],
   };
@@ -214,3 +216,16 @@ export async function updateEnrollmentProfile(
 
 export type { PaymentKind };
 
+
+/** Choix admin sur l'accès à la formation (null = automatique, selon les paiements). */
+export async function setAccessOverride(id: string, override: AccessOverride | null) {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from("enrollments")
+    .update({ access_override: override })
+    .eq("id", id)
+    .select("*")
+    .single();
+  if (error) throw error;
+  return mapRow(data as EnrollmentRow);
+}

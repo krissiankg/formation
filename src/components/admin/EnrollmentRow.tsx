@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { formation } from "@/lib/config/formation";
 import { formatFcfa } from "@/lib/format";
-import type { Enrollment } from "@/lib/types";
+import type { AccessOverride, Enrollment } from "@/lib/types";
+import { getCourseAccess } from "@/lib/access/course-access";
 import { PaymentStatusBadge } from "@/components/admin/PaymentStatusBadge";
 
 export function EnrollmentRow({
@@ -18,8 +19,38 @@ export function EnrollmentRow({
   const [sending, setSending] = useState(false);
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
 
+  const [override, setOverride] = useState<"auto" | AccessOverride>(enrollment.accessOverride ?? "auto");
+  const [savingAccess, setSavingAccess] = useState(false);
+  const [accessError, setAccessError] = useState<string | null>(null);
+
   const reg = enrollment.payments.find((p) => p.kind === "registration");
   const paid = reg?.status === "paid";
+  const access = getCourseAccess({
+    payments: enrollment.payments,
+    accessOverride: override === "auto" ? undefined : override,
+  });
+
+  async function handleAccessChange(next: "auto" | AccessOverride) {
+    const previous = override;
+    setOverride(next);
+    setSavingAccess(true);
+    setAccessError(null);
+    try {
+      const res = await fetch("/api/admin/enrollments/access", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: enrollment.id, override: next }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erreur");
+    } catch (err: any) {
+      setOverride(previous);
+      setAccessError(err.message || "Erreur");
+      setTimeout(() => setAccessError(null), 3500);
+    } finally {
+      setSavingAccess(false);
+    }
+  }
 
   async function handleRemind(type: "registration" | "payment") {
     setSending(true);
@@ -86,6 +117,30 @@ export function EnrollmentRow({
       </td>
       <td className="px-4 py-4 text-sm text-[color:var(--neutral-600)]">
         {paid ? formatFcfa(reg?.amount ?? formation.registrationFee) : "—"}
+      </td>
+      <td className="px-4 py-4 text-xs">
+        <select
+          value={override}
+          disabled={savingAccess}
+          onChange={(e) => handleAccessChange(e.target.value as "auto" | AccessOverride)}
+          className="rounded-lg border border-[color:var(--border)] bg-[color:var(--neutral-50)] px-2 py-1.5 text-xs font-medium text-[color:var(--neutral-black)] disabled:opacity-50"
+          title="Accès au cours de cet apprenant"
+        >
+          <option value="auto">Automatique</option>
+          <option value="full">Accès complet forcé</option>
+          <option value="blocked">Accès bloqué</option>
+        </select>
+        <div
+          className={`mt-1 text-[11px] ${
+            access.blocked
+              ? "text-red-600"
+              : access.overridden
+                ? "text-[color:var(--accent-dark)]"
+                : "text-[color:var(--neutral-500)]"
+          }`}
+        >
+          {accessError ? `❌ ${accessError}` : access.label}
+        </div>
       </td>
       <td className="px-4 py-4 text-xs text-[color:var(--neutral-500)]">
         {new Date(enrollment.createdAt).toLocaleDateString("fr-FR", {

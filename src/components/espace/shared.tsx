@@ -194,6 +194,16 @@ export function ProgrammeList({ modules }: { modules: CurriculumModule[] }) {
               style={{ width: `${mod.progress}%` }}
             />
           </div>
+          {mod.lockMessage ? (
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[color:var(--border)] bg-[color:var(--accent-lightest)] px-5 py-3">
+              <p className="text-sm text-[color:var(--accent-darkest)]">🔒 {mod.lockMessage}</p>
+              {mod.lockMessage.startsWith("Accès suspendu") ? null : (
+                <Link href="/espace/paiements" className="btn-primary !py-1.5 text-xs">
+                  Payer maintenant →
+                </Link>
+              )}
+            </div>
+          ) : null}
           <ul className="divide-y divide-[color:var(--border)]">
             {mod.lessons.map((lesson) => (
               <LessonRow key={lesson.id} lesson={lesson} />

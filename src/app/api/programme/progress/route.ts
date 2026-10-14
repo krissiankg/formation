@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getCourseAccess } from "@/lib/access/course-access";
 import { getSessionEnrollment } from "@/lib/auth/session";
 import { getStudentProgress, markLessonCompleted } from "@/lib/store/progress";
 
@@ -11,7 +12,7 @@ export async function POST(request: Request) {
 
   try {
     const { lessonId } = (await request.json()) as { lessonId?: string };
-    const progress = await getStudentProgress(enrollment.id);
+    const progress = await getStudentProgress(enrollment.id, getCourseAccess(enrollment));
     const lesson = progress.modules.flatMap((m) => m.lessons).find((l) => l.id === lessonId);
 
     if (!lesson) {

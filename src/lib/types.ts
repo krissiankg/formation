@@ -48,6 +48,8 @@ export type EnrollmentStatus =
 
 export type PaymentKind = "registration" | "start" | "month1" | "month3";
 
+export type AccessOverride = "full" | "blocked";
+
 export interface Enrollment {
   id: string;
   fullName: string;
@@ -57,6 +59,8 @@ export interface Enrollment {
   status: EnrollmentStatus;
   avatarUrl?: string;
   passwordHash?: string;
+  /** Choix admin prioritaire sur les paiements ; absent = automatique. */
+  accessOverride?: AccessOverride;
   createdAt: string;
   payments: {
     kind: PaymentKind;
