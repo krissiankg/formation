@@ -18,7 +18,7 @@ export default async function LessonPage({ params }: { params: Promise<{ lessonI
   if (!ctx) redirect("/connexion");
 
   const ordered = ctx.progress.modules.flatMap((m) =>
-    m.lessons.map((l) => ({ ...l, moduleLabel: m.monthLabel, moduleTitle: m.title })),
+    m.lessons.map((l) => ({ ...l, moduleLabel: m.monthLabel, moduleTitle: m.title, lockMessage: m.lockMessage })),
   );
   const index = ordered.findIndex((l) => l.id === lessonId);
   if (index === -1) notFound();
@@ -40,7 +40,17 @@ export default async function LessonPage({ params }: { params: Promise<{ lessonI
       </p>
       <h1 className="font-display mt-2 text-2xl tracking-tight sm:text-3xl">{lesson.title}</h1>
 
-      {locked ? (
+      {lesson.lockMessage ? (
+        <div className="mt-8 rounded-2xl border border-[color:var(--accent)] bg-[color:var(--accent-lightest)] px-6 py-12 text-center">
+          <p className="font-display text-xl">🔒 Contenu réservé</p>
+          <p className="mx-auto mt-2 max-w-md text-sm text-[color:var(--neutral-600)]">{lesson.lockMessage}</p>
+          {ctx.access.blocked ? null : (
+            <Link href="/espace/paiements" className="btn-primary mt-6 inline-flex !py-2.5 text-sm">
+              Payer maintenant →
+            </Link>
+          )}
+        </div>
+      ) : locked ? (
         <div className="mt-8 rounded-2xl border border-dashed border-[color:var(--border)] bg-[color:var(--neutral-50)] px-6 py-12 text-center">
           <p className="font-display text-xl">Bientôt disponible</p>
           <p className="mx-auto mt-2 max-w-md text-sm text-[color:var(--neutral-500)]">

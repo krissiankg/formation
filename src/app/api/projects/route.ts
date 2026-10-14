@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getSessionEnrollment } from "@/lib/auth/session";
 import { createProject, getStudentProjects } from "@/lib/projects/store";
 import { notifyAdminWhatsApp } from "@/lib/integrations";
+import { canSubmitProjects } from "@/lib/access/server";
 
 export async function GET() {
   try {
@@ -23,6 +24,13 @@ export async function POST(request: Request) {
     const enrollment = await getSessionEnrollment();
     if (!enrollment) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+    }
+
+    if (!canSubmitProjects(enrollment)) {
+      return NextResponse.json(
+        { error: "Le dépôt de projets s'ouvre avec le Mois 1, après le paiement de la 1re tranche." },
+        { status: 403 },
+      );
     }
 
     const body = await request.json();

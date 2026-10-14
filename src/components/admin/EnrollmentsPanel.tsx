@@ -64,6 +64,7 @@ export function EnrollmentsPanel({ enrollments }: { enrollments: Enrollment[] })
                   <th className="px-4 py-3 font-medium">Créneau</th>
                   <th className="px-4 py-3 font-medium">Statut</th>
                   <th className="px-4 py-3 font-medium">Montant</th>
+                  <th className="px-4 py-3 font-medium">Accès cours</th>
                   <th className="px-4 py-3 font-medium">Date</th>
                   <th className="px-4 py-3 font-medium">Action</th>
                 </tr>

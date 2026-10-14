@@ -1,4 +1,5 @@
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import { applyCourseAccess, type CourseAccess } from "@/lib/access/course-access";
 import { buildStudentProgress } from "@/lib/programme/compute";
 import type { StudentProgress } from "@/lib/programme/types";
 import { listLessons, listModules } from "@/lib/store/programme";
@@ -21,18 +22,23 @@ export async function getLessonProgressRows(enrollmentId: string) {
   return (data ?? []) as ProgressRow[];
 }
 
-export async function getStudentProgress(enrollmentId: string): Promise<StudentProgress> {
+/**
+ * Progression de l'apprenant. Avec `access`, les modules non couverts par ses paiements
+ * (ou bloqués par l'admin) sont verrouillés : c'est la version à afficher et à faire respecter.
+ */
+export async function getStudentProgress(enrollmentId: string, access?: CourseAccess): Promise<StudentProgress> {
   const [modules, lessons, rows] = await Promise.all([
     listModules(),
     listLessons(),
     getLessonProgressRows(enrollmentId),
   ]);
 
-  return buildStudentProgress(
+  const progress = buildStudentProgress(
     modules,
     lessons,
     rows.map((r) => ({ lessonId: r.lesson_id, status: r.status })),
   );
+  return access ? applyCourseAccess(progress, access) : progress;
 }
 
 export async function markLessonCompleted(enrollmentId: string, lessonId: string) {

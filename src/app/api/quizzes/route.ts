@@ -6,6 +6,8 @@ import {
   submitQuizAttempt,
 } from "@/lib/quiz/store";
 import { notifyWhatsApp } from "@/lib/integrations";
+import { getCourseAccess } from "@/lib/access/course-access";
+import { canAccessQuiz, getAccessibleLessonIds } from "@/lib/access/server";
 
 export async function GET(request: Request) {
   try {
@@ -21,6 +23,9 @@ export async function GET(request: Request) {
       const quiz = await getQuizWithQuestions(quizId);
       if (!quiz) {
         return NextResponse.json({ error: "Quiz introuvable" }, { status: 404 });
+      }
+      if (!(await canAccessQuiz(enrollment, quiz.lessonId))) {
+        return NextResponse.json({ error: "Ce quiz se débloque avec ton paiement." }, { status: 403 });
       }
 
       // Masquer la bonne réponse avant soumission pour empêcher la triche
@@ -40,7 +45,8 @@ export async function GET(request: Request) {
       });
     }
 
-    const quizzes = await getStudentQuizzes(enrollment.id);
+    const accessible = await getAccessibleLessonIds(getCourseAccess(enrollment));
+    const quizzes = (await getStudentQuizzes(enrollment.id)).filter((q) => q.lessonId && accessible.has(q.lessonId));
     return NextResponse.json({ quizzes });
   } catch (error) {
     console.error("Erreur GET /api/quizzes:", error);
@@ -60,6 +66,14 @@ export async function POST(request: Request) {
 
     if (!quizId || !Array.isArray(answers)) {
       return NextResponse.json({ error: "Données de soumission invalides" }, { status: 400 });
+    }
+
+    const quiz = await getQuizWithQuestions(quizId);
+    if (!quiz) {
+      return NextResponse.json({ error: "Quiz introuvable" }, { status: 404 });
+    }
+    if (!(await canAccessQuiz(enrollment, quiz.lessonId))) {
+      return NextResponse.json({ error: "Ce quiz se débloque avec ton paiement." }, { status: 403 });
     }
 
     const result = await submitQuizAttempt(enrollment.id, quizId, answers);
