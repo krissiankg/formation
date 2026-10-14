@@ -194,7 +194,7 @@ export function AdminQuizzesPanel({ initialQuizzes, initialAttempts, lessons }: 
       {/* En-tête */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-display text-2xl font-semibold tracking-tight">Tests & Quiz</h1>
+          <h1 className="font-display text-2xl font-semibold tracking-tight">Quiz</h1>
           <p className="mt-1 text-sm text-[color:var(--neutral-600)]">
             Crée, gère les tests d'évaluation avec notation immédiate et suis les résultats des apprenants.
           </p>

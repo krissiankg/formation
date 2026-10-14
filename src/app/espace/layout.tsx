@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { StudentShell } from "@/components/espace/StudentShell";
 import { getSessionEnrollment } from "@/lib/auth/session";
 import { formation } from "@/lib/config/formation";
+import { getStudentPending } from "@/lib/espace/pending";
 
 export default async function EspaceLayout({
   children,
@@ -12,9 +13,11 @@ export default async function EspaceLayout({
   if (!enrollment) redirect("/connexion");
 
   const firstName = enrollment.fullName.trim().split(/\s+/)[0] || "Apprenant";
+  const pending = await getStudentPending(enrollment);
 
   return (
     <StudentShell
+      pending={pending}
       student={{
         firstName,
         fullName: enrollment.fullName,

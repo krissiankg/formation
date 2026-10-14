@@ -2,7 +2,7 @@ import { AdminProjectsPanel } from "@/components/admin/AdminProjectsPanel";
 import { listAllProjects } from "@/lib/projects/store";
 
 export const metadata = {
-  title: "Projets SaaS — Admin FORGEIA",
+  title: "Projets à évaluer — Admin FORGEIA",
 };
 
 export const dynamic = "force-dynamic";

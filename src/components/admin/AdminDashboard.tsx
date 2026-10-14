@@ -37,7 +37,7 @@ export function AdminDashboard({
               Publier une ressource
             </Link>
             <Link href="/admin/tests" className="btn-ghost">
-              Gérer les tests & quiz
+              Gérer les quiz
             </Link>
             <Link href="/admin/programme" className="btn-ghost">
               Gérer le programme
