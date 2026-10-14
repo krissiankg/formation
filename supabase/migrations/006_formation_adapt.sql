@@ -1,3 +1,6 @@
+-- ATTENTION : SEED INITIAL, DEJA APPLIQUE (VPS et Supabase Cloud, 2026-10-13). NE PAS REAPPLIQUER :
+-- il ecraserait les lecons, quiz et seances modifies depuis le tableau de bord admin.
+-- Le contenu de la formation se gere desormais dans Admin > Programme / Tests / Seances.
 -- 006_formation_adapt.sql — GÉNÉRÉ par scripts/build-formation-migration.mjs, ne pas éditer à la main.
 -- Remplace le programme 3 mois par la formation ADAPT (2 mois) : modules, leçons, quiz, séances, préparation.
 begin;
