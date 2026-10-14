@@ -5,17 +5,41 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { brand } from "@/lib/config/formation";
+import type { PendingCounts } from "@/lib/admin/pending-counts";
 
-const nav = [
-  { id: "overview", label: "Tableau de bord", href: "/admin" },
-  { id: "inscrits", label: "Inscrits", href: "/admin/inscrits" },
-  { id: "projects", label: "Projets SaaS", href: "/admin/projets" },
-  { id: "testimonials", label: "Avis & Témoignages", href: "/admin/avis" },
-  { id: "programme", label: "Programme", href: "/admin/programme" },
-  { id: "tests", label: "Tests & Quiz", href: "/admin/tests" },
-  { id: "seances", label: "Séances", href: "/admin/seances" },
-  { id: "contenus", label: "Ressources", href: "/admin/contenus" },
-  { id: "todos", label: "À faire", href: "/admin/todos" },
+type NavItem = { label: string; href: string; badge?: keyof PendingCounts };
+
+// Menu organisé par grandes tâches : suivre les apprenants, construire la formation, gérer la bibliothèque.
+const sections: { title: string | null; items: NavItem[] }[] = [
+  { title: null, items: [{ label: "Tableau de bord", href: "/admin" }] },
+  {
+    title: "Apprenants",
+    items: [
+      { label: "Inscrits & paiements", href: "/admin/inscrits" },
+      { label: "Projets à évaluer", href: "/admin/projets", badge: "projects" },
+      { label: "Avis à modérer", href: "/admin/avis", badge: "testimonials" },
+    ],
+  },
+  {
+    title: "Formation",
+    items: [
+      { label: "Programme & leçons", href: "/admin/programme" },
+      { label: "Quiz", href: "/admin/tests" },
+      { label: "Calendrier des séances", href: "/admin/seances" },
+      { label: "Liste de préparation", href: "/admin/todos" },
+    ],
+  },
+  {
+    title: "Ressources",
+    items: [{ label: "Bibliothèque & fichiers", href: "/admin/contenus" }],
+  },
+];
+
+const externalLinks = [
+  { label: "Voir l'espace apprenant", href: "/espace", external: false },
+  { label: "Base de données (Supabase)", href: "https://supabase.com/dashboard/project/xnoaghfvrccbihksttfe", external: true },
+  { label: "WhatsApp (Evolution)", href: "https://evolution.guelichweb.store/manager", external: true },
+  { label: "Site public", href: "/", external: false },
 ];
 
 function isActive(pathname: string, href: string) {
@@ -23,11 +47,91 @@ function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function AdminShell({ children }: { children: React.ReactNode }) {
+function NavLinks({
+  pathname,
+  pending,
+  onNavigate,
+}: {
+  pathname: string;
+  pending: PendingCounts;
+  onNavigate?: () => void;
+}) {
+  return (
+    <div className="space-y-5">
+      {sections.map((section) => (
+        <div key={section.title ?? "home"}>
+          {section.title ? (
+            <p className="mb-1.5 px-3 font-mono text-[10px] uppercase tracking-[0.16em] text-[color:var(--neutral-500)]">
+              {section.title}
+            </p>
+          ) : null}
+          <div className="flex flex-col gap-0.5">
+            {section.items.map((item) => {
+              const active = isActive(pathname, item.href);
+              const count = item.badge ? pending[item.badge] : 0;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={onNavigate}
+                  className={`flex items-center justify-between gap-2 rounded-xl px-3 py-2 text-sm transition ${
+                    active
+                      ? "bg-[color:var(--neutral-black)] text-[color:var(--neutral-50)]"
+                      : "text-[color:var(--neutral-600)] hover:bg-[color:var(--neutral-100)] hover:text-[color:var(--neutral-black)]"
+                  }`}
+                >
+                  <span>{item.label}</span>
+                  {count > 0 ? (
+                    <span
+                      className={`min-w-5 rounded-full px-1.5 py-0.5 text-center text-[11px] font-semibold ${
+                        active ? "bg-[color:var(--neutral-50)] text-[color:var(--neutral-black)]" : "bg-[color:var(--accent)] text-white"
+                      }`}
+                      aria-label={`${count} en attente`}
+                    >
+                      {count}
+                    </span>
+                  ) : null}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function FooterLinks({ onLogout, loggingOut }: { onLogout: () => void; loggingOut: boolean }) {
+  return (
+    <div className="space-y-1 border-t border-[color:var(--border)] p-3">
+      {externalLinks.map((link) => (
+        <a
+          key={link.href}
+          href={link.href}
+          {...(link.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+          className="block rounded-lg px-3 py-1.5 text-xs text-[color:var(--neutral-600)] transition hover:bg-[color:var(--neutral-100)] hover:text-[color:var(--neutral-black)]"
+        >
+          {link.label} ↗
+        </a>
+      ))}
+      <button
+        type="button"
+        onClick={onLogout}
+        disabled={loggingOut}
+        className="mt-1 w-full rounded-lg border border-[color:var(--border)] px-3 py-2 text-center text-xs text-[color:var(--neutral-600)] transition hover:border-[color:var(--error)] hover:text-[color:var(--error)] disabled:opacity-60"
+      >
+        {loggingOut ? "Déconnexion…" : "Se déconnecter"}
+      </button>
+    </div>
+  );
+}
+
+export function AdminShell({ children, pending }: { children: React.ReactNode; pending: PendingCounts }) {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const totalPending = pending.projects + pending.testimonials;
 
   async function onLogout() {
     setLoggingOut(true);
@@ -45,7 +149,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       <div className="flex min-h-screen">
         <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-[color:var(--border)] bg-[color:var(--neutral-50)] lg:flex">
           <div className="border-b border-[color:var(--border)] px-5 py-5">
-            <Link href="/" className="flex items-center gap-2.5 group">
+            <Link href="/admin" className="flex items-center gap-2.5 group">
               <Image
                 src="/logo-color.png"
                 alt="Logo FORGEIA"
@@ -62,57 +166,11 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             </p>
           </div>
 
-          <nav className="flex flex-1 flex-col gap-1 p-3">
-            {nav.map((item) => {
-              const active = isActive(pathname, item.href);
-              return (
-                <Link
-                  key={item.id}
-                  href={item.href}
-                  className={`rounded-xl px-3 py-2.5 text-sm transition ${
-                    active
-                      ? "bg-[color:var(--neutral-black)] text-[color:var(--neutral-50)]"
-                      : "text-[color:var(--neutral-600)] hover:bg-[color:var(--neutral-100)] hover:text-[color:var(--neutral-black)]"
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
+          <nav className="flex-1 overflow-y-auto p-3">
+            <NavLinks pathname={pathname} pending={pending} />
           </nav>
 
-          <div className="space-y-2 border-t border-[color:var(--border)] p-4">
-            <a
-              href="https://supabase.guelichweb.store/login/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block rounded-lg border border-[color:var(--border)] px-3 py-2 text-center text-xs text-[color:var(--neutral-600)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--neutral-black)]"
-            >
-              Supabase Studio ↗
-            </a>
-            <a
-              href="https://evolution.guelichweb.store/manager"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block rounded-lg border border-[color:var(--border)] px-3 py-2 text-center text-xs text-[color:var(--neutral-600)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--neutral-black)]"
-            >
-              WhatsApp (Evolution) ↗
-            </a>
-            <Link
-              href="/"
-              className="block text-center text-xs text-[color:var(--neutral-500)] hover:text-[color:var(--accent-dark)]"
-            >
-              ← Retour au site public
-            </Link>
-            <button
-              type="button"
-              onClick={onLogout}
-              disabled={loggingOut}
-              className="w-full rounded-lg border border-[color:var(--border)] px-3 py-2 text-center text-xs text-[color:var(--neutral-600)] transition hover:border-[color:var(--error)] hover:text-[color:var(--error)] disabled:opacity-60"
-            >
-              {loggingOut ? "Déconnexion…" : "Se déconnecter"}
-            </button>
-          </div>
+          <FooterLinks onLogout={onLogout} loggingOut={loggingOut} />
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col">
@@ -121,48 +179,36 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
               <button
                 type="button"
                 onClick={() => setOpen((v) => !v)}
-                className="rounded-lg border border-[color:var(--border)] px-3 py-1.5 text-sm"
+                className="relative rounded-lg border border-[color:var(--border)] px-3 py-1.5 text-sm"
                 aria-label="Menu"
+                aria-expanded={open}
               >
-                Menu
+                {open ? "Fermer" : "Menu"}
+                {totalPending > 0 && !open ? (
+                  <span className="absolute -right-1.5 -top-1.5 size-4 rounded-full bg-[color:var(--accent)] text-[10px] font-semibold leading-4 text-white">
+                    {totalPending}
+                  </span>
+                ) : null}
               </button>
               <span className="font-display font-semibold">Admin</span>
             </div>
             <p className="hidden text-sm text-[color:var(--neutral-500)] lg:block">
-              Cohorte <span className="font-medium text-[color:var(--neutral-black)]">FORGE IA</span>{" "}
-              · {brand.tagline}
+              Cohorte <span className="font-medium text-[color:var(--neutral-black)]">FORGE IA</span> · {brand.tagline}
             </p>
-            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={onLogout}
-                disabled={loggingOut}
-                className="btn-ghost !px-2.5 sm:!px-3 !py-1.5 sm:!py-2 text-xs sm:text-sm"
-              >
-                {loggingOut ? "Déconnexion…" : "Déconnexion"}
-              </button>
-              <Link href="/espace" className="btn-ghost !px-2.5 sm:!px-3 !py-1.5 sm:!py-2 text-xs sm:text-sm">
-                <span className="hidden sm:inline">Espace </span>Apprenant ↗
-              </Link>
-            </div>
+            {totalPending > 0 ? (
+              <p className="hidden text-xs text-[color:var(--neutral-500)] lg:block">
+                <span className="font-semibold text-[color:var(--accent-dark)]">{totalPending}</span> élément
+                {totalPending > 1 ? "s" : ""} en attente
+              </p>
+            ) : null}
           </header>
 
           {open ? (
-            <div className="border-b border-[color:var(--border)] bg-[color:var(--neutral-50)] p-3 lg:hidden">
-              {nav.map((item) => (
-                <Link
-                  key={item.id}
-                  href={item.href}
-                  onClick={() => setOpen(false)}
-                  className={`block rounded-lg px-3 py-2.5 text-sm ${
-                    isActive(pathname, item.href)
-                      ? "bg-[color:var(--neutral-black)] text-[color:var(--neutral-50)]"
-                      : "text-[color:var(--neutral-700)] hover:bg-[color:var(--neutral-100)]"
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              ))}
+            <div className="border-b border-[color:var(--border)] bg-[color:var(--neutral-50)] lg:hidden">
+              <div className="p-3">
+                <NavLinks pathname={pathname} pending={pending} onNavigate={() => setOpen(false)} />
+              </div>
+              <FooterLinks onLogout={onLogout} loggingOut={loggingOut} />
             </div>
           ) : null}
 

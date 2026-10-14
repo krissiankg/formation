@@ -1,9 +1,11 @@
 import { AdminShell } from "@/components/admin/AdminShell";
+import { getPendingCounts } from "@/lib/admin/pending-counts";
 
-export default function AdminProtectedLayout({
+export default async function AdminProtectedLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <AdminShell>{children}</AdminShell>;
+  const pending = await getPendingCounts();
+  return <AdminShell pending={pending}>{children}</AdminShell>;
 }
