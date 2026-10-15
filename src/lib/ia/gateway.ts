@@ -71,10 +71,6 @@ type UsageCallback = (alias: string, usage: IaUsage | null, streamedChars: numbe
 
 /** Transmet une requête chat/completions au fournisseur, avec bascule vers le modèle de secours si besoin. */
 export async function forwardChatCompletion(payload: Record<string, unknown>, onUsage?: UsageCallback): Promise<Response> {
-  const provider = getIaProvider();
-  if (!provider.apiKey) return iaError(503, "Passerelle IA non configurée (clé du fournisseur manquante).");
-  const apiKey = provider.apiKey;
-
   const requested = typeof payload.model === "string" && payload.model ? payload.model : "forgeia-coder";
   if (!isPublicModel(requested)) {
     return iaError(
@@ -83,6 +79,9 @@ export async function forwardChatCompletion(payload: Record<string, unknown>, on
       "invalid_request_error",
     );
   }
+  const provider = getIaProvider();
+  if (!provider.apiKey) return iaError(503, "Passerelle IA non configurée (clé du fournisseur manquante).");
+  const apiKey = provider.apiKey;
   const model = provider.resolveModel(requested);
   const fallbackModel = provider.resolveModel(provider.fallbackAlias);
   const body = payload.stream === true ? { ...payload, stream_options: { include_usage: true } } : payload;
