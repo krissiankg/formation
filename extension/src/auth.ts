@@ -13,10 +13,11 @@ export function getKey(ctx: vscode.ExtensionContext): Thenable<string | undefine
   return ctx.secrets.get(SECRET_KEY);
 }
 
-export async function signIn(ctx: vscode.ExtensionContext, apiKey: string, baseUrl: string, firstName: string) {
+export async function signIn(ctx: vscode.ExtensionContext, apiKey: string, firstName: string) {
   await ctx.secrets.store(SECRET_KEY, apiKey);
   const home = homedir();
-  await writeKiloConfig(home, { apiKey, baseUrl });
+  // Toujours l'adresse officielle de la passerelle, jamais une adresse fournie par un serveur.
+  await writeKiloConfig(home, { apiKey, baseUrl: IA_BASE_URL });
   await installAdaptAgents(home, ctx.asAbsolutePath("agents"));
   changed.fire();
 
@@ -30,8 +31,8 @@ export async function signIn(ctx: vscode.ExtensionContext, apiKey: string, baseU
 
 export async function signInWithLinkToken(ctx: vscode.ExtensionContext, token: string) {
   try {
-    const { apiKey, baseUrl, firstName } = await exchangeLinkToken(token);
-    await signIn(ctx, apiKey, baseUrl, firstName);
+    const { apiKey, firstName } = await exchangeLinkToken(token);
+    await signIn(ctx, apiKey, firstName);
   } catch (error) {
     vscode.window.showErrorMessage(`Connexion FORGE IA impossible : ${(error as Error).message}`);
   }
@@ -49,7 +50,7 @@ export async function enterKey(ctx: vscode.ExtensionContext) {
   if (!apiKey) return;
   try {
     const me = await getMe(apiKey);
-    await signIn(ctx, apiKey, IA_BASE_URL, me.firstName);
+    await signIn(ctx, apiKey, me.firstName);
   } catch {
     vscode.window.showErrorMessage("Clé refusée par FORGE IA");
   }
