@@ -3,7 +3,6 @@ import { enterKey, openConnectPage, signInWithLinkToken, signOut } from "./auth"
 import { newProject, openDailyExercise, previewInBrowser, showMenu } from "./commands";
 import { createStatus } from "./status";
 
-const KILO_ID = "kilocode.kilo-code";
 const OLD_FORGEIA_ID = "forgeia.forgeia-code";
 
 let output: vscode.OutputChannel | undefined;
@@ -13,15 +12,9 @@ export function log(message: string) {
   output?.appendLine(`[${new Date().toLocaleTimeString("fr-FR")}] ${message}`);
 }
 
+// Kilo Code est une dépendance obligatoire (extensionDependencies) : s'il manque, VS Code propose
+// lui-même de l'installer avant d'activer FORGEIA CODE. Ici on ne gère que l'ancienne version 1.
 async function checkCompanions() {
-  if (!vscode.extensions.getExtension(KILO_ID)) {
-    const install = "Installer Kilo Code";
-    const choice = await vscode.window.showWarningMessage(
-      "FORGEIA CODE a besoin de Kilo Code (l'agent de code) pour fonctionner.",
-      install,
-    );
-    if (choice === install) await vscode.commands.executeCommand("workbench.extensions.installExtension", KILO_ID);
-  }
   if (vscode.extensions.getExtension(OLD_FORGEIA_ID)) {
     const remove = "Désinstaller l'ancienne version";
     const choice = await vscode.window.showWarningMessage(
