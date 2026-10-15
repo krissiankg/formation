@@ -61,6 +61,8 @@ export interface Enrollment {
   passwordHash?: string;
   /** Choix admin prioritaire sur les paiements ; absent = automatique. */
   accessOverride?: AccessOverride;
+  /** Crédit IA propre à l'apprenant (FCFA) ; absent = budget par défaut de la formation. */
+  iaBudgetFcfa?: number;
   createdAt: string;
   payments: {
     kind: PaymentKind;
