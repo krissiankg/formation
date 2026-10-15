@@ -2,6 +2,7 @@ import { randomBytes, scryptSync, timingSafeEqual } from "crypto";
 import type { AccessOverride, Enrollment, EnrollmentStatus, PaymentStatus, PaymentKind } from "@/lib/types";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { initStudentProgress } from "@/lib/store/progress";
+import { MANUAL_PAYMENT_REF } from "@/lib/programme/installments";
 
 type EnrollmentRow = {
   id: string;
@@ -105,6 +106,35 @@ export async function markPaymentPaid(
     await initStudentProgress(updated.id);
   }
   return updated;
+}
+
+/** Annule un paiement saisi à la main (erreur de clic). Les paiements FedaPay ne sont jamais annulés ici. */
+export async function revertManualPayment(id: string, kind: PaymentKind) {
+  const enrollment = await getEnrollment(id);
+  if (!enrollment) return null;
+  const target = enrollment.payments.find((p) => p.kind === kind);
+  if (target?.status !== "paid" || target.fedapayId !== MANUAL_PAYMENT_REF) {
+    throw new Error("Seul un paiement marqué à la main peut être annulé.");
+  }
+
+  const payments = enrollment.payments.map((p) =>
+    p.kind === kind ? { kind: p.kind, amount: p.amount, status: "pending" as PaymentStatus } : p,
+  );
+  const status: EnrollmentStatus =
+    kind === "registration"
+      ? "awaiting_registration_payment"
+      : payments.some((p) => p.kind !== "registration" && p.status === "paid")
+        ? "active"
+        : "registered";
+
+  const { data, error } = await getSupabaseAdmin()
+    .from("enrollments")
+    .update({ status, payments })
+    .eq("id", id)
+    .select("*")
+    .single();
+  if (error) throw error;
+  return mapRow(data as EnrollmentRow);
 }
 
 export async function markRegistrationPaid(id: string, fedapayId?: string) {

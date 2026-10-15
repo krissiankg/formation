@@ -6,6 +6,7 @@ import { formatFcfa } from "@/lib/format";
 import type { AccessOverride, Enrollment } from "@/lib/types";
 import { getCourseAccess } from "@/lib/access/course-access";
 import { PaymentStatusBadge } from "@/components/admin/PaymentStatusBadge";
+import { PaymentScheduleControl } from "@/components/admin/PaymentScheduleControl";
 
 export function EnrollmentRow({
   enrollment,
@@ -151,6 +152,7 @@ export function EnrollmentRow({
       <div className={`mt-1 text-[11px] ${stage.done ? "text-[#2e5a36]" : "text-[color:var(--neutral-500)]"}`}>
         {stage.label}
       </div>
+      <PaymentScheduleControl enrollment={enrollment} />
     </>
   );
 
