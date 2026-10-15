@@ -1,15 +1,17 @@
-import { CORS_HEADERS, FALLBACK_MODEL, PRIMARY_MODEL } from "@/lib/ia/gateway";
+import { CORS_HEADERS } from "@/lib/ia/gateway";
+import { getIaProvider } from "@/lib/ia/providers";
 
 export const dynamic = "force-dynamic";
 
 export function GET() {
+  const provider = getIaProvider();
   return Response.json(
     {
-      status: process.env.NVIDIA_API_KEY?.trim() ? "healthy" : "not_configured",
-      provider: "nvidia-nim",
-      primary_model: PRIMARY_MODEL,
-      fallback_model: FALLBACK_MODEL,
-      version: "3.0.0",
+      status: provider.apiKey ? "healthy" : "not_configured",
+      provider: provider.id,
+      primary_model: provider.resolveModel("forgeia-coder"),
+      fallback_model: provider.resolveModel(provider.fallbackAlias),
+      version: "3.1.0",
     },
     { headers: CORS_HEADERS },
   );

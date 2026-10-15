@@ -1,26 +1,12 @@
 import { getCourseAccess } from "@/lib/access/course-access";
+import { getIaProvider } from "@/lib/ia/providers";
 import { readStudentIaKey } from "@/lib/ia/student-key";
 import { getEnrollment } from "@/lib/store/enrollments";
 
 /**
- * Passerelle IA FORGE IA (compatible OpenAI) vers NVIDIA NIM.
- * Remplace l'ancien service `ia.guelichweb.store` du VPS : mêmes modèles, même bascule automatique.
+ * Passerelle IA FORGE IA (compatible OpenAI). Le fournisseur réel (NVIDIA NIM, DeepSeek…) vient de
+ * `getIaProvider()` ; les apprenants utilisent toujours les mêmes alias de modèles.
  */
-const NVIDIA_URL = "https://integrate.api.nvidia.com/v1/chat/completions";
-
-export const PRIMARY_MODEL = "deepseek-ai/deepseek-v4-flash-0731";
-export const FALLBACK_MODEL = "moonshotai/kimi-k3";
-
-const MODEL_MAPPING: Record<string, string> = {
-  "forgeia-coder": PRIMARY_MODEL,
-  "deepseek-chat": PRIMARY_MODEL,
-  "deepseek-coder": PRIMARY_MODEL,
-  "deepseek-v4-flash": PRIMARY_MODEL,
-  "deepseek-v4-pro": "deepseek-ai/deepseek-v4-pro-0813",
-  "kimi-k3": FALLBACK_MODEL,
-  "nemotron-3.5": "nvidia/nemotron-3.5-lightning-30b-a3b",
-};
-
 export const PUBLIC_MODELS = [
   { id: "forgeia-coder", owned_by: "forge-ia" },
   { id: "deepseek-v4-flash", owned_by: "deepseek-ai" },
@@ -71,12 +57,12 @@ export async function authorizeIaRequest(request: Request): Promise<boolean> {
   return ok;
 }
 
-async function callNvidia(payload: Record<string, unknown>, model: string, timeoutMs: number, apiKey: string) {
+async function callProvider(url: string, payload: Record<string, unknown>, model: string, timeoutMs: number, apiKey: string) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     // Le délai ne couvre que l'attente des en-têtes : une réponse en streaming peut ensuite durer.
-    return await fetch(NVIDIA_URL, {
+    return await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
       body: JSON.stringify({ ...payload, model }),
@@ -87,37 +73,39 @@ async function callNvidia(payload: Record<string, unknown>, model: string, timeo
   }
 }
 
-/** Transmet une requête chat/completions à NVIDIA, avec bascule vers le modèle de secours si besoin. */
+/** Transmet une requête chat/completions au fournisseur, avec bascule vers le modèle de secours si besoin. */
 export async function forwardChatCompletion(payload: Record<string, unknown>): Promise<Response> {
-  const apiKey = process.env.NVIDIA_API_KEY?.trim();
-  if (!apiKey) return iaError(503, "Passerelle IA non configurée (clé NVIDIA manquante).");
+  const provider = getIaProvider();
+  if (!provider.apiKey) return iaError(503, "Passerelle IA non configurée (clé du fournisseur manquante).");
+  const apiKey = provider.apiKey;
 
   const requested = typeof payload.model === "string" && payload.model ? payload.model : "forgeia-coder";
-  const model = MODEL_MAPPING[requested] ?? requested;
+  const model = provider.resolveModel(requested);
+  const fallbackModel = provider.resolveModel(provider.fallbackAlias);
 
   let upstream: Response | null = null;
   let reason = "";
   try {
-    upstream = await callNvidia(payload, model, PRIMARY_TIMEOUT_MS, apiKey);
+    upstream = await callProvider(provider.chatUrl, payload, model, PRIMARY_TIMEOUT_MS, apiKey);
     if (upstream.status === 429 || upstream.status >= 500) {
       reason = `HTTP ${upstream.status}`;
-      upstream = model === FALLBACK_MODEL ? upstream : null;
+      upstream = model === fallbackModel ? upstream : null;
     }
   } catch (error) {
     reason = error instanceof Error && error.name === "AbortError" ? "timeout" : String(error);
   }
 
-  if (!upstream && model !== FALLBACK_MODEL) {
-    console.warn(`[ia:failover] ${model} (${reason}) -> ${FALLBACK_MODEL}`);
+  if (!upstream && model !== fallbackModel) {
+    console.warn(`[ia:failover] ${model} (${reason}) -> ${fallbackModel}`);
     try {
-      upstream = await callNvidia(payload, FALLBACK_MODEL, FALLBACK_TIMEOUT_MS, apiKey);
+      upstream = await callProvider(provider.chatUrl, payload, fallbackModel, FALLBACK_TIMEOUT_MS, apiKey);
     } catch (error) {
       reason = error instanceof Error && error.name === "AbortError" ? "timeout" : String(error);
     }
   }
 
   if (!upstream) {
-    return iaError(504, `Délai d'attente ou saturation du modèle sur NVIDIA NIM (${reason})`);
+    return iaError(504, `Délai d'attente ou saturation du modèle chez le fournisseur IA (${reason})`);
   }
 
   return new Response(upstream.body, {
