@@ -14,6 +14,7 @@ type EnrollmentRow = {
   avatar_url?: string | null;
   password_hash?: string | null;
   access_override?: AccessOverride | null;
+  ia_budget_fcfa?: number | null;
   payments: Enrollment["payments"];
   created_at: string;
 };
@@ -29,6 +30,7 @@ function mapRow(row: EnrollmentRow): Enrollment {
     avatarUrl: row.avatar_url ?? undefined,
     passwordHash: row.password_hash ?? undefined,
     accessOverride: row.access_override ?? undefined,
+    iaBudgetFcfa: row.ia_budget_fcfa ?? undefined,
     createdAt: row.created_at,
     payments: row.payments ?? [],
   };
