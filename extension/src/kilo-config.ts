@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { copyFile, mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { applyEdits, modify, type FormattingOptions } from "jsonc-parser";
+import { applyEdits, modify, parse, type FormattingOptions } from "jsonc-parser";
 
 /**
  * Configuration de Kilo Code (format documenté par Kilo) : fournisseur « forgeia » vers la passerelle
@@ -39,6 +39,17 @@ export function applyForgeiaProvider(text: string, opts: ForgeiaProviderOptions)
   return out;
 }
 
+/** Modèle par défaut choisi par l'apprenant avant FORGE IA (à restaurer à la déconnexion). */
+export function readDefaultModel(text: string): string | undefined {
+  const model = (parse(text || "{}") as { model?: unknown } | undefined)?.model;
+  return typeof model === "string" ? model : undefined;
+}
+
+/** Remet le modèle par défaut (ou l'enlève si l'apprenant n'en avait pas). */
+export function setDefaultModel(text: string, model: string | undefined): string {
+  return edit(text.trim() ? text : "{}", ["model"], model);
+}
+
 export function removeForgeiaApiKey(text: string): string {
   return edit(text, ["provider", "forgeia", "options", "apiKey"], undefined);
 }
@@ -58,17 +69,21 @@ async function readConfig(path: string): Promise<string> {
   return existsSync(path) ? readFile(path, "utf8") : '{\n  "$schema": "https://app.kilo.ai/config.json"\n}';
 }
 
-export async function writeKiloConfig(home: string, opts: ForgeiaProviderOptions): Promise<string> {
+/** Écrit la configuration FORGE IA ; renvoie le modèle par défaut que l'apprenant avait avant. */
+export async function writeKiloConfig(home: string, opts: ForgeiaProviderOptions): Promise<string | undefined> {
   const path = kiloConfigPath(home);
   await mkdir(kiloConfigDir(home), { recursive: true });
-  await writeFile(path, applyForgeiaProvider(await readConfig(path), opts), "utf8");
-  return path;
+  const before = await readConfig(path);
+  await writeFile(path, applyForgeiaProvider(before, opts), "utf8");
+  return readDefaultModel(before);
 }
 
-export async function clearKiloApiKey(home: string): Promise<void> {
+/** Déconnexion : retire la clé et remet le modèle par défaut d'avant FORGE IA. */
+export async function clearKiloApiKey(home: string, previousModel: string | undefined): Promise<void> {
   const path = kiloConfigPath(home);
   if (!existsSync(path)) return;
-  await writeFile(path, removeForgeiaApiKey(await readFile(path, "utf8")), "utf8");
+  const text = removeForgeiaApiKey(await readFile(path, "utf8"));
+  await writeFile(path, setDefaultModel(text, previousModel), "utf8");
 }
 
 /** Copie les agents ADAPT (fichiers forgeia-*.md) dans le dossier global des agents Kilo. */

@@ -4,6 +4,7 @@ import { exchangeLinkToken, getMe, IA_BASE_URL, siteUrl } from "./api";
 import { clearKiloApiKey, installAdaptAgents, writeKiloConfig } from "./kilo-config";
 
 const SECRET_KEY = "forgeia.apiKey";
+const PREVIOUS_MODEL_KEY = "forgeia.previousModel";
 const changed = new vscode.EventEmitter<void>();
 
 /** Déclenché à chaque connexion / déconnexion (la barre d'état se met à jour). */
@@ -17,7 +18,9 @@ export async function signIn(ctx: vscode.ExtensionContext, apiKey: string, first
   await ctx.secrets.store(SECRET_KEY, apiKey);
   const home = homedir();
   // Toujours l'adresse officielle de la passerelle, jamais une adresse fournie par un serveur.
-  await writeKiloConfig(home, { apiKey, baseUrl: IA_BASE_URL });
+  const previous = await writeKiloConfig(home, { apiKey, baseUrl: IA_BASE_URL });
+  // On garde le modèle personnel de l'apprenant (pas celui de FORGE IA) pour le lui rendre à la déconnexion.
+  if (previous && !previous.startsWith("forgeia/")) await ctx.globalState.update(PREVIOUS_MODEL_KEY, previous);
   await installAdaptAgents(home, ctx.asAbsolutePath("agents"));
   changed.fire();
 
@@ -58,7 +61,8 @@ export async function enterKey(ctx: vscode.ExtensionContext) {
 
 export async function signOut(ctx: vscode.ExtensionContext) {
   await ctx.secrets.delete(SECRET_KEY);
-  await clearKiloApiKey(homedir());
+  await clearKiloApiKey(homedir(), ctx.globalState.get<string>(PREVIOUS_MODEL_KEY));
+  await ctx.globalState.update(PREVIOUS_MODEL_KEY, undefined);
   changed.fire();
   vscode.window.showInformationMessage("FORGEIA CODE est déconnecté de ton compte.");
 }
