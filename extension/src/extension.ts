@@ -53,6 +53,10 @@ export function activate(context: vscode.ExtensionContext) {
     }),
   );
   createStatus(context);
+  if (!context.globalState.get("forgeia.walkthroughShown")) {
+    void context.globalState.update("forgeia.walkthroughShown", true);
+    void vscode.commands.executeCommand("workbench.action.openWalkthrough", "guelichweb.forgeia-code#start", false);
+  }
   log("FORGEIA CODE activé.");
   void checkCompanions();
 }

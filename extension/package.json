@@ -82,7 +82,57 @@
           "description": "Adresse de la plateforme FORGE IA (à modifier seulement pour les tests)."
         }
       }
-    }
+    },
+    "walkthroughs": [
+      {
+        "id": "start",
+        "title": "Démarrer avec FORGEIA CODE",
+        "description": "Connecte ton compte, choisis un mode ADAPT et lance ton premier projet.",
+        "steps": [
+          {
+            "id": "connect",
+            "title": "Connecter mon compte FORGE IA",
+            "description": "Relie FORGEIA CODE à ton crédit IA.\n[Connecter mon compte](command:forgeia.connect)",
+            "media": {
+              "markdown": "walkthrough/1-connecter.md"
+            },
+            "completionEvents": [
+              "onCommand:forgeia.connect"
+            ]
+          },
+          {
+            "id": "modes",
+            "title": "Choisir un mode ADAPT dans Kilo Code",
+            "description": "Six modes pour apprendre en codant.",
+            "media": {
+              "markdown": "walkthrough/2-modes.md"
+            }
+          },
+          {
+            "id": "project",
+            "title": "Créer le projet de la semaine",
+            "description": "Un modèle prêt pour chaque projet de la formation.\n[Nouveau projet](command:forgeia.newProject)",
+            "media": {
+              "markdown": "walkthrough/3-projet.md"
+            },
+            "completionEvents": [
+              "onCommand:forgeia.newProject"
+            ]
+          },
+          {
+            "id": "preview",
+            "title": "Voir le résultat dans le navigateur interne",
+            "description": "Ton site, sans quitter VS Code.\n[Ouvrir l'aperçu](command:forgeia.preview)",
+            "media": {
+              "markdown": "walkthrough/4-apercu.md"
+            },
+            "completionEvents": [
+              "onCommand:forgeia.preview"
+            ]
+          }
+        ]
+      }
+    ]
   },
   "scripts": {
     "build": "node esbuild.mjs",
