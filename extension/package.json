@@ -51,6 +51,21 @@
         "command": "forgeia.signOut",
         "title": "Se déconnecter",
         "category": "FORGE IA"
+      },
+      {
+        "command": "forgeia.menu",
+        "title": "Menu FORGE IA",
+        "category": "FORGE IA"
+      },
+      {
+        "command": "forgeia.dailyExercise",
+        "title": "Exercice du jour",
+        "category": "FORGE IA"
+      },
+      {
+        "command": "forgeia.preview",
+        "title": "Aperçu dans le navigateur interne",
+        "category": "FORGE IA"
       }
     ],
     "configuration": {
