@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { brand } from "@/lib/config/formation";
 import { getSessionEnrollment } from "@/lib/auth/session";
+import { createStudentIaKey } from "@/lib/ia/student-key";
 import { listPublishedContent } from "@/lib/store/content";
 import { ResourcesHubClient } from "@/components/espace/ResourcesHubClient";
 
@@ -16,14 +17,8 @@ export default async function RessourcesPage() {
 
   const contents = await listPublishedContent();
 
-  // Clé étudiante déterministe
-  const studentSlug = enrollment.fullName
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]/g, "_")
-    .slice(0, 15);
-  const studentApiKey = `forge_${studentSlug}_${enrollment.id.slice(0, 6)}`;
+  // Clé personnelle signée pour la passerelle IA (désactivée automatiquement si l'accès est bloqué).
+  const studentApiKey = createStudentIaKey(enrollment.id);
 
   return (
     <div className="mx-auto max-w-5xl">
