@@ -66,6 +66,11 @@
         "command": "forgeia.preview",
         "title": "Aperçu dans le navigateur interne",
         "category": "FORGE IA"
+      },
+      {
+        "command": "forgeia.newProject",
+        "title": "Nouveau projet de la formation",
+        "category": "FORGE IA"
       }
     ],
     "configuration": {

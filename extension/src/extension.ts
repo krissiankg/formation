@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { enterKey, openConnectPage, signInWithLinkToken, signOut } from "./auth";
-import { openDailyExercise, previewInBrowser, showMenu } from "./commands";
+import { newProject, openDailyExercise, previewInBrowser, showMenu } from "./commands";
 import { createStatus } from "./status";
 
 const KILO_ID = "kilocode.kilo-code";
@@ -42,6 +42,7 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand("forgeia.menu", () => showMenu(context)),
     vscode.commands.registerCommand("forgeia.dailyExercise", () => openDailyExercise(context)),
     vscode.commands.registerCommand("forgeia.preview", previewInBrowser),
+    vscode.commands.registerCommand("forgeia.newProject", () => newProject(context)),
     vscode.window.registerUriHandler({
       handleUri(uri) {
         log(`Lien reçu : ${uri.path}`);
