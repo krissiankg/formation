@@ -27,6 +27,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Tests de l'application
+        run: |
+          npm install --no-audit --no-fund
+          npx vitest run
+
+      - name: Extension FORGEIA CODE (.vsix publié dans /downloads)
+        working-directory: extension
+        run: |
+          npm ci --no-audit --no-fund
+          npx vitest run
+          npm run build
+          VERSION=$(node -p "require('./package.json').version")
+          mkdir -p ../public/downloads
+          node scripts/package.mjs "../public/downloads/forgeia-code-$VERSION.vsix"
+
       - name: Identifiants AWS (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
