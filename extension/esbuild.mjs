@@ -1,18 +1,8 @@
 import * as esbuild from "esbuild";
+import { buildOptions } from "./build-options.mjs";
 
 const watch = process.argv.includes("--watch");
-const options = {
-  entryPoints: ["src/extension.ts"],
-  bundle: true,
-  outfile: "dist/extension.js",
-  format: "cjs",
-  platform: "node",
-  target: "node20",
-  external: ["vscode"],
-  sourcemap: !watch ? false : "inline",
-  minify: !watch,
-  logLevel: "info",
-};
+const options = { ...buildOptions, minify: !watch, sourcemap: watch ? "inline" : false };
 
 if (watch) {
   const ctx = await esbuild.context(options);

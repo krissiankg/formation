@@ -15,12 +15,55 @@
   "engines": {
     "vscode": "^1.105.0"
   },
-  "categories": ["AI", "Education"],
-  "keywords": ["forge ia", "forgeia", "adapt", "kilo code", "deepseek", "formation"],
-  "extensionDependencies": ["kilocode.kilo-code"],
-  "activationEvents": ["onStartupFinished", "onUri"],
+  "categories": [
+    "AI",
+    "Education"
+  ],
+  "keywords": [
+    "forge ia",
+    "forgeia",
+    "adapt",
+    "kilo code",
+    "deepseek",
+    "formation"
+  ],
+  "extensionDependencies": [
+    "kilocode.kilo-code"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "onUri"
+  ],
   "main": "./dist/extension.js",
-  "contributes": {},
+  "contributes": {
+    "commands": [
+      {
+        "command": "forgeia.connect",
+        "title": "Connecter mon compte",
+        "category": "FORGE IA"
+      },
+      {
+        "command": "forgeia.enterKey",
+        "title": "Saisir ma clé",
+        "category": "FORGE IA"
+      },
+      {
+        "command": "forgeia.signOut",
+        "title": "Se déconnecter",
+        "category": "FORGE IA"
+      }
+    ],
+    "configuration": {
+      "title": "FORGEIA CODE",
+      "properties": {
+        "forgeia.siteUrl": {
+          "type": "string",
+          "default": "https://forgeia.guelichweb.store",
+          "description": "Adresse de la plateforme FORGE IA (à modifier seulement pour les tests)."
+        }
+      }
+    }
+  },
   "scripts": {
     "build": "node esbuild.mjs",
     "watch": "node esbuild.mjs --watch",

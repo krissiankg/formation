@@ -73,6 +73,7 @@ export async function clearKiloApiKey(home: string): Promise<void> {
 
 /** Copie les agents ADAPT (fichiers forgeia-*.md) dans le dossier global des agents Kilo. */
 export async function installAdaptAgents(home: string, sourceDir: string): Promise<string[]> {
+  if (!existsSync(sourceDir)) return [];
   const target = join(kiloConfigDir(home), "agent");
   await mkdir(target, { recursive: true });
   const files = (await readdir(sourceDir)).filter((f) => f.startsWith("forgeia-") && f.endsWith(".md"));

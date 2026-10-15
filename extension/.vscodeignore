@@ -7,3 +7,4 @@ vitest.config.ts
 esbuild.mjs
 *.vsix
 .gitignore
+build-options.mjs

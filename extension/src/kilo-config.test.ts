@@ -82,4 +82,9 @@ describe("files", () => {
     expect(readdirSync(agentDir).sort()).toEqual(["forgeia-coach.md", "mon-agent.md"]);
     expect(readFileSync(join(agentDir, "mon-agent.md"), "utf8")).toBe("à moi");
   });
+
+  it("does nothing when the agents folder is missing", async () => {
+    const home = mkdtempSync(join(tmpdir(), "kilo-"));
+    expect(await installAdaptAgents(home, join(home, "absent"))).toEqual([]);
+  });
 });
