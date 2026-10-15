@@ -1,3 +1,6 @@
+/** Adresse publique de la passerelle (intégrée à l'extension et à la configuration Kilo Code). */
+export const IA_BASE_URL = "https://ia.guelichweb.store/v1";
+
 export const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
