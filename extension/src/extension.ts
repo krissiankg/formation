@@ -1,4 +1,8 @@
 import * as vscode from "vscode";
+import { enterKey, openConnectPage, signInWithLinkToken, signOut } from "./auth";
+
+const KILO_ID = "kilocode.kilo-code";
+const OLD_FORGEIA_ID = "forgeia.forgeia-code";
 
 let output: vscode.OutputChannel | undefined;
 
@@ -7,10 +11,43 @@ export function log(message: string) {
   output?.appendLine(`[${new Date().toLocaleTimeString("fr-FR")}] ${message}`);
 }
 
+async function checkCompanions() {
+  if (!vscode.extensions.getExtension(KILO_ID)) {
+    const install = "Installer Kilo Code";
+    const choice = await vscode.window.showWarningMessage(
+      "FORGEIA CODE a besoin de Kilo Code (l'agent de code) pour fonctionner.",
+      install,
+    );
+    if (choice === install) await vscode.commands.executeCommand("workbench.extensions.installExtension", KILO_ID);
+  }
+  if (vscode.extensions.getExtension(OLD_FORGEIA_ID)) {
+    const remove = "Désinstaller l'ancienne version";
+    const choice = await vscode.window.showWarningMessage(
+      "L'ancienne FORGEIA CODE (v1) est encore installée. Désinstalle-la pour éviter deux assistants.",
+      remove,
+    );
+    if (choice === remove) await vscode.commands.executeCommand("workbench.extensions.uninstallExtension", OLD_FORGEIA_ID);
+  }
+}
+
 export function activate(context: vscode.ExtensionContext) {
   output = vscode.window.createOutputChannel("FORGEIA CODE");
-  context.subscriptions.push(output);
+  context.subscriptions.push(
+    output,
+    vscode.commands.registerCommand("forgeia.connect", openConnectPage),
+    vscode.commands.registerCommand("forgeia.enterKey", () => enterKey(context)),
+    vscode.commands.registerCommand("forgeia.signOut", () => signOut(context)),
+    vscode.window.registerUriHandler({
+      handleUri(uri) {
+        log(`Lien reçu : ${uri.path}`);
+        if (uri.path !== "/connect") return;
+        const token = new URLSearchParams(uri.query).get("token");
+        if (token) void signInWithLinkToken(context, token);
+      },
+    }),
+  );
   log("FORGEIA CODE activé.");
+  void checkCompanions();
 }
 
 export function deactivate() {}
