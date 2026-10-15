@@ -1,0 +1,31 @@
+:root {
+  --couleur-principale: #7a1f3d;
+  --texte: #171d17;
+  --fond: #fbfaf4;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  color: var(--texte);
+  background: var(--fond);
+}
+
+.hero {
+  padding: 4rem 1rem;
+  text-align: center;
+}
+
+.bouton {
+  display: inline-block;
+  margin-top: 1rem;
+  padding: 0.8rem 1.4rem;
+  border-radius: 999px;
+  background: var(--couleur-principale);
+  color: white;
+  text-decoration: none;
+}

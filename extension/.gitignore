@@ -1,3 +1,6 @@
 node_modules/
 dist/
 *.vsix
+
+# Modèle de projet : fichier d exemple sans secret, à publier.
+!templates/saas/.env.example

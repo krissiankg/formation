@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { siteUrl } from "./api";
 import { signOut } from "./auth";
 import { lastKnownMe, refreshStatus } from "./status";
+import { copyTemplate, TEMPLATES } from "./templates";
 
 const open = (url: string) => vscode.env.openExternal(vscode.Uri.parse(url));
 
@@ -37,4 +38,25 @@ export async function showMenu(ctx: vscode.ExtensionContext) {
   ];
   const picked = await vscode.window.showQuickPick(items, { title: "FORGE IA", placeHolder: "Que veux-tu faire ?" });
   await picked?.run();
+}
+
+export async function newProject(ctx: vscode.ExtensionContext) {
+  const picked = await vscode.window.showQuickPick(
+    TEMPLATES.map((t) => ({ label: t.label, description: t.description, id: t.id })),
+    { title: "Nouveau projet de la formation", placeHolder: "Quel projet commences-tu ?" },
+  );
+  if (!picked) return;
+  const folder = await vscode.window.showOpenDialog({
+    canSelectFolders: true,
+    canSelectFiles: false,
+    openLabel: "Créer le projet ici",
+    title: "Choisis un dossier vide pour ton projet",
+  });
+  if (!folder?.[0]) return;
+  try {
+    await copyTemplate(picked.id, ctx.asAbsolutePath("templates"), folder[0].fsPath);
+    await vscode.commands.executeCommand("vscode.openFolder", folder[0]);
+  } catch (error) {
+    vscode.window.showErrorMessage(`Projet non créé : ${(error as Error).message}`);
+  }
 }
