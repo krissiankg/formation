@@ -2,27 +2,19 @@ import { getCourseAccess } from "@/lib/access/course-access";
 import { CORS_HEADERS, iaError } from "@/lib/ia/http";
 import { checkBudget, meterSseStream } from "@/lib/ia/meter";
 import { estimateUsage, parseUsage, type IaUsage } from "@/lib/ia/pricing";
-import { getIaProvider } from "@/lib/ia/providers";
+import { getIaProvider, isPublicModel, PUBLIC_MODELS } from "@/lib/ia/providers";
 import { readStudentIaKey } from "@/lib/ia/student-key";
 import { getIaBalance, recordIaUsage } from "@/lib/ia/usage-store";
 import { getEnrollment } from "@/lib/store/enrollments";
 import type { Enrollment } from "@/lib/types";
 
-export { CORS_HEADERS, iaError };
+export { CORS_HEADERS, iaError, PUBLIC_MODELS };
 
 /**
  * Passerelle IA FORGE IA (compatible OpenAI). Le fournisseur réel (NVIDIA NIM, DeepSeek…) vient de
  * `getIaProvider()` ; les apprenants utilisent toujours les mêmes alias de modèles. Chaque appel d'un
  * apprenant est décompté de son crédit IA.
  */
-export const PUBLIC_MODELS = [
-  { id: "forgeia-coder", owned_by: "forge-ia" },
-  { id: "deepseek-v4-flash", owned_by: "deepseek-ai" },
-  { id: "deepseek-chat", owned_by: "deepseek-ai" },
-  { id: "deepseek-v4-pro", owned_by: "deepseek-ai" },
-  { id: "kimi-k3", owned_by: "moonshotai" },
-  { id: "nemotron-3.5", owned_by: "nvidia" },
-];
 
 // Délai pour obtenir les en-têtes du modèle principal avant de basculer, puis délai du modèle de secours.
 const PRIMARY_TIMEOUT_MS = 10_000;
@@ -84,6 +76,13 @@ export async function forwardChatCompletion(payload: Record<string, unknown>, on
   const apiKey = provider.apiKey;
 
   const requested = typeof payload.model === "string" && payload.model ? payload.model : "forgeia-coder";
+  if (!isPublicModel(requested)) {
+    return iaError(
+      400,
+      `Modèle inconnu : ${requested.slice(0, 60)}. Modèles disponibles : ${PUBLIC_MODELS.map((m) => m.id).join(", ")}.`,
+      "invalid_request_error",
+    );
+  }
   const model = provider.resolveModel(requested);
   const fallbackModel = provider.resolveModel(provider.fallbackAlias);
   const body = payload.stream === true ? { ...payload, stream_options: { include_usage: true } } : payload;

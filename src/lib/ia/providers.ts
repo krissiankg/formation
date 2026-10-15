@@ -12,6 +12,21 @@ export type IaProvider = {
 
 type Env = Record<string, string | undefined>;
 
+/** Seuls modèles acceptés par la passerelle (alias FORGE IA) : chacun a un tarif connu. */
+export const PUBLIC_MODELS = [
+  { id: "forgeia-coder", owned_by: "forge-ia" },
+  { id: "deepseek-v4-flash", owned_by: "deepseek-ai" },
+  { id: "deepseek-chat", owned_by: "deepseek-ai" },
+  { id: "deepseek-coder", owned_by: "deepseek-ai" },
+  { id: "deepseek-v4-pro", owned_by: "deepseek-ai" },
+  { id: "kimi-k3", owned_by: "moonshotai" },
+  { id: "nemotron-3.5", owned_by: "nvidia" },
+];
+
+export function isPublicModel(alias: string): boolean {
+  return PUBLIC_MODELS.some((m) => m.id === alias);
+}
+
 const NVIDIA_MODELS: Record<string, string> = {
   "forgeia-coder": "deepseek-ai/deepseek-v4-flash-0731",
   "deepseek-chat": "deepseek-ai/deepseek-v4-flash-0731",
