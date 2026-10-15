@@ -22,3 +22,6 @@ export function getInstallmentLabel(kind: PaymentKind): string {
 
 /** Échéances payables (anciennes comprises, pour les inscrits de l'ancien programme). */
 export const PAYABLE_INSTALLMENTS: InstallmentKind[] = ["start", "month1", "month3"];
+
+/** Référence enregistrée pour un paiement saisi à la main par l'admin (espèces, Mobile Money direct…). */
+export const MANUAL_PAYMENT_REF = "manuel-admin";
