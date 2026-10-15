@@ -4,8 +4,7 @@ import { getCourseAccess } from "@/lib/access/course-access";
 import { getSessionEnrollment } from "@/lib/auth/session";
 import { brand } from "@/lib/config/formation";
 import { FCFA_PER_COIN, getIaBalance, listRecentIaUsage } from "@/lib/ia/usage-store";
-import { FORGEIA_CODE_DOWNLOAD_PATH, FORGEIA_CODE_VERSION, forgeiaCodeConnectUrl } from "@/lib/ia/extension-info";
-import { createIaLinkToken } from "@/lib/ia/link-token";
+import { FORGEIA_CODE_DOWNLOAD_PATH, FORGEIA_CODE_VERSION } from "@/lib/ia/extension-info";
 import { createStudentIaKey } from "@/lib/ia/student-key";
 import { getOrCreateStudentWallet } from "@/lib/wallet/store";
 import { PageHeader } from "@/components/espace/shared";
@@ -56,7 +55,7 @@ export default async function AssistantIaPage() {
       <AssistantIaClient
         version={FORGEIA_CODE_VERSION}
         downloadPath={FORGEIA_CODE_DOWNLOAD_PATH}
-        connectUrl={forgeiaCodeConnectUrl(createIaLinkToken(enrollment.id))}
+        connectUrl="/espace/assistant-ia/connect"
         apiKey={createStudentIaKey(enrollment.id)}
         balance={balance}
         walletCoins={wallet.balanceCoins}
