@@ -28,6 +28,8 @@ export const formation = {
   currency: "XOF",
   currencyLabel: "FCFA",
   totalPrice: 80_000,
+  // Crédit IA inclus pour chaque apprenant (passerelle FORGEIA CODE), modifiable par apprenant dans l'admin.
+  iaBudgetFcfa: 5_000,
   registrationFee: 5_000,
   schedule: {
     saturday: { id: "saturday" as const, label: "Tous les samedis", hours: "9h – 13h30" },

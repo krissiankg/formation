@@ -48,3 +48,6 @@ next-env.d.ts
 
 # Claude Code (réglages personnels)
 .claude/settings.local.json
+
+# Espace de travail des plans (superpowers)
+.superpowers/
