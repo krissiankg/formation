@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getIaProvider } from "@/lib/ia/providers";
+import { getIaProvider, isPublicModel } from "@/lib/ia/providers";
 
 describe("getIaProvider", () => {
   it("defaults to NVIDIA", () => {
@@ -24,5 +24,15 @@ describe("getIaProvider", () => {
   it("has no key when the variable is missing or blank", () => {
     expect(getIaProvider({ NVIDIA_API_KEY: "  " }).apiKey).toBeNull();
     expect(getIaProvider({ IA_PROVIDER: "deepseek" }).apiKey).toBeNull();
+  });
+});
+
+describe("isPublicModel", () => {
+  it("accepts only the FORGE IA aliases", () => {
+    expect(isPublicModel("forgeia-coder")).toBe(true);
+    expect(isPublicModel("deepseek-v4-pro")).toBe(true);
+    expect(isPublicModel("deepseek-reasoner")).toBe(false);
+    expect(isPublicModel("deepseek-ai/deepseek-v4-pro-0813")).toBe(false);
+    expect(isPublicModel("")).toBe(false);
   });
 });
