@@ -35,6 +35,8 @@ select
   enrollment_id,
   coalesce(sum(cost_fcfa), 0)::numeric(12, 2) as spent_fcfa,
   count(*) filter (where alias <> 'topup') as calls,
-  max(created_at) filter (where alias <> 'topup') as last_at
+  max(created_at) filter (where alias <> 'topup') as last_at,
+  -- Consommation réelle (sans les recharges), pour suivre le coût.
+  coalesce(sum(cost_fcfa) filter (where alias <> 'topup'), 0)::numeric(12, 2) as consumed_fcfa
 from public.ia_usage
 group by enrollment_id;

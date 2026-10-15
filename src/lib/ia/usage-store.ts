@@ -78,15 +78,16 @@ export async function listRecentIaUsage(enrollmentId: string, limit = 20): Promi
 }
 
 export async function listIaUsageByStudent(): Promise<
-  { enrollmentId: string; spentFcfa: number; calls: number; lastAt: string | null }[]
+  { enrollmentId: string; spentFcfa: number; consumedFcfa: number; calls: number; lastAt: string | null }[]
 > {
   const { data, error } = await getSupabaseAdmin()
     .from("ia_usage_totals")
-    .select("enrollment_id, spent_fcfa, calls, last_at");
+    .select("enrollment_id, spent_fcfa, consumed_fcfa, calls, last_at");
   if (error) throw error;
   return (data ?? []).map((r) => ({
     enrollmentId: r.enrollment_id,
     spentFcfa: Number(r.spent_fcfa),
+    consumedFcfa: Number(r.consumed_fcfa),
     calls: Number(r.calls),
     lastAt: r.last_at ?? null,
   }));
