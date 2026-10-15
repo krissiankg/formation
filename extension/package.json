@@ -79,7 +79,8 @@
         "forgeia.siteUrl": {
           "type": "string",
           "default": "https://forgeia.guelichweb.store",
-          "description": "Adresse de la plateforme FORGE IA (à modifier seulement pour les tests)."
+          "description": "Adresse de la plateforme FORGE IA (à modifier seulement pour les tests).",
+          "scope": "application"
         }
       }
     },
