@@ -40,3 +40,38 @@ select
   coalesce(sum(cost_fcfa) filter (where alias <> 'topup'), 0)::numeric(12, 2) as consumed_fcfa
 from public.ia_usage
 group by enrollment_id;
+
+-- Recharge atomique : débit des coins, transaction et crédit IA dans une seule fonction (pas de double dépense).
+create or replace function public.ia_topup_from_coins(p_enrollment uuid, p_coins integer)
+returns integer
+language plpgsql
+security invoker
+set search_path = public
+as $$
+declare
+  new_balance integer;
+begin
+  if p_coins is null or p_coins <= 0 or p_coins % 10 <> 0 then
+    raise exception 'invalid_coins';
+  end if;
+
+  update public.student_wallets
+     set balance_coins = balance_coins - p_coins, updated_at = now()
+   where enrollment_id = p_enrollment and balance_coins >= p_coins
+  returning balance_coins into new_balance;
+
+  if not found then
+    raise exception 'insufficient_coins';
+  end if;
+
+  insert into public.coin_transactions (enrollment_id, amount, type, description)
+  values (p_enrollment, -p_coins, 'ia_topup', 'Recharge du crédit IA FORGEIA CODE');
+
+  insert into public.ia_usage (enrollment_id, alias, cost_fcfa)
+  values (p_enrollment, 'topup', -p_coins * 50);
+
+  return new_balance;
+end;
+$$;
+
+revoke execute on function public.ia_topup_from_coins(uuid, integer) from public, anon, authenticated;

@@ -2,7 +2,7 @@ import { formation } from "@/lib/config/formation";
 import { computeCostFcfa, type IaUsage } from "@/lib/ia/pricing";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import type { Enrollment } from "@/lib/types";
-import { debitCoinsForIa } from "@/lib/wallet/store";
+import { getOrCreateStudentWallet } from "@/lib/wallet/store";
 
 /** Valeur d'un coin en crédit IA (même prix que les packs de coins : 10 coins = 500 F). */
 export const FCFA_PER_COIN = 50;
@@ -101,11 +101,21 @@ export async function setIaBudget(enrollmentId: string, fcfa: number | null): Pr
   if (error) throw error;
 }
 
-/** Convertit des coins en crédit IA : débite le portefeuille puis enregistre une recharge (coût négatif). */
-export async function topUpIaFromCoins(enrollmentId: string, coins: number): Promise<void> {
-  await debitCoinsForIa(enrollmentId, coins);
-  const { error } = await getSupabaseAdmin()
-    .from("ia_usage")
-    .insert({ enrollment_id: enrollmentId, alias: "topup", cost_fcfa: -coins * FCFA_PER_COIN });
-  if (error) throw error;
+/**
+ * Convertit des coins en crédit IA, de façon atomique (fonction SQL ia_topup_from_coins) :
+ * deux demandes simultanées ne peuvent pas dépenser les mêmes coins.
+ */
+export async function topUpIaFromCoins(enrollmentId: string, coins: number): Promise<number> {
+  const wallet = await getOrCreateStudentWallet(enrollmentId);
+  const { data, error } = await getSupabaseAdmin().rpc("ia_topup_from_coins", {
+    p_enrollment: enrollmentId,
+    p_coins: coins,
+  });
+  if (error) {
+    if (error.message.includes("insufficient_coins")) {
+      throw new Error(`Solde insuffisant : tu as ${wallet.balanceCoins} coins.`);
+    }
+    throw error;
+  }
+  return Number(data);
 }
