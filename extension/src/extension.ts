@@ -1,5 +1,7 @@
 import * as vscode from "vscode";
 import { enterKey, openConnectPage, signInWithLinkToken, signOut } from "./auth";
+import { openDailyExercise, previewInBrowser, showMenu } from "./commands";
+import { createStatus } from "./status";
 
 const KILO_ID = "kilocode.kilo-code";
 const OLD_FORGEIA_ID = "forgeia.forgeia-code";
@@ -37,6 +39,9 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand("forgeia.connect", openConnectPage),
     vscode.commands.registerCommand("forgeia.enterKey", () => enterKey(context)),
     vscode.commands.registerCommand("forgeia.signOut", () => signOut(context)),
+    vscode.commands.registerCommand("forgeia.menu", () => showMenu(context)),
+    vscode.commands.registerCommand("forgeia.dailyExercise", () => openDailyExercise(context)),
+    vscode.commands.registerCommand("forgeia.preview", previewInBrowser),
     vscode.window.registerUriHandler({
       handleUri(uri) {
         log(`Lien reçu : ${uri.path}`);
@@ -46,6 +51,7 @@ export function activate(context: vscode.ExtensionContext) {
       },
     }),
   );
+  createStatus(context);
   log("FORGEIA CODE activé.");
   void checkCompanions();
 }
