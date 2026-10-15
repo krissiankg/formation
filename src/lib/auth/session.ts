@@ -1,3 +1,4 @@
+import { createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 import type { Enrollment } from "@/lib/types";
 import {
@@ -27,9 +28,44 @@ export async function findEnrollmentByCredentials(email: string, whatsapp: strin
   return findEnrollmentByEmailAndWhatsapp(email, whatsapp);
 }
 
+/**
+ * Jeton de session apprenant signé : `student:<id>:<expiration>.<signature>`.
+ * Le préfixe « student: » empêche de réutiliser un jeton admin (signé avec le même secret) et inversement.
+ */
+function sessionSecret(): string {
+  const secret = process.env.ADMIN_SESSION_SECRET?.trim();
+  if (!secret) throw new Error("ADMIN_SESSION_SECRET is not configured");
+  return secret;
+}
+
+function sign(payload: string): string {
+  return createHmac("sha256", sessionSecret()).update(payload).digest("base64url");
+}
+
+function createStudentToken(enrollmentId: string): string {
+  const expiresAt = Math.floor(Date.now() / 1000) + SESSION_DAYS * 24 * 60 * 60;
+  const payload = `student:${enrollmentId}:${expiresAt}`;
+  return `${payload}.${sign(payload)}`;
+}
+
+/** Renvoie l'identifiant d'inscription si le jeton est authentique et non expiré. */
+function readStudentToken(token: string | undefined): string | null {
+  if (!token || !process.env.ADMIN_SESSION_SECRET?.trim()) return null;
+  const dot = token.lastIndexOf(".");
+  if (dot <= 0) return null;
+  const payload = token.slice(0, dot);
+  const [prefix, enrollmentId, exp] = payload.split(":");
+  if (prefix !== "student" || !enrollmentId || !exp) return null;
+  if (!(Number(exp) > Math.floor(Date.now() / 1000))) return null;
+  const given = Buffer.from(token.slice(dot + 1));
+  const expected = Buffer.from(sign(payload));
+  if (given.length !== expected.length || !timingSafeEqual(given, expected)) return null;
+  return enrollmentId;
+}
+
 export async function createSession(enrollmentId: string) {
   const jar = await cookies();
-  jar.set(SESSION_COOKIE, enrollmentId, {
+  jar.set(SESSION_COOKIE, createStudentToken(enrollmentId), {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
@@ -45,7 +81,7 @@ export async function destroySession() {
 
 export async function getSessionEnrollment(): Promise<Enrollment | null> {
   const jar = await cookies();
-  const id = jar.get(SESSION_COOKIE)?.value;
+  const id = readStudentToken(jar.get(SESSION_COOKIE)?.value);
   if (!id) return null;
   return getEnrollment(id);
 }

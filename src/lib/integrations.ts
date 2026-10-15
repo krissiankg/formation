@@ -231,6 +231,10 @@ export async function createFedapayTransaction(input: {
   const env = process.env.FEDAPAY_ENV ?? "sandbox";
 
   if (!secret) {
+    // Jamais de paiement simulé en production : sans clé, on refuse plutôt que d'inscrire gratuitement.
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("Paiement indisponible pour le moment. Réessaie plus tard ou contacte le formateur.");
+    }
     const mockId = `mock_${crypto.randomUUID()}`;
     return {
       id: mockId,

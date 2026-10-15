@@ -3,7 +3,6 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { getEnrollment, markRegistrationPaid } from "@/lib/store/enrollments";
 import { notifyTelegram, notifyWhatsApp, notifyAdminWhatsApp } from "@/lib/integrations";
-import { createSession } from "@/lib/auth/session";
 import { formation } from "@/lib/config/formation";
 import { formatFcfa } from "@/lib/format";
 
@@ -41,7 +40,11 @@ export default async function ConfirmationPage({ searchParams }: Props) {
     );
   }
 
+  // Le paiement simulé n'existe que sans clé FedaPay (dev / démo) : en production,
+  // seul le webhook FedaPay signé peut marquer l'inscription comme payée.
+  const mockPaymentsAllowed = process.env.NODE_ENV !== "production" && !process.env.FEDAPAY_SECRET_KEY;
   if (
+    mockPaymentsAllowed &&
     params.mock_payment === "1" &&
     enrollment.status === "awaiting_registration_payment"
   ) {
@@ -75,10 +78,6 @@ export default async function ConfirmationPage({ searchParams }: Props) {
   const paid =
     enrollment.payments.find((p) => p.kind === "registration")?.status === "paid";
 
-  if (paid) {
-    await createSession(enrollment.id);
-  }
-
   return (
     <Shell>
       <p className="section-kicker">
@@ -96,8 +95,8 @@ export default async function ConfirmationPage({ searchParams }: Props) {
       </p>
 
       <dl className="mt-8 space-y-3 rounded-xl border border-[color:var(--border)] bg-[color:var(--neutral-100)] p-5 text-sm">
-        <Row label="Email" value={enrollment.email} />
-        <Row label="WhatsApp" value={enrollment.whatsapp} />
+        <Row label="Email" value={maskEmail(enrollment.email)} />
+        <Row label="WhatsApp" value={maskPhone(enrollment.whatsapp)} />
         <Row
           label="Créneau"
           value={`${formation.schedule[enrollment.schedule].label} · ${formation.schedule[enrollment.schedule].hours}`}
@@ -109,13 +108,8 @@ export default async function ConfirmationPage({ searchParams }: Props) {
       </dl>
 
       <div className="mt-8 flex flex-wrap gap-3">
-        {paid ? (
-          <Link href="/espace" className="btn-primary">
-            Ouvrir l&apos;espace apprenant
-          </Link>
-        ) : null}
-        <Link href="/connexion" className="btn-ghost">
-          Page de connexion
+        <Link href="/connexion" className={paid ? "btn-primary" : "btn-ghost"}>
+          {paid ? "Me connecter à mon espace" : "Page de connexion"}
         </Link>
         <Link href="/" className="btn-ghost">
           Retour à l&apos;accueil
@@ -123,6 +117,18 @@ export default async function ConfirmationPage({ searchParams }: Props) {
       </div>
     </Shell>
   );
+}
+
+// Ce lien circule (WhatsApp, relances) : on n'y affiche pas les identifiants de connexion en clair.
+function maskEmail(email: string) {
+  const [user, domain] = email.split("@");
+  if (!domain) return "•••";
+  return `${user.slice(0, 2)}${"•".repeat(Math.max(3, user.length - 2))}@${domain}`;
+}
+
+function maskPhone(phone: string) {
+  const digits = phone.replace(/\D/g, "");
+  return digits.length > 2 ? `•••• •• ${digits.slice(-2)}` : "••••";
 }
 
 function Row({ label, value }: { label: string; value: string }) {
