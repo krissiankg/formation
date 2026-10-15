@@ -9,7 +9,7 @@ async function isAuthenticated(request: NextRequest): Promise<boolean> {
   return verifyAdminSessionToken(token);
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (pathname.startsWith("/api/admin/auth/")) {

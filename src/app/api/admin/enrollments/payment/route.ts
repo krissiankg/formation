@@ -11,7 +11,7 @@ import type { PaymentKind } from "@/lib/types";
 
 const KINDS: PaymentKind[] = ["registration", "start", "month1", "month3"];
 
-/** Marque une échéance comme payée à la main (ou annule ce marquage). Route protégée par le middleware admin. */
+/** Marque une échéance comme payée à la main (ou annule ce marquage). Route protégée par le proxy admin (src/proxy.ts). */
 export async function POST(request: Request) {
   try {
     const { id, kind, paid } = (await request.json()) as { id?: string; kind?: PaymentKind; paid?: boolean };
@@ -26,6 +26,12 @@ export async function POST(request: Request) {
     }
 
     if (!paid) {
+      if (target.status !== "paid" || target.fedapayId !== MANUAL_PAYMENT_REF) {
+        return NextResponse.json(
+          { error: "Seul un paiement marqué à la main peut être annulé (les paiements FedaPay restent acquis)." },
+          { status: 409 },
+        );
+      }
       await revertManualPayment(id, kind);
       return NextResponse.json({ ok: true });
     }

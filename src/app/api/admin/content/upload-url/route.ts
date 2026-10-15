@@ -6,7 +6,7 @@ import { createResourceUploadUrl, isS3UploadEnabled } from "@/lib/storage/s3-upl
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-// Prépare un téléversement direct navigateur → S3 (protégé par le middleware /api/admin).
+// Prépare un téléversement direct navigateur → S3 (/api/admin est protégé par src/proxy.ts).
 export async function POST(request: Request) {
   if (!isS3UploadEnabled()) {
     return NextResponse.json({ mode: "local" });
