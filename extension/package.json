@@ -1,0 +1,42 @@
+{
+  "name": "forgeia-code",
+  "displayName": "FORGEIA CODE",
+  "description": "L'assistant de code IA de la formation FORGE IA : modes de la méthode ADAPT, crédit IA inclus, modèles de projets et aperçu dans le navigateur interne. Propulsé par Kilo Code.",
+  "version": "2.0.0",
+  "publisher": "guelichweb",
+  "license": "MIT",
+  "icon": "media/icon.png",
+  "homepage": "https://forgeia.guelichweb.store",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/krissiankg/formation.git",
+    "directory": "extension"
+  },
+  "engines": {
+    "vscode": "^1.105.0"
+  },
+  "categories": ["AI", "Education"],
+  "keywords": ["forge ia", "forgeia", "adapt", "kilo code", "deepseek", "formation"],
+  "extensionDependencies": ["kilocode.kilo-code"],
+  "activationEvents": ["onStartupFinished", "onUri"],
+  "main": "./dist/extension.js",
+  "contributes": {},
+  "scripts": {
+    "build": "node esbuild.mjs",
+    "watch": "node esbuild.mjs --watch",
+    "typecheck": "tsc --noEmit -p .",
+    "test": "vitest run",
+    "package": "npm run build && node scripts/package.mjs"
+  },
+  "dependencies": {
+    "jsonc-parser": "^3.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/vscode": "~1.105.0",
+    "@vscode/vsce": "^3.6.0",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.2.0"
+  }
+}
