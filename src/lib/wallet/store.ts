@@ -257,26 +257,3 @@ export async function grantAdminBonus(
   await creditCoins(target, amount, "admin_bonus", reason);
   return { count: 1 };
 }
-
-/** Débite des coins pour recharger le crédit IA (FORGEIA CODE). Lève une erreur si le solde est insuffisant. */
-export async function debitCoinsForIa(enrollmentId: string, coins: number): Promise<number> {
-  const supabase = getSupabaseAdmin();
-  const wallet = await getOrCreateStudentWallet(enrollmentId);
-  if (wallet.balanceCoins < coins) {
-    throw new Error(`Solde insuffisant : tu as ${wallet.balanceCoins} coins.`);
-  }
-  const newBalance = wallet.balanceCoins - coins;
-  const { error } = await supabase
-    .from("student_wallets")
-    .update({ balance_coins: newBalance, updated_at: new Date().toISOString() })
-    .eq("enrollment_id", enrollmentId);
-  if (error) throw new Error("Échec de la mise à jour du portefeuille.");
-
-  await supabase.from("coin_transactions").insert({
-    enrollment_id: enrollmentId,
-    amount: -coins,
-    type: "ia_topup",
-    description: "Recharge du crédit IA FORGEIA CODE",
-  });
-  return newBalance;
-}
