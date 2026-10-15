@@ -7,6 +7,8 @@ import {
   applyForgeiaProvider,
   installAdaptAgents,
   kiloConfigPath,
+  readDefaultModel,
+  setDefaultModel,
   removeForgeiaApiKey,
   writeKiloConfig,
 } from "./kilo-config";
@@ -43,6 +45,31 @@ describe("applyForgeiaProvider", () => {
 
   it("starts from an empty object when the file is blank", () => {
     expect(parse(applyForgeiaProvider("", OPTS)).model).toBe("forgeia/forgeia-coder");
+  });
+});
+
+describe("default model", () => {
+  it("reads the student's own default model", () => {
+    expect(readDefaultModel('{ "model": "anthropic/claude-sonnet" }')).toBe("anthropic/claude-sonnet");
+    expect(readDefaultModel(EMPTY)).toBeUndefined();
+  });
+
+  it("restores the previous default model on sign-out", () => {
+    const signedIn = applyForgeiaProvider(
+      `{
+  // perso
+  "model": "anthropic/claude-sonnet"
+}`,
+      OPTS,
+    );
+    expect(parse(signedIn).model).toBe("forgeia/forgeia-coder");
+    const restored = setDefaultModel(signedIn, "anthropic/claude-sonnet");
+    expect(parse(restored).model).toBe("anthropic/claude-sonnet");
+    expect(restored).toContain("// perso");
+  });
+
+  it("removes the default model when the student had none", () => {
+    expect(parse(setDefaultModel(applyForgeiaProvider(EMPTY, OPTS), undefined)).model).toBeUndefined();
   });
 });
 
