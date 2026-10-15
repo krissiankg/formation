@@ -27,6 +27,7 @@ const sections: { title: string | null; items: NavItem[] }[] = [
       { label: "Quiz", href: "/admin/tests" },
       { label: "Calendrier des séances", href: "/admin/seances" },
       { label: "Liste de préparation", href: "/admin/todos" },
+      { label: "Assistant IA", href: "/admin/ia" },
     ],
   },
   {
