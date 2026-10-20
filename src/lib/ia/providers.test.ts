@@ -17,6 +17,13 @@ describe("getIaProvider", () => {
     expect(getIaProvider({}).resolveModel("forgeia-coder")).toBe("deepseek-ai/deepseek-v4-flash-0731");
   });
 
+  it("uses DeepSeek V4 model names (deepseek-chat / deepseek-reasoner retired on 2026-07-24)", () => {
+    const deepseek = getIaProvider({ IA_PROVIDER: "deepseek", DEEPSEEK_API_KEY: "k" });
+    expect(deepseek.resolveModel("forgeia-coder")).toBe("deepseek-v4-flash");
+    expect(deepseek.resolveModel("deepseek-chat")).toBe("deepseek-v4-flash");
+    expect(deepseek.resolveModel("deepseek-v4-pro")).toBe("deepseek-v4-pro");
+  });
+
   it("passes unknown models through unchanged", () => {
     expect(getIaProvider({}).resolveModel("custom/x")).toBe("custom/x");
   });
