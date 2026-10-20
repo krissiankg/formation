@@ -28,7 +28,7 @@ export const formation = {
   currency: "XOF",
   currencyLabel: "FCFA",
   totalPrice: 80_000,
-  // Crédit IA inclus pour chaque apprenant (passerelle FORGEIA CODE), modifiable par apprenant dans l'admin.
+  // Crédit IA inclus pour chaque apprenant (passerelle IA FORGE IA), modifiable par apprenant dans l'admin.
   iaBudgetFcfa: 5_000,
   registrationFee: 5_000,
   schedule: {
@@ -55,7 +55,7 @@ export const formation = {
     "Transformer un template UI8 ou Figma en vrai site avec l'IA",
     "Recoder un thème WordPress en site moderne et rapide",
     "Construire ton propre SaaS avec paiement Mobile Money",
-    "Maîtriser Cursor, Claude Code, Antigravity et FORGEIA CODE",
+    "Maîtriser Cursor, Claude Code et Antigravity",
     "Vendre tes services et ton produit",
   ],
   months: [

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useState, useEffect } from "react";
 import { DriveResourcesExplorer } from "@/components/espace/drive-resources-explorer";
 import { ResourcesPanel } from "@/components/espace/shared";
@@ -10,7 +9,7 @@ interface ResourcesHubClientProps {
   contents: any[];
 }
 
-type TabType = "templates" | "devtools" | "course-docs" | "coins";
+type TabType = "templates" | "course-docs" | "coins";
 
 export function ResourcesHubClient({ contents }: ResourcesHubClientProps) {
   const [activeTab, setActiveTab] = useState<TabType>("templates");
@@ -82,19 +81,6 @@ export function ResourcesHubClient({ contents }: ResourcesHubClientProps) {
 
         <button
           type="button"
-          onClick={() => setActiveTab("devtools")}
-          className={`flex-1 min-w-fit inline-flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold transition whitespace-nowrap cursor-pointer ${
-            activeTab === "devtools"
-              ? "bg-white text-[color:var(--neutral-black)] shadow-xs border border-[color:var(--border)]"
-              : "text-[color:var(--neutral-600)] hover:text-[color:var(--neutral-black)] hover:bg-white/50"
-          }`}
-        >
-          <span>⚡</span>
-          <span>Passerelle IA<span className="hidden sm:inline"> & VS Code</span></span>
-        </button>
-
-        <button
-          type="button"
           onClick={() => setActiveTab("course-docs")}
           className={`flex-1 min-w-fit inline-flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold transition whitespace-nowrap cursor-pointer ${
             activeTab === "course-docs"
@@ -133,22 +119,6 @@ export function ResourcesHubClient({ contents }: ResourcesHubClientProps) {
         {activeTab === "coins" && (
           <div className="animate-in fade-in zoom-in-98 duration-200">
             <CoinsShopSection />
-          </div>
-        )}
-
-        {/* ONGLET 2 : FORGEIA CODE (assistant IA) — tout se passe sur la page « Mon assistant IA » */}
-        {activeTab === "devtools" && (
-          <div className="animate-in fade-in zoom-in-98 duration-200">
-            <div className="rounded-2xl border border-[color:var(--border)] bg-[#171d17] p-6 text-[#fbfaf4] shadow-md sm:p-8">
-              <h3 className="font-display text-2xl font-bold tracking-tight text-white">FORGEIA CODE</h3>
-              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/70">
-                Ton assistant de code IA dans VS Code, avec les modes de la méthode ADAPT et un crédit IA inclus dans ta
-                formation. Installation, connexion et suivi de ton crédit : tout est sur ta page « Mon assistant IA ».
-              </p>
-              <Link href="/espace/assistant-ia" className="btn-primary mt-6 inline-flex !py-2.5 text-sm">
-                Ouvrir Mon assistant IA →
-              </Link>
-            </div>
           </div>
         )}
 

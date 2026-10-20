@@ -12,7 +12,7 @@ export function OPTIONS() {
   return new Response(null, { status: 204, headers: CORS_HEADERS });
 }
 
-/** Infos de l'apprenant pour FORGEIA CODE : prénom, crédit IA et exercice en cours. */
+/** Infos de l'apprenant pour les outils IA : prénom, crédit IA et exercice en cours. */
 export async function GET(request: Request) {
   const caller = await authenticateIaRequest(request);
   if (!caller || caller.kind !== "student") {

@@ -152,7 +152,7 @@ export async function handleChatCompletion(request: Request): Promise<Response> 
   if (!caller) {
     return iaError(
       401,
-      "Clé d'accès Forge IA invalide ou manquante. Connecte FORGEIA CODE depuis « Mon assistant IA » dans ton espace apprenant.",
+      "Clé d'accès Forge IA invalide ou manquante.",
       "authentication_error",
     );
   }

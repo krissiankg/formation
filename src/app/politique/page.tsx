@@ -60,11 +60,6 @@ const sections: LegalSection[] = [
             <strong>Portefeuille de coins</strong> : solde, historique des achats et des ressources débloquées.
           </li>
           <li>
-            <strong>Extension FORGEIA CODE</strong> : le code, les fichiers et les instructions que tu envoies
-            volontairement à l&apos;assistant IA, ainsi que la version installée (pour proposer les mises à
-            jour).
-          </li>
-          <li>
             <strong>Données techniques</strong> : adresse IP, type de navigateur, pages demandées et horodatage,
             enregistrés dans les journaux de nos serveurs pour assurer la sécurité et le bon fonctionnement du
             service.
@@ -100,7 +95,7 @@ const sections: LegalSection[] = [
           consentement, que tu peux retirer à tout moment en demandant son retrait.
         </li>
         <li>
-          <strong>Faire fonctionner l&apos;assistant IA</strong> de l&apos;extension FORGEIA CODE — base légale :
+          <strong>Faire fonctionner les services d&apos;IA de la plateforme</strong> — base légale :
           exécution du contrat.
         </li>
         <li>
@@ -139,7 +134,7 @@ const sections: LegalSection[] = [
           </li>
           <li>
             <strong>NVIDIA</strong> et les fournisseurs de modèles d&apos;IA qu&apos;il héberge — génération des
-            réponses de l&apos;assistant FORGEIA CODE.
+            réponses des services d&apos;IA de la plateforme.
           </li>
         </ul>
         <p>
@@ -255,10 +250,10 @@ const sections: LegalSection[] = [
   },
   {
     id: "ia",
-    title: "Assistant IA de l'extension FORGEIA CODE",
+    title: "Services d'IA de la plateforme",
     content: (
       <p>
-        Lorsque tu utilises l&apos;assistant de l&apos;extension, le code et les instructions que tu lui envoies
+        Lorsque tu utilises un service d&apos;IA de la plateforme, le code et les instructions que tu lui envoies
         transitent par notre passerelle puis sont transmis à des modèles d&apos;IA hébergés par nos
         fournisseurs, uniquement pour générer la réponse demandée. <strong>N&apos;y envoie jamais de mots de
         passe, de clés d&apos;API ou de données personnelles de tiers.</strong> Nous n&apos;utilisons pas ton
