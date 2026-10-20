@@ -37,13 +37,13 @@ const NVIDIA_MODELS: Record<string, string> = {
   "nemotron-3.5": "nvidia/nemotron-3.5-lightning-30b-a3b",
 };
 
-// Noms des modèles de l'API DeepSeek : à confirmer quand la clé sera branchée.
+// Noms des modèles de l'API DeepSeek V4 (deepseek-chat / deepseek-reasoner ont été retirés le 2026-07-24).
 const DEEPSEEK_MODELS: Record<string, string> = {
-  "forgeia-coder": "deepseek-chat",
-  "deepseek-chat": "deepseek-chat",
-  "deepseek-coder": "deepseek-chat",
-  "deepseek-v4-flash": "deepseek-chat",
-  "deepseek-v4-pro": "deepseek-reasoner",
+  "forgeia-coder": "deepseek-v4-flash",
+  "deepseek-chat": "deepseek-v4-flash",
+  "deepseek-coder": "deepseek-v4-flash",
+  "deepseek-v4-flash": "deepseek-v4-flash",
+  "deepseek-v4-pro": "deepseek-v4-pro",
 };
 
 const key = (value: string | undefined) => value?.trim() || null;
