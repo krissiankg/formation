@@ -52,5 +52,3 @@ next-env.d.ts
 # Espace de travail des plans (superpowers)
 .superpowers/
 
-# Extension FORGEIA CODE : le .vsix est construit par la CI à chaque déploiement.
-public/downloads/forgeia-code-*.vsix

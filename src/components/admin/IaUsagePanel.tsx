@@ -32,7 +32,7 @@ export function IaUsagePanel({ rows, defaultBudget, usdToFcfa }: { rows: IaStude
       <PageHeader
         kicker="Formation"
         title="Assistant IA"
-        description={`Consommation de FORGEIA CODE par apprenant. Crédit inclus par défaut : ${formatFcfa(defaultBudget)}.`}
+        description={`Consommation de la passerelle IA par apprenant. Crédit inclus par défaut : ${formatFcfa(defaultBudget)}.`}
       />
 
       <div className="grid grid-cols-3 gap-2 sm:gap-3">

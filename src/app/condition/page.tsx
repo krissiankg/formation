@@ -52,7 +52,7 @@ const sections: LegalSection[] = [
             une <strong>bibliothèque de ressources pédagogiques</strong> accessible avec des coins ;
           </li>
           <li>
-            l&apos;<strong>extension FORGEIA CODE</strong> pour Visual Studio Code, avec un assistant IA.
+            des <strong>outils d&apos;intelligence artificielle</strong> utilisés pendant la formation.
           </li>
         </ul>
         <p>
@@ -182,22 +182,21 @@ const sections: LegalSection[] = [
     ),
   },
   {
-    id: "extension",
-    title: "Extension FORGEIA CODE et intelligence artificielle",
+    id: "ia",
+    title: "Outils d'intelligence artificielle",
     content: (
       <ul>
         <li>
-          L&apos;extension est mise à disposition des apprenants pour la durée de leur accès à la plateforme.
-          Elle reste la propriété de {legal.publisher} et des auteurs des logiciels libres dont elle dérive,
-          selon leurs licences respectives.
+          Les outils d&apos;IA présentés pendant la formation (Cursor, Antigravity, Claude Code…) sont des
+          services tiers soumis à leurs propres conditions d&apos;utilisation.
         </li>
         <li>
-          L&apos;assistant s&apos;appuie sur des modèles d&apos;IA tiers. Ses réponses peuvent être
+          Ces outils s&apos;appuient sur des modèles d&apos;IA tiers. Ses réponses peuvent être
           inexactes, incomplètes ou non sécurisées : <strong>tu dois relire et tester tout code généré</strong>{" "}
           avant de l&apos;utiliser, en particulier en production.
         </li>
         <li>
-          N&apos;envoie jamais à l&apos;assistant de mots de passe, de clés d&apos;API ou de données
+          N&apos;envoie jamais à une IA de mots de passe, de clés d&apos;API ou de données
           personnelles de tiers. Le fonctionnement de l&apos;assistant est décrit dans notre{" "}
           <Link href="/politique#ia">politique de confidentialité</Link>.
         </li>

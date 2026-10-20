@@ -24,7 +24,6 @@ const sections: { title: string | null; items: NavItem[] }[] = [
   {
     title: "Outils",
     items: [
-      { label: "Mon assistant IA", href: "/espace/assistant-ia", icon: "🤖" },
       { label: "Ressources & IA", href: "/espace/ressources", icon: "⚡" },
       { label: "Boutique de coins", href: "/espace/coins", icon: "🪙" },
     ],
