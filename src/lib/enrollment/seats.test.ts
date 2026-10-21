@@ -22,4 +22,10 @@ describe("computeSeats", () => {
     const seats = computeSeats(Array.from({ length: 21 }, () => paid("saturday_pm")), 20);
     expect(seats.saturday_pm).toEqual({ taken: 21, left: 0, full: true });
   });
+
+  it("ignores test accounts (@forgeia.local)", () => {
+    const test = { ...paid("saturday"), email: "test.apprenant@forgeia.local" };
+    const real = { ...paid("saturday"), email: "awa@gmail.com" };
+    expect(computeSeats([test, real], 20).saturday).toEqual({ taken: 1, left: 19, full: false });
+  });
 });
