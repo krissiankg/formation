@@ -1,3 +1,4 @@
+import type { SessionSchedule } from "@/lib/programme/types";
 import { NextResponse } from "next/server";
 import {
   createSession,
@@ -39,7 +40,7 @@ export async function POST(request: Request) {
           sessionDate: body.sessionDate,
           hours: body.hours,
           location: body.location,
-          schedule: body.schedule as "saturday" | "sunday" | "both",
+          schedule: body.schedule as SessionSchedule,
           lessonId: body.lessonId,
         });
         return NextResponse.json({ session });
@@ -51,7 +52,7 @@ export async function POST(request: Request) {
           sessionDate: body.sessionDate,
           hours: body.hours,
           location: body.location,
-          schedule: body.schedule as "saturday" | "sunday" | "both" | undefined,
+          schedule: body.schedule as SessionSchedule | undefined,
           lessonId: body.lessonId,
         });
         return NextResponse.json({ session });

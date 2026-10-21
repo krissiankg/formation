@@ -4,13 +4,17 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { InscriptionForm } from "@/components/InscriptionForm";
 import { formation } from "@/lib/config/formation";
 import { formatFcfa } from "@/lib/format";
+import { getSeats } from "@/lib/enrollment/seats-server";
 
 export const metadata = {
   title: `Inscription — ${formation.title}`,
-  description: `Réserve ta place pour ${formation.title}. Frais d'inscription ${formatFcfa(formation.registrationFee)}.`,
+  description: `Réserve ta place pour ${formation.title}. Préinscription ${formatFcfa(formation.registrationFee)}.`,
 };
 
-export default function InscriptionPage() {
+export const dynamic = "force-dynamic";
+
+export default async function InscriptionPage() {
+  const seats = await getSeats();
   return (
     <>
       <SiteHeader />
@@ -21,11 +25,12 @@ export default function InscriptionPage() {
             Rejoins la cohorte {formation.startLabel}
           </h1>
           <p className="mt-4 leading-relaxed text-[color:var(--neutral-600)]">
-            Remplis le formulaire, choisis samedi ou dimanche, puis paie{" "}
-            {formatFcfa(formation.registrationFee)} pour verrouiller ta place.
+            Remplis le formulaire, choisis ta classe (samedi matin, samedi après-midi ou dimanche matin),
+            puis paie la préinscription de {formatFcfa(formation.registrationFee)} pour réserver ta place.
           </p>
           <ul className="mt-8 space-y-3 text-sm text-[color:var(--neutral-600)]">
-            <li>• Formation présentielle · {formation.startLabel} → {formation.endLabel}</li>
+            <li>• {formation.sessionsCount} séances en présentiel · {formation.startLabel} → {formation.endLabel}</li>
+            <li>• {formation.seatsHint} · lieu communiqué avant la première séance</li>
             <li>• Total : {formatFcfa(formation.totalPrice)}</li>
             <li>• WhatsApp obligatoire pour les notifications de contenu</li>
             <li>• Paiement par Mobile Money</li>
@@ -38,7 +43,7 @@ export default function InscriptionPage() {
           </p>
         </div>
         <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--neutral-50)] p-5 shadow-[0_20px_60px_rgba(23,29,23,0.06)] sm:p-8">
-          <InscriptionForm />
+          <InscriptionForm seats={seats} />
         </div>
       </main>
       <SiteFooter />

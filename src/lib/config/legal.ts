@@ -6,5 +6,5 @@ export const legal = {
   address: "Abomey-Calavi, Bénin",
   email: "contact@guelichweb.store",
   siteUrl: "https://forgeia.guelichweb.store",
-  lastUpdated: "12 octobre 2026",
+  lastUpdated: "21 octobre 2026",
 } as const;

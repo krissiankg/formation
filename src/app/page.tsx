@@ -43,8 +43,8 @@ function Hero() {
           </h1>
           <p className="mt-6 max-w-xl text-lg leading-relaxed text-[color:var(--neutral-600)]">
             {brand.shortDescription} Formation présentielle ·{" "}
-            {formation.startLabel} → {formation.endLabel} · samedi ou dimanche,
-            9h–14h.
+            {formation.sessionsCount} séances du {formation.startLabel} au {formation.endLabel} · 3 classes
+            au choix · 20 places maximum par classe.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link href="/inscription" className="btn-primary">
@@ -192,17 +192,33 @@ function Format() {
             Présentiel. Intense. Connecté.
           </h2>
           <p className="mt-4 leading-relaxed text-[color:var(--neutral-600)]">
-            Tu choisis un créneau unique. Sur place on construit. Sur la
-            plateforme tu récupères outils, prompts, codes et tests — publiés
-            progressivement, avec notif WhatsApp.
+            {formation.sessionsCount} séances de 4 h 30, une par semaine, du {formation.startLabel} au{" "}
+            {formation.endLabel}. Tu choisis ta classe à la préinscription. Sur place on construit ; sur la
+            plateforme tu récupères outils, prompts, codes et tests, publiés au fil des séances avec une
+            alerte WhatsApp.
           </p>
+          <ul className="mt-5 space-y-2 text-sm text-[color:var(--neutral-600)]">
+            <li>
+              • <strong className="text-[color:var(--neutral-black)]">20 places maximum par classe</strong> : une
+              classe complète n&apos;est plus proposée.
+            </li>
+            <li>
+              • <strong className="text-[color:var(--neutral-black)]">Notre défi</strong> : si une classe
+              n&apos;atteint pas le nombre minimum d&apos;inscrits, les classes seront fusionnées — tu seras
+              prévenu à l&apos;avance.
+            </li>
+            <li>
+              • <strong className="text-[color:var(--neutral-black)]">Lieu</strong> : communiqué aux inscrits
+              avant la première séance.
+            </li>
+          </ul>
         </Reveal>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
           {Object.values(formation.schedule).map((slot, i) => (
             <Reveal key={slot.id} delay={i * 80}>
               <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--neutral-50)] p-5">
                 <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-[color:var(--neutral-500)]">
-                  0{i + 1} · Créneau
+                  Classe {i + 1} · {formation.maxPerClass} places
                 </p>
                 <p className="font-display mt-2 text-xl">{slot.label}</p>
                 <p className="mt-1 text-[color:var(--accent-dark)]">{slot.hours}</p>
@@ -238,13 +254,13 @@ function Pricing() {
           <Reveal>
             <div className="rounded-2xl border border-[color:var(--accent)] bg-[color:var(--accent-lightest)] p-6">
               <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-[color:var(--neutral-500)]">
-                Frais d&apos;inscription
+                Préinscription obligatoire
               </p>
               <p className="font-display mt-2 text-4xl text-[color:var(--accent-darkest)]">
                 {formatFcfa(formation.registrationFee)}
               </p>
               <p className="mt-3 text-sm text-[color:var(--neutral-600)]">
-                Payés lors du formulaire. Paiement sécurisé par Mobile Money.
+                Réserve ta place dans la classe choisie. Paiement sécurisé par Mobile Money, non remboursable.
               </p>
               <Link href="/inscription" className="btn-primary mt-6 w-full sm:w-auto">
                 S&apos;inscrire maintenant
@@ -299,7 +315,7 @@ function Platform() {
           {[
             {
               title: "Programme & séances",
-              text: "Suis le fil des samedis ou dimanches, séance après séance.",
+              text: "Suis le fil de ta classe, séance après séance.",
             },
             {
               title: "Outils & codes",
@@ -379,8 +395,8 @@ function FinalCta() {
               </h2>
               <p className="mt-4 text-white/65">
                 Remplis le formulaire, choisis ton créneau, paie{" "}
-                {formatFcfa(formation.registrationFee)} — et rejoins la cohorte
-                d&apos;octobre 2026.
+                {formatFcfa(formation.registrationFee)} de préinscription — et rejoins la cohorte
+                du {formation.startLabel}.
               </p>
               <Link
                 href="/inscription"

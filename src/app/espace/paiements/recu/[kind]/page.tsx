@@ -13,7 +13,7 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 const kindTitles: Record<PaymentKind, string> = {
-  registration: "Frais d'inscription & réservation de place",
+  registration: "Préinscription & réservation de place",
   start: "1ère Tranche — Démarrage de la formation",
   month1: "2ème Tranche — Solde de la formation",
   month3: "3ème Tranche — Ancien échéancier",
@@ -107,9 +107,9 @@ export default async function RecuPage({
               <p className="text-xs font-mono uppercase tracking-wider text-gray-400">Programme & Cohorte</p>
               <p className="mt-1 text-sm font-semibold text-gray-900">{brand.name} — {brand.tagline}</p>
               <p className="text-xs text-gray-600">
-                Créneau : {enrollment.schedule === "saturday" ? "Samedi 9h–14h" : "Dimanche 9h–14h"}
+                Créneau : {formation.schedule[enrollment.schedule].label} · {formation.schedule[enrollment.schedule].hours}
               </p>
-              <p className="text-xs text-gray-600">Durée : 3 mois présentiels (Octobre 2026)</p>
+              <p className="text-xs text-gray-600">Durée : {formation.sessionsCount} séances présentielles, du {formation.startLabel} au {formation.endLabel}</p>
             </div>
           </div>
 

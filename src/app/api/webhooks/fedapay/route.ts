@@ -9,7 +9,7 @@ import type { PaymentKind } from "@/lib/types";
 export const runtime = "nodejs";
 
 const installmentLabels: Record<string, string> = {
-  registration: "Frais d'inscription",
+  registration: "Préinscription",
   start: "Tranche 1 (Démarrage)",
   month1: "Tranche 2 (Solde)",
   month3: "Tranche 3 (ancien échéancier)",

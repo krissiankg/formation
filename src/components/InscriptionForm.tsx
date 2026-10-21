@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import { formation } from "@/lib/config/formation";
 import type { ScheduleId } from "@/lib/types";
 import { formatFcfa } from "@/lib/format";
+import type { Seats } from "@/lib/enrollment/seats";
 
 type InscriptionState = {
   fullName: string;
@@ -15,12 +16,15 @@ type InscriptionState = {
   promoCode: string;
 };
 
-export function InscriptionForm() {
+export function InscriptionForm({ seats }: { seats: Seats }) {
+  const slots = Object.values(formation.schedule);
+  const firstOpen = slots.find((slot) => !seats[slot.id].full)?.id ?? "saturday";
+  const allFull = slots.every((slot) => seats[slot.id].full);
   const [form, setForm] = useState<InscriptionState>({
     fullName: "",
     email: "",
     whatsapp: "",
-    schedule: "saturday",
+    schedule: firstOpen,
     acceptTerms: false,
     promoCode: "",
   });
@@ -133,19 +137,25 @@ export function InscriptionForm() {
       />
 
       <fieldset>
-        <legend className="mb-3 text-sm font-medium text-[color:var(--neutral-black)]">
-          Créneau de formation
+        <legend className="mb-2 text-sm font-medium text-[color:var(--neutral-black)]">
+          Ta classe (créneau de formation)
         </legend>
-        <div className="grid gap-3 sm:grid-cols-2">
-          {Object.values(formation.schedule).map((slot) => {
+        <p className="mb-3 text-xs leading-relaxed text-[color:var(--neutral-600)]">
+          {formation.classPolicy}
+        </p>
+        <div className="grid gap-3 sm:grid-cols-3">
+          {slots.map((slot) => {
             const selected = form.schedule === slot.id;
+            const { left, full } = seats[slot.id];
             return (
               <label
                 key={slot.id}
-                className={`cursor-pointer rounded-xl border p-4 transition ${
-                  selected
-                    ? "border-[color:var(--accent)] bg-[color:var(--accent-lightest)]"
-                    : "border-[color:var(--border)] bg-[color:var(--neutral-50)] hover:border-[color:var(--accent)]"
+                className={`rounded-xl border p-4 transition ${
+                  full
+                    ? "cursor-not-allowed border-[color:var(--border)] bg-[color:var(--neutral-100)] opacity-60"
+                    : selected
+                      ? "cursor-pointer border-[color:var(--accent)] bg-[color:var(--accent-lightest)]"
+                      : "cursor-pointer border-[color:var(--border)] bg-[color:var(--neutral-50)] hover:border-[color:var(--accent)]"
                 }`}
               >
                 <input
@@ -153,16 +163,23 @@ export function InscriptionForm() {
                   name="schedule"
                   className="sr-only"
                   checked={selected}
+                  disabled={full}
                   onChange={() => setForm((s) => ({ ...s, schedule: slot.id }))}
                 />
-                <p className="font-medium text-[color:var(--neutral-black)]">
-                  {slot.label}
-                </p>
+                <p className="font-medium text-[color:var(--neutral-black)]">{slot.label}</p>
                 <p className="mt-1 text-sm accent-text">{slot.hours}</p>
+                <p className={`mt-2 text-xs font-medium ${full ? "text-[color:var(--error)]" : "text-[color:var(--neutral-500)]"}`}>
+                  {full ? "Complet" : `${left} place${left > 1 ? "s" : ""} restante${left > 1 ? "s" : ""}`}
+                </p>
               </label>
             );
           })}
         </div>
+        {allFull ? (
+          <p className="mt-3 text-sm text-[color:var(--error)]">
+            Toutes les classes sont complètes. Écris-nous sur WhatsApp pour être sur la liste d&apos;attente.
+          </p>
+        ) : null}
       </fieldset>
 
       {/* ── Code promo (discret sans exemple affiché) ─────────────────────────── */}
@@ -247,7 +264,7 @@ export function InscriptionForm() {
         />
         <span>
           Je confirme mon choix de créneau, je m&apos;engage à payer{" "}
-          {promoApplied ? "0 FCFA" : formatFcfa(formation.registrationFee)} (non remboursables) pour réserver
+          {promoApplied ? "0 FCFA" : formatFcfa(formation.registrationFee)} de préinscription (non remboursables) pour réserver
           ma place et j&apos;accepte les{" "}
           <Link href="/condition" target="_blank" className="accent-text underline">
             conditions d&apos;utilisation
@@ -266,12 +283,12 @@ export function InscriptionForm() {
         </p>
       ) : null}
 
-      <button type="submit" className="btn-primary w-full" disabled={loading}>
+      <button type="submit" className="btn-primary w-full" disabled={loading || allFull}>
         {loading
           ? "Traitement en cours…"
           : promoApplied
             ? "Confirmer mon inscription (0 FCFA)"
-            : `Payer ${formatFcfa(formation.registrationFee)} et s'inscrire`}
+            : `Payer la préinscription (${formatFcfa(formation.registrationFee)})`}
       </button>
     </form>
   );

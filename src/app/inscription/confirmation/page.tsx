@@ -102,7 +102,7 @@ export default async function ConfirmationPage({ searchParams }: Props) {
           value={`${formation.schedule[enrollment.schedule].label} · ${formation.schedule[enrollment.schedule].hours}`}
         />
         <Row
-          label="Frais d'inscription"
+          label="Préinscription"
           value={`${formatFcfa(formation.registrationFee)} · ${paid ? "Payé" : "En attente"}`}
         />
       </dl>
