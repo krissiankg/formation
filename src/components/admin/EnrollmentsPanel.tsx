@@ -47,7 +47,7 @@ export function EnrollmentsPanel({
         <SummaryCard label="Total" value={String(stats.total)} />
         <SummaryCard label="Payés" value={String(stats.paidCount)} accent />
         <SummaryCard
-          label="Recettes inscription"
+          label="Recettes préinscription"
           value={formatFcfa(stats.revenue)}
           hint={`${formation.registrationFee.toLocaleString("fr-FR")} FCFA / apprenant`}
         />
