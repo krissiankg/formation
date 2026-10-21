@@ -5,9 +5,9 @@ import type { Enrollment } from "@/lib/types";
 
 /**
  * Accès à la formation, par module (ordre du module) :
- * - inscription payée (5 000 F)      → module 0 « Avant de commencer »
- * - 1re tranche payée (25 000 F)     → + module 1 « Mois 1 »
- * - solde payé (50 000 F)            → toute la formation
+ * - préinscription payée (2 500 F)  → module 0 « Avant de commencer »
+ * - 1re tranche payée (30 000 F)     → + module 1 « Mois 1 »
+ * - solde payé (47 500 F)            → toute la formation
  * Le choix de l'admin (accès complet / bloqué) est prioritaire sur les paiements.
  */
 export type CourseAccess = {
@@ -52,7 +52,7 @@ export function moduleLockMessage(access: CourseAccess, moduleSortOrder: number)
   if (access.blocked) return "Accès suspendu — contacte le formateur.";
   const [start, balance] = formation.installments;
   if (access.maxModuleSort < 0) {
-    return `Se débloque après le paiement de l'inscription (${formatFcfa(formation.registrationFee)}).`;
+    return `Se débloque après le paiement de la préinscription (${formatFcfa(formation.registrationFee)}).`;
   }
   if (moduleSortOrder <= 1 && start) {
     return `Se débloque après le paiement de la 1re tranche (${formatFcfa(start.amount)}).`;

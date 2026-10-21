@@ -1,4 +1,4 @@
-export type ScheduleId = "saturday" | "sunday";
+export type ScheduleId = "saturday" | "saturday_pm" | "sunday";
 
 export type InscriptionInput = {
   fullName: string;
@@ -28,8 +28,8 @@ export function validateInscription(body: unknown): {
   if (whatsapp.length < 8 || !/^[+\d\s()-]+$/.test(whatsapp)) {
     return { error: "Numéro WhatsApp invalide" };
   }
-  if (schedule !== "saturday" && schedule !== "sunday") {
-    return { error: "Choisis ton créneau (samedi ou dimanche)" };
+  if (schedule !== "saturday" && schedule !== "saturday_pm" && schedule !== "sunday") {
+    return { error: "Choisis ton créneau (samedi matin, samedi après-midi ou dimanche matin)" };
   }
   if (!acceptTerms) return { error: "Tu dois accepter les conditions" };
 

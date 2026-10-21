@@ -150,8 +150,9 @@ export function SessionsPanel({
                 }))
               }
             >
-              <option value="both">Samedi & dimanche</option>
-              <option value="saturday">Samedi seulement</option>
+              <option value="both">Toutes les classes</option>
+              <option value="saturday">Samedi matin seulement</option>
+              <option value="saturday_pm">Samedi après-midi seulement</option>
               <option value="sunday">Dimanche seulement</option>
             </select>
             <select
@@ -218,8 +219,9 @@ export function SessionsPanel({
                     value={editing.schedule}
                     onChange={(e) => setEditing({ ...editing, schedule: e.target.value as FormationSession["schedule"] })}
                   >
-                    <option value="both">Samedi & dimanche</option>
-                    <option value="saturday">Samedi seulement</option>
+                    <option value="both">Toutes les classes</option>
+                    <option value="saturday">Samedi matin seulement</option>
+                    <option value="saturday_pm">Samedi après-midi seulement</option>
                     <option value="sunday">Dimanche seulement</option>
                   </select>
                   <select
@@ -260,13 +262,11 @@ export function SessionsPanel({
                     <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-[color:var(--accent-darkest)]">
                       {session.schedule === "both"
                         ? "Tous créneaux"
-                        : session.schedule === "saturday"
-                          ? "Samedi"
-                          : "Dimanche"}
+                        : formation.schedule[session.schedule].label}
                     </p>
                     <h3 className="mt-1 text-lg font-semibold">{session.title}</h3>
                     <p className="mt-2 text-sm text-[color:var(--neutral-600)]">
-                      {formatSessionDateLabel(session.sessionDate, session.schedule === "sunday" ? "sunday" : "saturday")} · {session.hours}
+                      {formatSessionDateLabel(session.sessionDate, session.schedule === "both" ? "saturday" : session.schedule)} · {session.hours}
                     </p>
                     <p className="text-sm text-[color:var(--neutral-500)]">{session.location}</p>
                   </div>

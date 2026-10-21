@@ -16,7 +16,7 @@ export function getInstallmentConfig(kind: string) {
 }
 
 export function getInstallmentLabel(kind: PaymentKind): string {
-  if (kind === "registration") return "Inscription";
+  if (kind === "registration") return "Préinscription";
   return getInstallmentConfig(kind)?.label ?? LEGACY_LABELS[kind];
 }
 

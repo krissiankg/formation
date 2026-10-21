@@ -11,6 +11,7 @@ export function getAdminStats(enrollments: Enrollment[], contents: ContentItem[]
       !e.payments.some((p) => p.kind === "registration" && p.status === "paid"),
   );
   const saturday = enrollments.filter((e) => e.schedule === "saturday").length;
+  const saturdayPm = enrollments.filter((e) => e.schedule === "saturday_pm").length;
   const sunday = enrollments.filter((e) => e.schedule === "sunday").length;
   const published = contents.filter((c) => c.published).length;
   const revenue = paid.length * formation.registrationFee;
@@ -20,6 +21,7 @@ export function getAdminStats(enrollments: Enrollment[], contents: ContentItem[]
     paidCount: paid.length,
     pendingCount: pending.length,
     saturday,
+    saturdayPm,
     sunday,
     published,
     draftCount: contents.length - published,

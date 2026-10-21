@@ -81,8 +81,17 @@ const sections: LegalSection[] = [
           partager ton accès avec une autre personne.
         </li>
         <li>
-          Ta place est réservée dès la confirmation du paiement des frais d&apos;inscription, dans la limite
-          des places disponibles par créneau.
+          Ta place est réservée dès la confirmation du paiement de la préinscription, dans la limite de{" "}
+          {formation.maxPerClass} places par classe (samedi matin, samedi après-midi ou dimanche matin).
+        </li>
+        <li>
+          Si une classe n&apos;atteint pas le nombre minimum d&apos;inscrits, {brand.name} peut fusionner les
+          classes. Tu en es prévenu à l&apos;avance et peux rejoindre une autre classe ; si aucune ne te
+          convient, les sommes versées te sont remboursées.
+        </li>
+        <li>
+          La formation a lieu en présentiel. Le lieu exact est communiqué aux inscrits avant la première
+          séance.
         </li>
       </ul>
     ),
@@ -98,7 +107,7 @@ const sections: LegalSection[] = [
         </p>
         <ul>
           <li>
-            <strong>Frais d&apos;inscription</strong> : {formatFcfa(formation.registrationFee)}, payables à
+            <strong>Préinscription obligatoire</strong> : {formatFcfa(formation.registrationFee)}, payable à
             l&apos;inscription pour réserver ta place ;
           </li>
           {formation.installments.map((i) => (
@@ -126,8 +135,8 @@ const sections: LegalSection[] = [
     content: (
       <ul>
         <li>
-          <strong>Les frais d&apos;inscription ({formatFcfa(formation.registrationFee)}) ne sont pas
-          remboursables</strong> : ils servent à réserver ta place et à organiser la cohorte.
+          <strong>La préinscription ({formatFcfa(formation.registrationFee)}) n&apos;est pas
+          remboursable</strong> : ils servent à réserver ta place et à organiser la cohorte.
         </li>
         <li>
           Une tranche déjà payée n&apos;est pas remboursée si tu abandonnes la formation ou ne te présentes
@@ -135,7 +144,7 @@ const sections: LegalSection[] = [
         </li>
         <li>
           <strong>Si {brand.name} annule la formation</strong>, ou la reporte et que tu ne souhaites pas suivre
-          la nouvelle session, les sommes versées (y compris les frais d&apos;inscription) te sont remboursées
+          la nouvelle session, les sommes versées (y compris la préinscription) te sont remboursées
           intégralement dans un délai de 30 jours, par le moyen de paiement utilisé ou par Mobile Money.
         </li>
         <li>

@@ -1,5 +1,5 @@
 import { randomBytes, scryptSync, timingSafeEqual } from "crypto";
-import type { AccessOverride, Enrollment, EnrollmentStatus, PaymentStatus, PaymentKind } from "@/lib/types";
+import type { AccessOverride, Enrollment, EnrollmentStatus, PaymentStatus, PaymentKind, ScheduleId } from "@/lib/types";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { initStudentProgress } from "@/lib/store/progress";
 import { MANUAL_PAYMENT_REF } from "@/lib/programme/installments";
@@ -9,7 +9,7 @@ type EnrollmentRow = {
   full_name: string;
   email: string;
   whatsapp: string;
-  schedule: "saturday" | "sunday";
+  schedule: ScheduleId;
   status: EnrollmentStatus;
   avatar_url?: string | null;
   password_hash?: string | null;
@@ -51,7 +51,7 @@ export async function createEnrollment(input: {
   fullName: string;
   email: string;
   whatsapp: string;
-  schedule: "saturday" | "sunday";
+  schedule: ScheduleId;
   payments: Enrollment["payments"];
 }): Promise<Enrollment> {
   const supabase = getSupabaseAdmin();

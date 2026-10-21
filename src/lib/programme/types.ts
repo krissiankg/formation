@@ -1,6 +1,6 @@
 export type ModuleStatus = "completed" | "current" | "locked" | "upcoming";
 export type LessonType = "séance" | "outil" | "code" | "test" | "défi" | "recherche";
-export type SessionSchedule = "saturday" | "sunday" | "both";
+export type SessionSchedule = "saturday" | "saturday_pm" | "sunday" | "both";
 
 export type FormationModule = {
   id: string;

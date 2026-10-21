@@ -10,6 +10,7 @@ import {
 } from "@/lib/integrations";
 import { formatFcfa } from "@/lib/format";
 import { getPublicOrigin } from "@/lib/http/public-origin";
+import { getSeats } from "@/lib/enrollment/seats-server";
 
 export async function POST(request: Request) {
   try {
@@ -21,6 +22,18 @@ export async function POST(request: Request) {
     }
 
     const data = parsed.data;
+
+    // 20 places maximum par classe : un créneau complet n'accepte plus de préinscription.
+    const seats = await getSeats();
+    if (seats[data.schedule].full) {
+      return NextResponse.json(
+        {
+          error: `Le créneau « ${formation.schedule[data.schedule].label} » est complet. Choisis un autre créneau.`,
+        },
+        { status: 409 },
+      );
+    }
+
     const enrollment = await createEnrollment({
       ...data,
       payments: [
@@ -45,7 +58,7 @@ export async function POST(request: Request) {
 
     const tx = await createFedapayTransaction({
       amount: formation.registrationFee,
-      description: `Frais d'inscription — ${formation.title}`,
+      description: `Préinscription — ${formation.title}`,
       customer: {
         firstname,
         lastname,
@@ -79,8 +92,8 @@ export async function POST(request: Request) {
       await notifyWhatsApp(
         data.whatsapp,
         `*Bienvenue sur FORGEIA, ${firstname} !*\n\n` +
-          `Ton inscription pour la cohorte d'octobre 2026 (${scheduleLabel}) est bien enregistrée.\n\n` +
-          `👉 *Finalise ta place en réglant les frais d'inscription (${formatFcfa(formation.registrationFee)}) :*\n` +
+          `Ta préinscription pour la cohorte de novembre 2026 (${scheduleLabel}) est bien enregistrée.\n\n` +
+          `👉 *Réserve ta place en réglant ta préinscription (${formatFcfa(formation.registrationFee)}) :*\n` +
           `${paymentUrl}\n\n` +
           `Une fois ton paiement validé, ton espace apprenant sera débloqué immédiatement.\n\n` +
           `_L'équipe FORGEIA_`,

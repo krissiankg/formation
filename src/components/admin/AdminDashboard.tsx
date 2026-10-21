@@ -72,8 +72,8 @@ export function AdminDashboard({
         />
         <Kpi
           label="Créneaux"
-          value={`${stats.saturday} / ${stats.sunday}`}
-          hint="Samedi · Dimanche"
+          value={`${stats.saturday} / ${stats.saturdayPm} / ${stats.sunday}`}
+          hint="Sam. matin · Sam. après-midi · Dim."
         />
         <Kpi
           label="Contenus"

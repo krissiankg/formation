@@ -169,7 +169,7 @@ const sections: LegalSection[] = [
           <strong>Paiements et reçus</strong> : 10 ans, au titre des obligations comptables.
         </li>
         <li>
-          <strong>Inscriptions non finalisées</strong> (frais d&apos;inscription jamais payés) : 12 mois.
+          <strong>Inscriptions non finalisées</strong> (préinscription jamais payée) : 12 mois.
         </li>
         <li>
           <strong>Journaux techniques</strong> : 30 jours.
