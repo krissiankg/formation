@@ -58,7 +58,7 @@ export function AdminDashboard({
             <p className="mt-4 text-2xl font-medium text-[color:var(--accent-light)]">
               {formatFcfa(stats.revenue)}
             </p>
-            <p className="mt-1 text-xs text-white/40">Frais d&apos;inscription encaissés</p>
+            <p className="mt-1 text-xs text-white/40">Préinscriptions encaissées</p>
           </div>
         </div>
       </section>

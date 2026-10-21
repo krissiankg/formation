@@ -209,7 +209,7 @@ export function InscriptionForm({ seats }: { seats: Seats }) {
         </div>
         {promoChecked === "valid" && (
           <p className="text-sm font-medium text-green-600">
-            ✓ Code valide — frais d&apos;inscription offerts !
+            ✓ Code valide — préinscription offerte !
           </p>
         )}
         {promoChecked === "invalid" && (
@@ -226,7 +226,7 @@ export function InscriptionForm({ seats }: { seats: Seats }) {
         </p>
         <ul className="mt-3 space-y-2">
           <li className="flex justify-between gap-3">
-            <span>Frais d&apos;inscription (maintenant)</span>
+            <span>Préinscription (maintenant)</span>
             {promoApplied ? (
               <span className="font-medium text-green-600">
                 <s className="mr-1 text-[color:var(--neutral-400)]">{formatFcfa(formation.registrationFee)}</s>
