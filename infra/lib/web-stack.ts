@@ -18,11 +18,11 @@ export interface ForgeiaWebStackProps extends cdk.StackProps {
   /** Certificat ACM en us-east-1 couvrant tous les domaineNames. */
   certificateArn: string;
   domainNames: string[];
+  redirectLegacyDomains?: boolean;
 }
 
 // Clés du secret forgeia/web/env injectées dans le conteneur (toutes doivent exister dans le JSON).
 const ENV_SECRET_KEYS = [
-  "NEXT_PUBLIC_APP_URL",
   "NEXT_PUBLIC_SUPABASE_URL",
   "NEXT_PUBLIC_SUPABASE_ANON_KEY",
   "SUPABASE_SERVICE_ROLE_KEY",
@@ -108,6 +108,8 @@ export class ForgeiaWebStack extends cdk.Stack {
       logging: ecs.LogDrivers.awsLogs({ logGroup, streamPrefix: "web" }),
       environment: {
         NODE_ENV: "production",
+        NEXT_PUBLIC_APP_URL: "https://www.forgeia.site",
+        LEGACY_DOMAIN_REDIRECTS: props.redirectLegacyDomains ? "true" : "false",
         UPLOADS_BUCKET: uploadsBucket.bucketName,
         AWS_REGION: this.region,
       },

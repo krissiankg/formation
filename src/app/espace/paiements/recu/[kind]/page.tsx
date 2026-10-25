@@ -84,7 +84,7 @@ export default async function RecuPage({
               <p className="mt-2 text-xs font-mono text-gray-500 uppercase tracking-widest">
                 Académie d'Excellence IA & SaaS
               </p>
-              <p className="mt-1 text-xs text-gray-500">Cotonou, Bénin · contact@forgeia.guelichweb.store</p>
+              <p className="mt-1 text-xs text-gray-500">Cotonou, Bénin · contact@guelichweb.store</p>
             </div>
 
             <div className="sm:text-right">

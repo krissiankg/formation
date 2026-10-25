@@ -26,14 +26,14 @@ export async function POST(request: Request) {
         `Bonjour ${firstname},\n\n` +
         `Votre inscription à la formation *FORGEIA* (${scheduleLabel}) est toujours en attente.\n\n` +
         `Pour sécuriser votre place avant la clôture de la cohorte :\n` +
-        `👉 https://forgeia.guelichweb.store/inscription/confirmation?id=${enrollment.id}\n\n` +
+        `👉 https://www.forgeia.site/inscription/confirmation?id=${enrollment.id}\n\n` +
         `Besoin d'aide ? Répondez directement à ce message WhatsApp.`;
     } else if (type === "payment") {
       message =
         `Bonjour ${firstname},\n\n` +
         `Rappel amical concernant votre parcours *FORGEIA* (${scheduleLabel}).\n\n` +
         `Une échéance de votre formation est à régulariser dans votre espace apprenant :\n` +
-        `👉 https://forgeia.guelichweb.store/espace/paiements\n\n` +
+        `👉 https://www.forgeia.site/espace/paiements\n\n` +
         `Merci de votre engagement et bonne continuation dans vos projets !`;
     } else if (type === "custom" && customMessage) {
       message = customMessage.trim();

@@ -16,7 +16,7 @@ const installmentLabels: Record<string, string> = {
 };
 
 /**
- * Webhook FedaPay — URL : https://forgeia.guelichweb.store/api/webhooks/fedapay
+ * Webhook FedaPay — URL : https://www.forgeia.site/api/webhooks/fedapay
  */
 export async function POST(request: Request) {
   try {

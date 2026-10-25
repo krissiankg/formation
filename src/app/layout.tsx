@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { IBM_Plex_Mono, Inter, Orbitron } from "next/font/google";
 import "./globals.css";
 import { brand } from "@/lib/config/formation";
+import { siteOrigin } from "@/lib/config/site";
 import { WhatsAppFloat } from "@/components/WhatsAppFloat";
 
 const body = Inter({
@@ -25,13 +26,13 @@ const mono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://forgeia.guelichweb.store"),
+  metadataBase: new URL(siteOrigin),
   title: `${brand.name} — ${brand.tagline}`,
   description: brand.shortDescription,
   openGraph: {
     title: `${brand.name} — ${brand.tagline}`,
     description: brand.shortDescription,
-    url: "https://forgeia.guelichweb.store",
+    url: siteOrigin,
     siteName: "FORGEIA",
     locale: "fr_FR",
     type: "website",

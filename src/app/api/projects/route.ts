@@ -58,7 +58,7 @@ export async function POST(request: Request) {
           `📦 *Projet :* ${title}\n` +
           `🔗 *Lien du site :* ${projectUrl}\n` +
           (githubUrl ? `💻 *GitHub :* ${githubUrl}\n` : "") +
-          `\nConnecte-toi à l'admin pour l'évaluer : https://forgeia.guelichweb.store/admin/projets`
+          `\nConnecte-toi à l'admin pour l'évaluer : https://www.forgeia.site/admin/projets`
       );
     } catch (waErr) {
       console.error("[project:whatsapp:admin:error]", waErr);

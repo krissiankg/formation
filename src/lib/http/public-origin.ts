@@ -1,5 +1,5 @@
 /**
- * Origine publique (ex. "https://forgeia.guelichweb.store") telle que vue par le visiteur.
+ * Origine publique (ex. "https://www.forgeia.site") telle que vue par le visiteur.
  *
  * Derrière CloudFront → ALB, `x-forwarded-proto` vaut "http" (protocole CloudFront → ALB) :
  * on privilégie donc `cloudfront-forwarded-proto`, qui porte le protocole du visiteur.

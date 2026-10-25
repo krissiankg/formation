@@ -6,7 +6,7 @@ import { getStudentProgress } from "@/lib/store/progress";
 
 export const dynamic = "force-dynamic";
 
-const SITE = "https://forgeia.guelichweb.store";
+const SITE = "https://www.forgeia.site";
 
 export function OPTIONS() {
   return new Response(null, { status: 204, headers: CORS_HEADERS });

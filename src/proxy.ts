@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { verifyAdminSessionToken } from "@/lib/auth/admin-session";
+import { getSiteRedirect } from "@/lib/http/site-redirect";
 
 const ADMIN_LOGIN_PATH = "/admin/connexion";
 
@@ -10,6 +11,11 @@ async function isAuthenticated(request: NextRequest): Promise<boolean> {
 }
 
 export async function proxy(request: NextRequest) {
+  const destination = getSiteRedirect(request, process.env.LEGACY_DOMAIN_REDIRECTS === "true");
+  if (destination) {
+    return NextResponse.redirect(destination, 308);
+  }
+
   const { pathname } = request.nextUrl;
 
   if (pathname.startsWith("/api/admin/auth/")) {
@@ -42,5 +48,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin", "/admin/:path*", "/api/admin/:path*"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };
