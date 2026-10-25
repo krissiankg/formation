@@ -50,7 +50,7 @@ jobs:
         id: image
         env:
           REGISTRY: ${{ steps.ecr.outputs.registry }}
-          NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL }}
+          NEXT_PUBLIC_APP_URL: https://www.forgeia.site
           NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
         run: |
@@ -77,6 +77,12 @@ jobs:
         working-directory: infra
         # npm install plutôt que npm ci : le lockfile est généré sous Windows (cf. Dockerfile).
         run: npm install --no-audit --no-fund
+
+      - name: Vérification des changements AWS
+        working-directory: infra
+        run: |
+          npx cdk synth ForgeiaWebStack --exclusively --quiet -c imageTag=${{ steps.image.outputs.tag }}
+          npx cdk diff ForgeiaWebStack --exclusively --no-change-set -c imageTag=${{ steps.image.outputs.tag }}
 
       - name: Mise à jour de l'appli sur ECS
         working-directory: infra

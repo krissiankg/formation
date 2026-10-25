@@ -5,8 +5,11 @@
     "region": "eu-west-3",
     "alertEmail": "krissiankg@gmail.com",
     "githubOidcSubjectPrefix": "repo:krissiankg@90513209/formation@1351361218",
-    "certificateArn": "arn:aws:acm:us-east-1:555968473975:certificate/00cf4a2a-b6ff-48f3-adf3-8ad86a959553",
+    "certificateArn": "arn:aws:acm:us-east-1:555968473975:certificate/9e21732e-c9c5-4fb6-b1aa-2cd9193ff5bc",
+    "redirectLegacyDomains": false,
     "domainNames": [
+      "forgeia.site",
+      "www.forgeia.site",
       "forgeia.guelichweb.store",
       "forgia.guelichweb.store",
       "aws-test.guelichweb.store"
