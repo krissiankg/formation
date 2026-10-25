@@ -50,7 +50,7 @@ export async function POST(request: Request) {
       ],
     });
 
-    const origin = getPublicOrigin(request, "forgeia.guelichweb.store");
+    const origin = getPublicOrigin(request, "www.forgeia.site");
     const callbackUrl = `${origin}/inscription/confirmation?id=${enrollment.id}`;
 
     const [firstname, ...rest] = data.fullName.trim().split(/\s+/);

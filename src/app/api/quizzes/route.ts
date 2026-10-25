@@ -92,7 +92,7 @@ export async function POST(request: Request) {
             `*Test :* ${quizTitle}\n` +
             `*Score :* ${result.scorePercent}% (${result.correctAnswersCount}/${result.totalQuestions})\n` +
             `*Statut :* ${statusText}\n\n` +
-            `Connecte-toi pour voir le corrigé détaillé : https://forgeia.guelichweb.store/espace/tests`,
+            `Connecte-toi pour voir le corrigé détaillé : https://www.forgeia.site/espace/tests`,
         );
       }
     } catch (notifErr) {

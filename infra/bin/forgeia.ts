@@ -28,5 +28,6 @@ if (imageTag && certificateArn) {
     imageTag,
     certificateArn,
     domainNames,
+    redirectLegacyDomains: app.node.tryGetContext("redirectLegacyDomains") === true,
   });
 }

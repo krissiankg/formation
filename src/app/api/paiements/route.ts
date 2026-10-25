@@ -35,7 +35,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Cette tranche a déjà été réglée." }, { status: 400 });
     }
 
-    const origin = getPublicOrigin(request, "forgeia.guelichweb.store");
+    const origin = getPublicOrigin(request, "www.forgeia.site");
     const callbackUrl = `${origin}/espace/paiements?status=success&kind=${kind}`;
 
     const [firstname, ...rest] = enrollment.fullName.trim().split(/\s+/);

@@ -168,7 +168,7 @@ export function DriveConnectionCard() {
           <p className="mt-1 text-amber-700">
             URI de redirection à autoriser dans Google Cloud Console :<br />
             <code className="mt-1 inline-block max-w-full break-all rounded bg-white px-2 py-0.5 font-mono text-[11px] border border-amber-200">
-              https://forgeia.guelichweb.store/api/admin/drive/callback
+              https://www.forgeia.site/api/admin/drive/callback
             </code>
           </p>
         </div>

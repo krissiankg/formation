@@ -52,7 +52,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const origin = getPublicOrigin(request, "forgeia.guelichweb.store");
+    const origin = getPublicOrigin(request, "www.forgeia.site");
     const callbackUrl = `${origin}/espace/ressources?recharge=success&pack=${coins}`;
 
     const names = student.fullName.trim().split(/\s+/);

@@ -42,7 +42,7 @@ export async function PATCH(request: Request) {
             `*Statut :* ${statusLabel}\n` +
             scoreLine +
             feedbackLine +
-            `\nConsulte les détails dans ton espace : https://forgeia.guelichweb.store/espace/projets`
+            `\nConsulte les détails dans ton espace : https://www.forgeia.site/espace/projets`
         );
       } catch (waErr) {
         console.error("[review:whatsapp:student:error]", waErr);

@@ -1,6 +1,6 @@
 # Domaine public FORGE IA
 
-Adresse principale prévue : **https://www.forgeia.site**.
+Adresse principale : **https://www.forgeia.site**.
 Le domaine reste enregistré et géré chez LWS. L'application reste sur AWS.
 
 ## AWS configuré le 26 octobre 2026
@@ -23,11 +23,15 @@ Modifier l'enregistrement existant ; ne pas ajouter un deuxième CNAME pour `www
 
 Conserver les enregistrements A et AAAA du domaine nu sur l'hébergement LWS : il sert uniquement la redirection vers `www` et son certificat HTTPS. Conserver les enregistrements de validation ACM, de messagerie (MX, mail, SPF, DKIM, DMARC) et les serveurs NS.
 
-Dans **Gestion du domaine → Redirection Web**, configurer `forgeia.site` vers `https://www.forgeia.site` avec une redirection permanente 301 (domaine vers www). Le HTTPS fonctionne déjà sur le domaine nu chez LWS. Vérifier la conservation des chemins et paramètres avec un lien d'inscription avant d'activer la redirection des anciens domaines.
+Dans **Gestion du domaine → Redirection Web**, choisir **301 (Htaccess)** et configurer `forgeia.site` vers la destination exacte `https://www.forgeia.site`. L'option automatique « domaine vers www » testée chez LWS renvoie vers `http://www.forgeia.site` ; utiliser la destination HTTPS explicite. Le HTTPS fonctionne déjà sur le domaine nu chez LWS. Vérifier la conservation des chemins et paramètres avec un lien d'inscription avant d'activer la redirection des anciens domaines.
 
 Aucune zone Route 53 ni compte Cloudflare n'est nécessaire pour cette configuration. Ne pas remplacer le domaine nu par un CNAME et ne pas copier des adresses IP temporaires de CloudFront dans un enregistrement A.
 
 Les caches contenant l'ancien CNAME `www → @` peuvent durer jusqu'à son ancien TTL de 24 heures, même si le nouveau TTL est abaissé.
+
+Le 26 octobre 2026, l'interrogation DNS directe de `ns17.lwsdns.com` confirme le CNAME `www → d2dy4o2jjophxh.cloudfront.net` avec un TTL de 900 secondes. Un ancien résultat vers LWS restait temporairement présent dans le cache local pendant les vérifications.
+
+Après expiration de ce cache, les tests publics sans contournement DNS réussissent : `https://www.forgeia.site/api/health` renvoie `200 {"ok":true}`, et `https://forgeia.site/` renvoie une 301 vers `https://www.forgeia.site/`, puis l'accueil répond en 200. La redirection LWS conserve aussi les chemins et paramètres.
 
 ## Ordre de mise en service
 
