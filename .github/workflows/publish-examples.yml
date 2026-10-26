@@ -27,6 +27,9 @@ on:
         type: boolean
         default: false
         required: false
+      rebuild_archives:
+        description: Archives à reconstruire pendant une reprise, séparées par des virgules
+        required: false
 permissions:
   id-token: write
   contents: read
@@ -43,6 +46,7 @@ env:
   UPLOAD_PUBLIC_KEY: ${{ inputs.public_key }}
   PREVIEW_URL: ${{ inputs.preview_url }}
   RESUME_ARCHIVES: ${{ inputs.resume_archives }}
+  REBUILD_ARCHIVES: ${{ inputs.rebuild_archives }}
 jobs:
   audit:
     if: inputs.mode == 'audit'
