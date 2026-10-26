@@ -12,9 +12,9 @@ from urllib.parse import unquote, urlsplit, urlunsplit
 from brand import brand_tree
 from package import safe_relative
 
-EXTENSIONS = re.compile(r"\.(?:css|js|png|jpe?g|gif|svg|webp|mp4|webm|mp3|woff2?|ttf|eot|otf|cur|ico)$", re.I)
+EXTENSIONS = re.compile(r"\.(?:css|js|png|jpe?g|gif|svg|webp|mp4|webm|mp3|mov|ogg|woff2?|ttf|eot|otf|cur|ico)$", re.I)
 REFERENCE = re.compile(r'''\b(?:src|href|poster|data-src|data-background|data-thumb|data-large|data-at2x|data-lazyload|data-videomp4|data-videowebm)\s*=\s*["']([^"']+)["']|url\(\s*["']?([^'"\s)]+)["']?\s*\)''', re.I)
-MEDIA = {".mp4", ".webm", ".mp3", ".ogg"}
+MEDIA = {".mp4", ".webm", ".mp3", ".mov", ".ogg"}
 ROOT_DIRS = {"images", "demos", "include", "css", "js", "one-page", "saas-page", "forgeia-brand", "thumbnails"}
 
 
@@ -56,6 +56,7 @@ def repair(root):
     root = Path(root)
     restored = []
     aliases = {
+        "include/rs-plugin/js/public/assets/images/transparent.png": "include/rs-plugin/demos/assets/images/transparent.png",
         "include/rs-plugin/js/addons/revolution.addon.whiteboard.min.js": "include/rs-plugin/demos/whiteboard/js/revolution.addon.whiteboard.min.js",
         **{f"demos/home/fonts/revicons/revicons.{ext}": f"include/rs-plugin/fonts/revicons/revicons.{ext}" for ext in ["eot", "woff", "ttf"]},
     }
@@ -64,6 +65,17 @@ def repair(root):
             (root / target).parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(root / source, root / target)
             restored.append(target)
+    bundle = root / "js/functions.bundle.js"
+    if bundle.is_file():
+        script = bundle.read_text(encoding="utf-8-sig")
+        script = script.replace('var eventChange = new Event("change");', 'if (!input) return;\nvar eventChange = new Event("change");')
+        script = script.replace('plus.onclick = function(e)', 'if (plus) plus.onclick = function(e)').replace('minus.onclick = function(e)', 'if (minus) minus.onclick = function(e)')
+        bundle.write_text(script, encoding="utf-8")
+    whiteboard = root / "include/rs-plugin/js/addons/revolution.addon.whiteboard.min.js"
+    if whiteboard.is_file():
+        script = whiteboard.read_text(encoding="utf-8-sig")
+        script = script.replace('jQuery(this).on("revolution.slide.onloaded",function(){a(e)})', 'jQuery(this).on("revolution.slide.onloaded",function(){var t=jQuery(this).data("opt");t&&a(t)})')
+        whiteboard.write_text(script, encoding="utf-8")
     support = Path(__file__).resolve().parents[2] / "assets/website-examples-support/letmescroll"
     (root / "js/plugins.letmescroll.js").write_bytes((support / "letmescroll.js").read_bytes())
     (root / "css/letmescroll.css").write_bytes((support / "letmescroll.css").read_bytes())
@@ -84,6 +96,23 @@ def repair(root):
     for file in text_files:
         text = file.read_text(encoding="utf-8-sig", errors="replace")
         text = text.replace("https://bmsvieira.github.io/letmescroll.js/css/letmescroll.css", "css/letmescroll.css")
+        if file.name == "demo-magazine.html":
+            text = text.replace("selector: element,", "selector: '#' + (element.id || (element.id = 'forgeia-scroll-' + Array.from(document.querySelectorAll('.canvas-custom-scroll')).indexOf(element))),")
+        text = text.replace('data-scrollto="intro.html##section-onepage"', '').replace('intro.html##section-onepage', 'intro.html#section-onepage')
+        if file.name == "landing-4.html":
+            text = text.replace('<script>', '<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script><script>', 1)
+        if file.name == "right-hamburger.html":
+            text = re.sub(r"<script>\s*jQuery\('\.carousel-widget'\)\.appear\([\s\S]*?</script>", '<script>new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting)jQuery(entry.target).trigger("play.owl.autoplay",[5000]);});},{rootMargin:"120px"}).observe(document.querySelector(".carousel-widget"));</script>', text)
+        if file.name == "block-slider-1.html" and not re.search(r'''id=["']slider["']''', text):
+            text = re.sub(r'''(<section\b)([^>]*class=["'][^"']*\bslider-element\b)''', r'\1 id="slider"\2', text, count=1)
+        def holder(match):
+            width, height = match.group(1), match.group(2)
+            target = f"forgeia-brand/placeholders/holder-{width}-{height}.svg"
+            image = root / target
+            image.parent.mkdir(parents=True, exist_ok=True)
+            image.write_text(f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}"><rect width="100%" height="100%" fill="#ebe8e1"/><text x="50%" y="50%" text-anchor="middle" font-family="Arial" font-size="24" fill="#79756d">{width} × {height}</text></svg>', encoding="utf-8")
+            return posixpath.relpath(target, file.relative_to(root).parent.as_posix())
+        text = re.sub(r'''(?<![\w/])holder\.js/(\d+)x(\d+)(?:\?[^"'\s<>]+)?''', holder, text)
         if file.suffix == ".html":
             # These stale imports do not implement any selector used by the pages;
             # the gallery and Swiper styles are already supplied inline and in style.css.
@@ -157,6 +186,8 @@ def prepare(source, output, preview_url, consume=False):
     else:
         shutil.copytree(source, root, ignore=shutil.ignore_patterns("__MACOSX", "._*", ".DS_Store", "node_modules", ".git", "*.pem", "*.key", ".env*"))
     report = repair(root)
+    from canvas_vendor import localize_vendors
+    report["vendorAssets"] = localize_vendors(root)
     pages = sorted(p.name for p in root.glob("*.html") if not p.name.startswith("._"))
     groups, entries, homes = {}, [], {"demo-" + family + ".html" for family in families}
     for page in pages:
@@ -164,14 +195,27 @@ def prepare(source, output, preview_url, consume=False):
         family = next((f for f in sorted(families, key=len, reverse=True) if stem == "demo-" + f or stem.startswith("demo-" + f + "-")), None)
         group = family or stem
         groups.setdefault(group, []).append(page)
-        title = re.search(r"<title[^>]*>(.*?)</title>", (root / page).read_text(encoding="utf-8"), re.I | re.S)
+        content = (root / page).read_text(encoding="utf-8")
+        title = re.search(r"<title[^>]*>(.*?)</title>", content, re.I | re.S)
         label = html.unescape(title[1]).split("|")[0].strip() if title else stem.replace("-", " ").capitalize()
         if label.lower() in {"canvas", ""}: label = stem.replace("-", " ").capitalize()
         identifier = "f2-" + re.sub(r"[^a-z0-9-]", "-", stem.lower())
         if len(identifier) > 100: identifier = identifier[:90] + "-" + hashlib.sha256(page.encode()).hexdigest()[:8]
-        entries.append({"id": identifier, "title": label[:200], "category": "sites" if page in homes else "pages" if family else "components", "family": family or "", "page": page, "archive": group, "thumbnail": f"thumbnails/{identifier}.jpg", "collection": "forgeia-2"})
+        display_page = page
+        if not re.search(r"<(?:html|head|body)\b", content, re.I):
+            display_page = "forgeia-" + page
+            parent = root / ("demo-" + family + ".html" if family else "index.html")
+            parent_text = parent.read_text(encoding="utf-8")
+            styles = "\n".join(tag for tag in re.findall(r"<link\b[^>]*>", parent_text, re.I) if re.search(r'''rel=["']stylesheet["']''', tag, re.I))
+            custom = ".offcanvas{position:relative!important;visibility:visible!important;transform:none!important;inset:auto!important;width:100%!important}.position-fixed[data-bs-target]{display:none!important}" if page == "switcher-html.html" else ""
+            (root / display_page).write_text(f'<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{html.escape(label)} | FORGEIA</title>{styles}<style>{custom}</style></head><body class="stretched"><main class="container py-5"><h1>{html.escape(label)}</h1><div class="row">{content}</div></main><script src="js/plugins.min.js"></script><script src="js/functions.bundle.js"></script></body></html>', encoding="utf-8")
+            groups[group].append(display_page)
+            report.setdefault("fragmentPreviews", {})[page] = display_page
+        entries.append({"id": identifier, "title": label[:200], "category": "sites" if page in homes else "pages" if family else "components", "family": family or "", "page": display_page, "archive": group, "thumbnail": f"thumbnails/{identifier}.jpg", "collection": "forgeia-2"})
     for entry in entries: entry["pageCount"] = len(groups[entry["archive"]])
     recipes = [{"id": group, "family": group if group in families else None, "pages": files, "home": "demo-" + group + ".html" if group in families else files[0]} for group, files in groups.items()]
+    for recipe in recipes:
+        recipe["home"] = report.get("fragmentPreviews", {}).get(recipe["home"], recipe["home"])
     catalog_file = output / "catalog.json"
     catalog_file.write_text(json.dumps({"version": 1, "entries": entries, "sites": len(homes), "total": len(entries)}, ensure_ascii=False), encoding="utf-8")
     (output / "recipes.json").write_text(json.dumps(recipes), encoding="utf-8")

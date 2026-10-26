@@ -50,7 +50,7 @@ try {
     let currentEntry;
     page.on("pageerror", (error) => {
       if (currentEntry && scriptErrors.filter((item) => item.page === currentEntry.page).length < 5) {
-        scriptErrors.push({ page: currentEntry.page, error: error.message.slice(0, 300) });
+        scriptErrors.push({ page: currentEntry.page, error: error.message.slice(0, 300), stack: error.stack?.slice(0, 1000) });
       }
     });
     while (position < entries.length) {

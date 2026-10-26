@@ -3,6 +3,12 @@ from brand import brand_html
 
 
 class BrandTests(unittest.TestCase):
+    def test_minified_implicit_head_receives_branding(self):
+        output, _ = brand_html('<html><title>Canvas</title><body>Content</body></html>', 'index-minified.html', 'canvas')
+        self.assertIn('<head>', output)
+        self.assertIn('forgeia-brand/favicon.svg', output)
+        self.assertLess(output.index('forgeia-brand/favicon.svg'), output.index('<body>'))
+
     def test_changes_presentation_but_preserves_runtime_and_licence_comments(self):
         source = '''<!doctype html><html><head><title>Canvas | Restaurant</title><link rel="icon" href="old.ico"></head><body><!-- Copyright original author -->
         <div id="logo"><a href="demo-restaurant.html"><img src="images/logo.png" srcset="images/logo@2x.png 2x" alt="Canvas Logo"><img class="logo-dark" src="images/logo-dark.png"></a></div>

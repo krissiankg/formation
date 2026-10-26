@@ -9,6 +9,28 @@ from package import safe_relative
 
 
 class CanvasImportTests(unittest.TestCase):
+    def test_fragment_preview_preserves_ajax_source(self):
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            source, build = base / "source", base / "build"
+            for name in ["css", "js", "demos/news"]: (source / name).mkdir(parents=True, exist_ok=True)
+            (source / "style.css").write_text('body{}')
+            (source / "index.html").write_text('<html><head><title>Canvas</title></head><body></body></html>')
+            (source / "demo-news.html").write_text('<html><head><title>News</title><link rel="stylesheet" href="style.css"></head><body></body></html>')
+            (source / "demo-news-2.html").write_text('<article class="entry">Canvas news</article>')
+            prepare(source, build, 'https://d123.cloudfront.net/forgeia-two')
+            original = (build / 'html/demo-news-2.html').read_text()
+            self.assertNotIn('<head>', original)
+            self.assertIn('FORGEIA news', original)
+            catalog = json.loads((build / 'catalog.json').read_text())
+            entry = next(item for item in catalog['entries'] if item['id'] == 'f2-demo-news-2')
+            self.assertEqual(entry['page'], 'forgeia-demo-news-2.html')
+            self.assertIn('forgeia-brand/favicon.svg', (build / 'html' / entry['page']).read_text())
+            recipes = json.loads((build / 'recipes.json').read_text())
+            project = next(item for item in recipes if item['id'] == 'news')
+            self.assertIn('demo-news-2.html', project['pages'])
+            self.assertIn(entry['page'], project['pages'])
+
     def test_import_repairs_paths_preserves_originals_and_builds_independent_zip(self):
         with tempfile.TemporaryDirectory() as directory:
             base = Path(directory)
