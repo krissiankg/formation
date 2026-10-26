@@ -15,7 +15,11 @@ with zipfile.ZipFile(sys.argv[1]) as archive:
         package.safe_relative(info.filename)
         if (info.external_attr >> 16) & 0o170000 == 0o120000:
             raise ValueError("Source symlinks are not supported")
-    archive.extractall(target)
+    for info in archive.infolist():
+        parts = Path(info.filename).parts
+        if any(part == "__MACOSX" or part == ".DS_Store" or part.startswith("._") for part in parts):
+            continue
+        archive.extract(info, target)
 candidates = [p.parent for p in target.rglob("start-here.html") if (p.parent / "html" / "package.json").is_file()]
 if len(candidates) != 1:
     raise ValueError("Cannot identify the Crafto source directory")

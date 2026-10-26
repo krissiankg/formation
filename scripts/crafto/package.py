@@ -28,7 +28,7 @@ def prepare(source, output):
     if source == output or source in output.parents or output.exists():
         raise ValueError("Use a new build directory outside the source package")
     output.mkdir(parents=True)
-    shutil.copytree(source / "html", output / "html")
+    shutil.copytree(source / "html", output / "html", ignore=shutil.ignore_patterns("__MACOSX", ".DS_Store", "._*"))
     shutil.copytree(source / "documentation", output / "documentation")
     shutil.copy2(source / "start-here.html", output / "start-here.html")
     root = output / "html"
