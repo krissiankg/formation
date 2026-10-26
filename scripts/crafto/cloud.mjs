@@ -37,15 +37,15 @@ if (mode === "prepare") {
   if (createHash("sha256").update(body).digest("hex") !== checksum) throw new Error("Bundle checksum mismatch");
   await fs.writeFile("crafto.zip", body);
   console.log(`Verified source bundle: ${body.length} bytes`);
-} else if (mode === "publish") {
+} else if (mode === "publish" || mode === "assets") {
   const build = path.resolve("crafto-build");
   const catalog = JSON.parse(await fs.readFile(path.join(build, "catalog.json"), "utf8"));
-  for (const entry of catalog.entries) {
+  for (const entry of mode === "publish" ? catalog.entries : []) {
     if ((await fs.stat(path.join(build, entry.thumbnail))).size < 500) throw new Error(`Missing thumbnail: ${entry.id}`);
     await fs.access(path.join(build, "html", entry.page));
     await fs.access(path.join("crafto-archives", `${entry.archive}.zip`));
   }
-  const types = { ".html": "text/html; charset=utf-8", ".css": "text/css", ".js": "application/javascript", ".json": "application/json", ".svg": "image/svg+xml", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png", ".gif": "image/gif", ".webp": "image/webp", ".woff2": "font/woff2", ".woff": "font/woff", ".ttf": "font/ttf", ".eot": "application/vnd.ms-fontobject", ".mp4": "video/mp4" };
+  const types = { ".html": "text/html; charset=utf-8", ".css": "text/css", ".js": "application/javascript", ".json": "application/json", ".svg": "image/svg+xml", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png", ".gif": "image/gif", ".webp": "image/webp", ".cur": "image/x-icon", ".woff2": "font/woff2", ".woff": "font/woff", ".ttf": "font/ttf", ".eot": "application/vnd.ms-fontobject", ".mp4": "video/mp4" };
   async function put(file, objectKey, contentType, cache = "public, max-age=31536000, immutable") {
     const stat = await fs.stat(file);
     await client.send(new PutObjectCommand({ Bucket: bucket, Key: objectKey, Body: createReadStream(file), ContentLength: stat.size, ContentType: contentType, CacheControl: cache }));
@@ -59,7 +59,7 @@ if (mode === "prepare") {
     return files;
   }
   const tasks = [];
-  for (const folder of ["html", "thumbnails"]) {
+  for (const folder of mode === "publish" ? ["html", "thumbnails"] : ["html"]) {
     for (const file of await walk(path.join(build, folder))) {
       const ext = path.extname(file).toLowerCase();
       if (!types[ext] || /(?:^|[/\\])(?:sass|email-templates)(?:[/\\])/.test(file)) continue;
@@ -68,12 +68,19 @@ if (mode === "prepare") {
       tasks.push(() => put(file, objectKey, types[ext]));
     }
   }
-  const archiveFiles = await walk("crafto-archives");
+  const archiveFiles = mode === "publish" ? await walk("crafto-archives") : [];
   for (const file of archiveFiles) tasks.push(() => put(file, `website-examples/downloads/${release}/${path.basename(file)}`, "application/zip", "private, no-store"));
   let index = 0;
   await Promise.all(Array.from({ length: 8 }, async () => {
-    while (index < tasks.length) await tasks[index++]();
+    while (index < tasks.length) {
+      await tasks[index++]();
+      if (index % 200 === 0) console.log(JSON.stringify({ uploaded: index, total: tasks.length }));
+    }
   }));
+  if (mode === "assets") {
+    console.log(JSON.stringify({ refreshedStaticFiles: tasks.length, release }));
+    process.exit(0);
+  }
   catalog.release = release;
   catalog.publishedAt = new Date().toISOString();
   for (const entry of catalog.entries) entry.archiveBytes = (await fs.stat(path.join("crafto-archives", `${entry.archive}.zip`))).size;
