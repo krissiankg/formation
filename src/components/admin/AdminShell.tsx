@@ -32,7 +32,10 @@ const sections: { title: string | null; items: NavItem[] }[] = [
   },
   {
     title: "Ressources",
-    items: [{ label: "Bibliothèque & fichiers", href: "/admin/contenus" }],
+    items: [
+      { label: "Bibliothèque & fichiers", href: "/admin/contenus" },
+      { label: "Exemples de sites", href: "/admin/exemples" },
+    ],
   },
 ];
 

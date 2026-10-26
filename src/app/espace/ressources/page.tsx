@@ -3,6 +3,7 @@ import { brand } from "@/lib/config/formation";
 import { getSessionEnrollment } from "@/lib/auth/session";
 import { listPublishedContent } from "@/lib/store/content";
 import { ResourcesHubClient } from "@/components/espace/ResourcesHubClient";
+import { getExamplesCatalog } from "@/lib/website-examples/server";
 
 export const metadata = {
   title: `Ressources & IA — ${brand.name}`,
@@ -15,11 +16,16 @@ export default async function RessourcesPage() {
   if (!enrollment) redirect("/connexion");
 
   const contents = await listPublishedContent();
+  let examplesAvailable = false;
+  if (process.env.WEBSITE_EXAMPLES_PREVIEW_BASE_URL) {
+    try { examplesAvailable = (await getExamplesCatalog()).total > 0; } catch { /* Publication not yet complete. */ }
+  }
 
   return (
     <div className="mx-auto max-w-5xl">
       <ResourcesHubClient
         contents={contents}
+        examplesAvailable={examplesAvailable}
       />
     </div>
   );
