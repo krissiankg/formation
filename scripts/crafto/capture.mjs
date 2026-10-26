@@ -41,13 +41,21 @@ const browser = await chromium.launch({ headless: true, ...(executablePath ? { e
 let position = 0;
 let captured = 0;
 const errors = [];
+const scriptErrors = [];
 try {
   await Promise.all(Array.from({ length: 4 }, async () => {
     const context = await browser.newContext({ viewport: { width: 1280, height: 960 }, deviceScaleFactor: 1 });
     await context.route("**/*", (route) => (route.request().url().startsWith(base) || route.request().url().startsWith("data:")) && !/\.(mp4|webm|mp3)(?:\?|$)/i.test(route.request().url()) ? route.continue() : route.abort());
     const page = await context.newPage();
+    let currentEntry;
+    page.on("pageerror", (error) => {
+      if (currentEntry && scriptErrors.filter((item) => item.page === currentEntry.page).length < 5) {
+        scriptErrors.push({ page: currentEntry.page, error: error.message.slice(0, 300) });
+      }
+    });
     while (position < entries.length) {
       const entry = entries[position++];
+      currentEntry = entry;
       const output = path.join(build, entry.thumbnail);
       if (!force && await fs.access(output).then(() => true, () => false)) continue;
       try {
@@ -83,6 +91,6 @@ try {
   await browser.close();
   server.close();
 }
-await fs.writeFile(path.join(build, "capture-report.json"), JSON.stringify({ captured, errors, missing: [...missing].sort() }, null, 2));
-console.log(JSON.stringify({ captured, errors, missing: [...missing].sort() }));
+await fs.writeFile(path.join(build, "capture-report.json"), JSON.stringify({ captured, errors, scriptErrors, missing: [...missing].sort() }, null, 2));
+console.log(JSON.stringify({ captured, errors, scriptErrorCount: scriptErrors.length, missing: [...missing].sort() }));
 if (errors.length || [...missing].some((file) => /\.(?:css|js|woff2?|ttf)(?:\?|$)/i.test(file))) process.exitCode = 1;
