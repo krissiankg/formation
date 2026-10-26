@@ -4,22 +4,23 @@ import { useState, useEffect } from "react";
 import { DriveResourcesExplorer } from "@/components/espace/drive-resources-explorer";
 import { ResourcesPanel } from "@/components/espace/shared";
 import { CoinsShopSection } from "@/components/espace/CoinsShopSection";
+import { WebsiteExamplesGallery } from "@/components/espace/WebsiteExamplesGallery";
 
 interface ResourcesHubClientProps {
   contents: any[];
+  examplesAvailable: boolean;
 }
 
-type TabType = "templates" | "course-docs" | "coins";
+type TabType = "sites" | "templates" | "course-docs" | "coins";
 
-export function ResourcesHubClient({ contents }: ResourcesHubClientProps) {
-  const [activeTab, setActiveTab] = useState<TabType>("templates");
+export function ResourcesHubClient({ contents, examplesAvailable }: ResourcesHubClientProps) {
+  const [activeTab, setActiveTab] = useState<TabType>(examplesAvailable ? "sites" : "templates");
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
-      if (params.get("tab") === "coins") {
-        setActiveTab("coins");
-      }
+      const tab = params.get("tab");
+      if (tab === "coins" || tab === "templates" || tab === "course-docs" || (tab === "sites" && examplesAvailable)) setActiveTab(tab);
     }
 
     function handleOpenCoins() {
@@ -28,7 +29,7 @@ export function ResourcesHubClient({ contents }: ResourcesHubClientProps) {
 
     window.addEventListener("open-coins-tab", handleOpenCoins);
     return () => window.removeEventListener("open-coins-tab", handleOpenCoins);
-  }, []);
+  }, [examplesAvailable]);
 
   const publishedCount = contents.filter((c) => c.status === "published").length;
 
@@ -47,7 +48,7 @@ export function ResourcesHubClient({ contents }: ResourcesHubClientProps) {
             Hub Outils, IA & Templates
           </h1>
           <p className="text-xs sm:text-sm text-[color:var(--neutral-600)] mt-1 max-w-2xl">
-            Accède à l&apos;intégralité de ton écosystème de formation : milliers de kits UI8, extension VS Code dédiée et passerelle d&apos;intelligence artificielle.
+            Explore les exemples de sites web, télécharge leurs sources et retrouve tes kits et supports de formation.
           </p>
         </div>
 
@@ -66,6 +67,10 @@ export function ResourcesHubClient({ contents }: ResourcesHubClientProps) {
 
       {/* Barre de navigation par Onglets (Segmented Control Top-Tier Responsive) */}
       <div className="flex items-center gap-1.5 rounded-2xl border border-[color:var(--border)] bg-[color:var(--neutral-50)] p-1.5 shadow-2xs overflow-x-auto scrollbar-none">
+        {examplesAvailable && <button type="button" onClick={() => setActiveTab("sites")}
+          className={`flex-1 min-w-fit rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold whitespace-nowrap cursor-pointer ${activeTab === "sites" ? "bg-white text-[color:var(--neutral-black)] shadow-xs border border-[color:var(--border)]" : "text-[color:var(--neutral-600)] hover:bg-white/50"}`}>
+          Exemples de sites
+        </button>}
         <button
           type="button"
           onClick={() => setActiveTab("templates")}
@@ -108,6 +113,7 @@ export function ResourcesHubClient({ contents }: ResourcesHubClientProps) {
 
       {/* Contenu de l'onglet actif */}
       <div>
+        {activeTab === "sites" && <WebsiteExamplesGallery />}
         {/* ONGLET 1 : Templates & Kits UI8 */}
         {activeTab === "templates" && (
           <div className="animate-in fade-in zoom-in-98 duration-200">
