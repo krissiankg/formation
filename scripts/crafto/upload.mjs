@@ -28,7 +28,7 @@ if (mode === "key") {
     request.on("error", () => reject(new Error("Upload connection failed")));
     let bytes = 0;
     let next = 64 * 1024 * 1024;
-    const input = createReadStream(bundle);
+    const input = createReadStream(bundle, { highWaterMark: 8 * 1024 * 1024 });
     input.on("data", (chunk) => { bytes += chunk.length; if (bytes >= next) { console.log(JSON.stringify({ uploadedBytes: bytes })); next += 64 * 1024 * 1024; } });
     input.on("error", (error) => { request.destroy(); reject(error); }).pipe(request);
   });
