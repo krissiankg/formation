@@ -14,7 +14,7 @@ DOCS = "https://craftohtml.themezaa.com/documentation/"
 
 def safe_relative(value):
     p = PurePosixPath(value)
-    if p.is_absolute() or ".." in p.parts or "\\" in value:
+    if p.is_absolute() or ".." in p.parts or "\\" in value or ":" in value or "\x00" in value:
         raise ValueError("Unsafe archive path")
     return p.as_posix()
 
