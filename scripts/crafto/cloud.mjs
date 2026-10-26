@@ -132,6 +132,22 @@ if (mode === "prepare") {
   } catch (error) { if (error.name !== "NoSuchKey") throw error; }
   if (previous) await client.send(new PutObjectCommand({ Bucket: bucket, Key: `website-examples/catalog/history/${Date.now()}-${collection}.json`, Body: JSON.stringify(previous), ContentType: "application/json" }));
   const combined = mergeCatalogs(catalog, previous, release, collection);
+  // Check the real public origin and a private download in each collection before activation.
+  const origin = process.env.PREVIEW_URL;
+  if (!/^https:\/\/[a-z0-9]+\.cloudfront\.net$/.test(origin || "")) throw new Error("Invalid preview origin");
+  const samples = [...new Map(combined.entries.map((entry) => [entry.collection, entry])).values()];
+  for (const entry of samples) {
+    for (const resource of [entry.page, entry.thumbnail, "forgeia-brand/favicon.svg"]) {
+      const response = await fetch(`${origin}/${entry.release}/${resource}`, { method: "HEAD", signal: AbortSignal.timeout(30000) });
+      if (response.status !== 200) throw new Error(`Published preview failed: ${entry.id} ${resource} (${response.status})`);
+    }
+    const url = await getSignedUrl(client, new GetObjectCommand({ Bucket: bucket,
+      Key: `website-examples/downloads/${entry.release}/${entry.archive}.zip` }), { expiresIn: 120 });
+    const response = await fetch(url, { headers: { Range: "bytes=0-3" }, signal: AbortSignal.timeout(30000) });
+    const signature = Buffer.from(await response.arrayBuffer());
+    if (response.status !== 206 || signature.length !== 4 || signature.readUInt32LE(0) !== 0x04034b50) throw new Error(`Private ZIP check failed: ${entry.id}`);
+    console.log(JSON.stringify({ verifiedCollection: entry.collection, preview: 200, thumbnail: 200, privateZip: 206 }));
+  }
   await client.send(new PutObjectCommand({ Bucket: bucket, Key: "website-examples/catalog/current.json", Body: JSON.stringify(combined), ContentType: "application/json", CacheControl: "no-store" }));
   console.log(JSON.stringify({ published: tasks.length, pages: catalog.total, sites: catalog.sites, archives: archiveIndex ? Object.keys(archiveIndex.archives).length : archiveFiles.length, release, combinedPages: combined.total, combinedSites: combined.sites }));
 } else throw new Error("Invalid mode");
