@@ -8,7 +8,7 @@ import re
 import struct
 from html.parser import HTMLParser
 from pathlib import Path
-from urllib.parse import urljoin, urlsplit, urlunsplit
+from urllib.parse import unquote, urljoin, urlsplit, urlunsplit
 
 BRAND_WORD = re.compile(r"\b(?:canvas|crafto|themezaa|semicolonweb)\b", re.I)
 OWNER_URL = "https://www.forgeia.site/espace/ressources?tab=sites"
@@ -17,7 +17,7 @@ PROTECTED = {"script", "style", "code", "pre", "canvas"}
 
 
 def brand_text(value):
-    value = re.sub(r"[\w.+-]+@(?:canvas|crafto)\.[a-z]+", "contact@forgeia.site", value, flags=re.I)
+    value = re.sub(r"[\w.+-]+@(?:canvas|crafto|themezaa|semicolonweb)\.[a-z]+", "contact@forgeia.site", value, flags=re.I)
     value = re.sub(r"(?:https?://)?(?:www\.)?(?:craftohtml\.themezaa\.com|canvastemplate\.com|canvas\.com|themezaa\.com|semicolonweb\.com)", "www.forgeia.site", value, flags=re.I)
     return BRAND_WORD.sub("FORGEIA", value)
 
@@ -25,12 +25,12 @@ def brand_text(value):
 def owner_link(value):
     parsed = urlsplit(value)
     host = parsed.hostname or ""
-    if any(name in host.lower() for name in ("themezaa", "semicolonweb", "canvastemplate", "craftohtml")) or host.lower().removeprefix("www.") == "canvas.com":
-        return OWNER_URL
-    if host.lower().endswith("themeforest.net") and re.search(r"canvas|crafto", value, re.I):
-        return OWNER_URL
-    if value.lower().startswith("mailto:") and re.search(r"@(?:canvas|crafto)\.", value, re.I):
+    if value.lower().startswith("mailto:") and re.search(r"@(?:canvas|crafto|themezaa|semicolonweb)\.", value, re.I):
         return "mailto:contact@forgeia.site"
+    if re.search(r"themezaa|semicolonweb|canvastemplate|craftohtml", unquote(value), re.I) or host.lower().removeprefix("www.") == "canvas.com":
+        return OWNER_URL
+    if host.lower().endswith("envato.market") or (host.lower().endswith("themeforest.net") and re.search(r"canvas|crafto", unquote(value), re.I)):
+        return OWNER_URL
     return value
 
 
