@@ -49,8 +49,8 @@ try {
       if (await fs.access(output).then(() => true, () => false)) continue;
       try {
         await page.goto(`${base}/${entry.page}`, { waitUntil: "load", timeout: 18000 });
-        await page.waitForTimeout(450);
-        await page.addStyleTag({ content: ".preloader,.page-loader,.loader-wrapper{display:none!important} [data-anime]{opacity:1!important} *{animation-duration:0.01ms!important;transition-duration:0ms!important}" });
+        await page.waitForTimeout(900);
+        await page.addStyleTag({ content: ".preloader,.page-loader,.loader-wrapper{display:none!important} [data-anime],[data-anime] .word,[data-anime] .char{opacity:1!important;transform:none!important} *{animation-duration:0.01ms!important;transition-duration:0ms!important}" });
         const screenshot = await page.screenshot({ type: "jpeg", quality: 78, timeout: 10000 });
         await sharp(screenshot).resize(640, 480).jpeg({ quality: 76 }).toFile(output);
         captured++;
@@ -64,5 +64,5 @@ try {
   server.close();
 }
 await fs.writeFile(path.join(build, "capture-report.json"), JSON.stringify({ captured, errors, missing: [...missing].sort() }, null, 2));
-console.log(JSON.stringify({ captured, errors: errors.length, missing: missing.size }));
-if (errors.length) process.exitCode = 1;
+console.log(JSON.stringify({ captured, errors, missing: [...missing].sort() }));
+if (errors.length || [...missing].some((file) => /\.(?:css|js|woff2?|ttf)(?:\?|$)/i.test(file))) process.exitCode = 1;

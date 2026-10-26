@@ -52,3 +52,6 @@ next-env.d.ts
 # Espace de travail des plans (superpowers)
 .superpowers/
 
+# Local Crafto packaging helpers
+/scripts/crafto/__pycache__/
+

@@ -40,6 +40,11 @@ if (mode === "prepare") {
 } else if (mode === "publish") {
   const build = path.resolve("crafto-build");
   const catalog = JSON.parse(await fs.readFile(path.join(build, "catalog.json"), "utf8"));
+  for (const entry of catalog.entries) {
+    if ((await fs.stat(path.join(build, entry.thumbnail))).size < 500) throw new Error(`Missing thumbnail: ${entry.id}`);
+    await fs.access(path.join(build, "html", entry.page));
+    await fs.access(path.join("crafto-archives", `${entry.archive}.zip`));
+  }
   const types = { ".html": "text/html; charset=utf-8", ".css": "text/css", ".js": "application/javascript", ".json": "application/json", ".svg": "image/svg+xml", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png", ".gif": "image/gif", ".webp": "image/webp", ".woff2": "font/woff2", ".woff": "font/woff", ".ttf": "font/ttf", ".eot": "application/vnd.ms-fontobject", ".mp4": "video/mp4" };
   async function put(file, objectKey, contentType, cache = "public, max-age=31536000, immutable") {
     const stat = await fs.stat(file);
