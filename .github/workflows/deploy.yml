@@ -5,6 +5,10 @@ name: Déploiement AWS
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'scripts/crafto/**'
+      - '.github/workflows/publish-examples.yml'
+      - 'docs/crafto-examples.md'
   workflow_dispatch:
 
 permissions:
