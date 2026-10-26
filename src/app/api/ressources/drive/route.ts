@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getSessionEnrollment } from "@/lib/auth/session";
 import { ADMIN_SESSION_COOKIE, verifyAdminSessionToken } from "@/lib/auth/admin-session";
-import { searchDriveFiles, isDriveConfigured } from "@/lib/drive/google-drive";
+import { searchDriveCatalog, isDriveConfigured } from "@/lib/drive/google-drive";
 
 export const dynamic = "force-dynamic";
 
@@ -45,14 +45,14 @@ export async function GET(request: Request) {
   const searchQuery = (url.searchParams.get("q") ?? "").trim();
 
   try {
-    const rawFiles = await searchDriveFiles({
+    const result = await searchDriveCatalog({
       query: searchQuery,
       pageSize: searchQuery ? 60 : 30,
     });
 
     const { calculateFileCoinsCost } = await import("@/lib/wallet/pricing");
 
-    const files = rawFiles.map((file) => {
+    const files = result.files.map((file) => {
       const isZip =
         file.name.toLowerCase().endsWith(".zip") ||
         file.name.toLowerCase().endsWith(".tar.gz") ||
@@ -79,6 +79,8 @@ export async function GET(request: Request) {
       files,
       totalCount: files.length,
       query: searchQuery,
+      isIndexing: result.isIndexing,
+      warning: result.warning,
     });
   } catch (err) {
     console.error("[Drive API] Erreur récupération fichiers:", err);
