@@ -4,7 +4,7 @@ on:
     inputs:
       mode:
         type: choice
-        options: [prepare, publish]
+        options: [prepare, publish, assets]
         required: true
       release:
         required: true
@@ -53,17 +53,20 @@ jobs:
           path: upload-target.encrypted.json
           retention-days: 1
       - name: Récupérer le pack vérifié
-        if: inputs.mode == 'publish'
+        if: inputs.mode != 'prepare'
         run: node scripts/crafto/cloud.mjs fetch
       - uses: actions/setup-python@v5
-        if: inputs.mode == 'publish'
+        if: inputs.mode != 'prepare'
         with:
           python-version: '3.12'
-      - name: Préparer les archives étudiantes
-        if: inputs.mode == 'publish'
+      - name: Importer les sources statiques
+        if: inputs.mode != 'prepare'
         run: |
           python scripts/crafto/test_package.py
           python scripts/crafto/extract.py crafto.zip crafto-original crafto-build
+      - name: Préparer les archives étudiantes
+        if: inputs.mode == 'publish'
+        run: |
           python scripts/crafto/package.py archives crafto-build crafto-archives --preview-url "${PREVIEW_URL}/${RELEASE}"
       - name: Générer et vérifier les captures de chaque page
         if: inputs.mode == 'publish'
@@ -76,6 +79,9 @@ jobs:
       - name: Publier les aperçus et activer le catalogue complet
         if: inputs.mode == 'publish'
         run: node scripts/crafto/cloud.mjs publish
+      - name: Compléter uniquement les fichiers statiques
+        if: inputs.mode == 'assets'
+        run: node scripts/crafto/cloud.mjs assets
       - uses: actions/upload-artifact@v4
         if: always() && inputs.mode == 'publish'
         with:

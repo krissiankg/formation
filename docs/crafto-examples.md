@@ -40,6 +40,8 @@ Le workflow `publish-examples.yml` utilise le rôle OIDC GitHub existant. Le ZIP
 
 Le script de lancement utilise `crafto-v1` pour cette première publication. Pour une nouvelle version de sources, choisir une nouvelle release dans le workflow et adapter le script de lancement : les URL des aperçus sont mises en cache comme fichiers immuables.
 
+Le mode `assets` complète les fichiers statiques d’une release existante (par exemple les curseurs des sliders), sans recréer les ZIP, les vignettes ou le manifeste. Utiliser une nouvelle release si le contenu d’un fichier existant change.
+
 L’import ignore les métadonnées Mac et refuse les chemins sortant de l’archive. Les images externes de remplacement `placehold.co` deviennent des SVG locaux. Les compilations HTML/CSS/JS fournies restent utilisables directement. Chaque ZIP possède un `index.html`, les dépendances et un guide français ; le Gulp du pack reçoit son export `build` manquant.
 
 Les captures utilisent Chrome avec un profil temporaire, sans connexion à des comptes personnels. Les requêtes externes sont bloquées pendant le rendu des vignettes. Le rapport et des captures représentatives sont disponibles dans l’artefact `crafto-preview-review`.

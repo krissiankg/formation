@@ -5,7 +5,7 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 
 const [mode, directory, bundle, previewUrl] = process.argv.slice(2);
-if (!["prepare", "publish"].includes(mode)) throw new Error("Expected prepare or publish");
+if (!["prepare", "publish", "assets"].includes(mode)) throw new Error("Expected prepare, publish or assets");
 const hash = createHash("sha256");
 for await (const chunk of createReadStream(bundle)) hash.update(chunk);
 const input = { mode, release: "crafto-v1", sha256: hash.digest("hex"), bytes: String((await fs.stat(bundle)).size) };

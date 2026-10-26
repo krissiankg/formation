@@ -4,6 +4,7 @@ const [catalogFile, base, release, reportFile] = process.argv.slice(2);
 if (!/^https:\/\/[a-z0-9]+\.cloudfront\.net$/.test(base || "") || !/^[a-z0-9-]+$/.test(release || "")) throw new Error("Invalid preview URL");
 const catalog = JSON.parse(await fs.readFile(catalogFile, "utf8"));
 const checks = [];
+checks.push({ path: "revolution/css/openhand.cur", type: "image/x-icon" }, { path: "revolution/css/closedhand.cur", type: "image/x-icon" });
 for (const entry of catalog.entries) {
   if (!/^[a-z0-9-]+\.html$/.test(entry.page) || !/^thumbnails\/[a-z0-9-]+\.jpg$/.test(entry.thumbnail)) throw new Error("Invalid catalog path");
   checks.push({ path: entry.page, type: "text/html" }, { path: entry.thumbnail, type: "image/jpeg" });
