@@ -8,7 +8,7 @@ import re
 import struct
 from html.parser import HTMLParser
 from pathlib import Path
-from urllib.parse import urljoin, urlsplit
+from urllib.parse import urljoin, urlsplit, urlunsplit
 
 BRAND_WORD = re.compile(r"\b(?:canvas|crafto|themezaa|semicolonweb)\b", re.I)
 OWNER_URL = "https://www.forgeia.site/espace/ressources?tab=sites"
@@ -35,11 +35,12 @@ def owner_link(value):
 
 
 class BrandHTML(HTMLParser):
-    def __init__(self, page, pack, canonical="", known_pages=(), source_root=None):
+    def __init__(self, page, pack, canonical="", known_pages=(), source_root=None, page_map=None):
         super().__init__(convert_charrefs=False)
         self.page, self.pack, self.canonical = page, pack, canonical
         self.known_pages = set(known_pages)
         self.source_root = Path(source_root).resolve() if source_root else None
+        self.page_map = {a: b for a, b in (page_map or {}).items() if a != b}
         self.stack, self.out = [], []
         self.logos = 0
         self.title_start = 0
@@ -107,6 +108,12 @@ class BrandHTML(HTMLParser):
                 data["content"] = brand_text(data["content"])
         if tag == "a" and data.get("href"):
             data["href"] = owner_link(data["href"])
+            parsed = urlsplit(data["href"])
+            if not parsed.scheme and not parsed.netloc and parsed.path:
+                original = posixpath.normpath(parsed.path.lstrip("/") if parsed.path.startswith("/") else posixpath.join(posixpath.dirname(self.page), parsed.path))
+                if original in self.page_map:
+                    target = "/" + self.page_map[original] if parsed.path.startswith("/") else posixpath.relpath(self.page_map[original], posixpath.dirname(self.page) or ".")
+                    data["href"] = urlunsplit(("", "", target, parsed.query, parsed.fragment))
         # Marketing pages show screenshots of the rebranded examples.
         if tag == "img" and self.page == "index.html" and not own_logo:
             linked = next((item[1].get("href") for item in reversed(self.stack) if item[0] == "a"), "")
@@ -137,6 +144,9 @@ class BrandHTML(HTMLParser):
                 break
 
     def handle_data(self, value):
+        if any(tag == "script" for tag, _ in self.stack):
+            for original, target in self.page_map.items():
+                if original != target: value = value.replace(original, target)
         self.out.append(value if any(tag in PROTECTED for tag, _ in self.stack) else brand_text(value))
 
     def handle_entityref(self, name): self.out.append("&" + name + ";")
@@ -146,9 +156,9 @@ class BrandHTML(HTMLParser):
     def handle_pi(self, value): self.out.append("<?" + value + ">")
 
 
-def brand_html(text, page, pack, canonical="", known_pages=(), source_root=None):
+def brand_html(text, page, pack, canonical="", known_pages=(), source_root=None, page_map=None):
     text = re.sub(r"<!-- FORGEIA:brand-start -->.*?<!-- FORGEIA:brand-end -->", "", text, flags=re.S)
-    parser = BrandHTML(page, pack, canonical, known_pages, source_root)
+    parser = BrandHTML(page, pack, canonical, known_pages, source_root, page_map)
     parser.feed(text)
     parser.close()
     return "".join(parser.out), parser.logos
@@ -169,24 +179,43 @@ def make_assets(root):
     (dest / "brand.css").write_text('.forgeia-brand-logo{width:165px!important;height:44px!important;max-width:100%!important;object-fit:contain!important;object-position:left center}#logo .forgeia-brand-logo{max-height:100%} @media(max-width:575px){.forgeia-brand-logo{width:145px!important;height:40px!important}} .forgeia-brand-logo[data-forgeia-layout="symbol"]{width:44px!important;height:44px!important}', encoding="utf-8")
 
 
-def brand_tree(root, pack, base_url="", catalog_file=None):
+def brand_tree(root, pack, base_url="", catalog_file=None, source_root=None):
     root = Path(root).resolve()
     make_assets(root)
     pages = sorted(p for p in root.rglob("*.html") if not any(part.startswith(".") for part in p.relative_to(root).parts))
-    known = {p.name for p in pages if p.parent == root}
+    # The off-canvas component name is a framework term; slider names are branding.
+    page_map = {p.relative_to(root).as_posix(): re.sub(r"(?<!off-)\b(?:canvas|crafto)\b", "forgeia", p.relative_to(root).as_posix(), flags=re.I) for p in pages}
+    known = {page_map[p.name] for p in pages if p.parent == root}
     logos = 0
     for file in pages:
         page = file.relative_to(root).as_posix()
-        content, count = brand_html(file.read_text(encoding="utf-8-sig"), page, pack, base_url.rstrip("/") + "/" + page if base_url else "", known, root)
-        file.write_text(content, encoding="utf-8")
+        target = root / page_map[page]
+        if target != file and target.exists(): raise ValueError("Branding page name collision")
+        content, count = brand_html(file.read_text(encoding="utf-8-sig"), page, pack, base_url.rstrip("/") + "/" + page_map[page] if base_url else "", known, source_root or root, page_map)
+        if target != file: file.rename(target)
+        target.write_text(content, encoding="utf-8")
         logos += count
     if catalog_file:
         catalog_file = Path(catalog_file)
         catalog = json.loads(catalog_file.read_text(encoding="utf-8"))
-        for entry in catalog["entries"]: entry["title"] = brand_text(entry["title"])
+        for entry in catalog["entries"]:
+            entry["title"] = brand_text(entry["title"])
+            if entry["page"] in page_map and page_map[entry["page"]] != entry["page"]:
+                entry["page"] = page_map[entry["page"]]
+                entry["id"] = entry["page"].removesuffix(".html")
+                entry["thumbnail"] = "thumbnails/" + entry["id"] + ".jpg"
+            entry["archive"] = re.sub(r"(?<!off-)\b(?:canvas|crafto)\b", "forgeia", entry["archive"], flags=re.I)
         catalog["branding"] = "FORGEIA"
         catalog_file.write_text(json.dumps(catalog, ensure_ascii=False), encoding="utf-8")
-    return {"brandedPages": len(pages), "logos": logos, "brand": "FORGEIA"}
+        recipes_file = catalog_file.parent / "recipes.json"
+        if recipes_file.exists():
+            recipes = json.loads(recipes_file.read_text(encoding="utf-8"))
+            for recipe in recipes:
+                recipe["id"] = re.sub(r"(?<!off-)\b(?:canvas|crafto)\b", "forgeia", recipe["id"], flags=re.I)
+                recipe["home"] = page_map.get(recipe["home"], recipe["home"])
+                recipe["pages"] = [page_map.get(page, page) for page in recipe["pages"]]
+            recipes_file.write_text(json.dumps(recipes), encoding="utf-8")
+    return {"brandedPages": len(pages), "logos": logos, "brand": "FORGEIA", "renamedPages": {a: b for a, b in page_map.items() if a != b}}
 
 
 if __name__ == "__main__":
@@ -195,5 +224,6 @@ if __name__ == "__main__":
     parser.add_argument("--pack", choices=["crafto", "canvas"], required=True)
     parser.add_argument("--base-url", default="")
     parser.add_argument("--catalog")
+    parser.add_argument("--source-root")
     args = parser.parse_args()
-    print(json.dumps(brand_tree(args.root, args.pack, args.base_url, args.catalog)))
+    print(json.dumps(brand_tree(args.root, args.pack, args.base_url, args.catalog, args.source_root)))

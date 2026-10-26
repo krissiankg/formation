@@ -45,6 +45,14 @@ class BrandTests(unittest.TestCase):
         self.assertIn('thumbnails/demo-business.jpg', output)
         self.assertNotIn('images/old-thumb.jpg', output)
 
+    def test_page_links_are_branded_without_renaming_canvas_apis(self):
+        source = '<html><head><title>Slider</title></head><body><canvas id="canvas"></canvas><a href="slider-canvas.html?mode=1#slide">Canvas Slider</a><script>const canvas=document.querySelector("canvas");const url="slider-canvas.html";</script></body></html>'
+        output, _ = brand_html(source, 'index.html', 'canvas', page_map={'slider-canvas.html': 'slider-forgeia.html'})
+        self.assertIn('slider-forgeia.html?mode=1#slide', output)
+        self.assertIn('const url="slider-forgeia.html"', output)
+        self.assertIn('document.querySelector("canvas")', output)
+        self.assertIn('Slider | FORGEIA</title>', output)
+
 
 if __name__ == '__main__':
     unittest.main()
