@@ -1,0 +1,69 @@
+name: Publier les exemples Crafto
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        type: choice
+        options: [prepare, publish]
+        required: true
+      release:
+        required: true
+      sha256:
+        required: true
+      bytes:
+        required: false
+      public_key:
+        required: false
+      preview_url:
+        required: false
+permissions:
+  id-token: write
+  contents: read
+concurrency:
+  group: publish-examples
+  cancel-in-progress: false
+env:
+  AWS_REGION: eu-west-3
+  RELEASE: ${{ inputs.release }}
+  SHA256: ${{ inputs.sha256 }}
+  BUNDLE_BYTES: ${{ inputs.bytes }}
+  UPLOAD_PUBLIC_KEY: ${{ inputs.public_key }}
+  PREVIEW_URL: ${{ inputs.preview_url }}
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: eu-west-3
+      - name: Préparer un envoi privé
+        if: inputs.mode == 'prepare'
+        run: node scripts/crafto/cloud.mjs prepare
+      - uses: actions/upload-artifact@v4
+        if: inputs.mode == 'prepare'
+        with:
+          name: crafto-upload-target
+          path: upload-target.encrypted.json
+          retention-days: 1
+      - name: Récupérer le pack vérifié
+        if: inputs.mode == 'publish'
+        run: node scripts/crafto/cloud.mjs fetch
+      - uses: actions/setup-python@v5
+        if: inputs.mode == 'publish'
+        with:
+          python-version: '3.12'
+      - name: Préparer les archives étudiantes
+        if: inputs.mode == 'publish'
+        run: |
+          python -c "import tarfile; tarfile.open('crafto.tar.gz').extractall('crafto-build', filter='data')"
+          python scripts/crafto/package.py archives crafto-build crafto-archives --preview-url "${PREVIEW_URL}/${RELEASE}"
+      - name: Publier les aperçus et activer le catalogue complet
+        if: inputs.mode == 'publish'
+        run: node scripts/crafto/cloud.mjs publish

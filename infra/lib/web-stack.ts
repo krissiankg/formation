@@ -8,6 +8,7 @@ import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as ecs from "aws-cdk-lib/aws-ecs";
 import * as elbv2 from "aws-cdk-lib/aws-elasticloadbalancingv2";
 import * as logs from "aws-cdk-lib/aws-logs";
+import * as iam from "aws-cdk-lib/aws-iam";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import { Construct } from "constructs";
 import type { ForgeiaBaseStack } from "./base-stack";
@@ -83,6 +84,49 @@ export class ForgeiaWebStack extends cdk.Stack {
       ],
     });
 
+    // Les démonstrations utilisent une origine distincte des sessions étudiantes.
+    const examplesHeaders = new cloudfront.ResponseHeadersPolicy(this, "ExamplesHeaders", {
+      securityHeadersBehavior: {
+        contentTypeOptions: { override: true },
+        frameOptions: { frameOption: cloudfront.HeadersFrameOption.DENY, override: true },
+        referrerPolicy: { referrerPolicy: cloudfront.HeadersReferrerPolicy.NO_REFERRER, override: true },
+        contentSecurityPolicy: {
+          contentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.youtube.com https://s.ytimg.com https://maps.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https:; media-src 'self' https:; connect-src 'self'; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com https://www.google.com; form-action 'none'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'",
+          override: true,
+        },
+      },
+      customHeadersBehavior: { customHeaders: [
+        { header: "X-Robots-Tag", value: "noindex, nofollow", override: true },
+        { header: "Cross-Origin-Opener-Policy", value: "same-origin", override: true },
+      ] },
+    });
+    const examplesDistribution = new cloudfront.Distribution(this, "ExamplesDistribution", {
+      comment: "FORGEIA exemples pédagogiques",
+      defaultBehavior: {
+        origin: origins.S3BucketOrigin.withOriginAccessControl(uploadsBucket, {
+          originPath: "/website-examples/previews",
+          originAccessLevels: [],
+        }),
+        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD,
+        cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
+        responseHeadersPolicy: examplesHeaders,
+        compress: true,
+      },
+    });
+    uploadsBucket.addToResourcePolicy(new iam.PolicyStatement({
+      principals: [new iam.ServicePrincipal("cloudfront.amazonaws.com")],
+      actions: ["s3:GetObject"],
+      resources: [uploadsBucket.arnForObjects("website-examples/previews/*")],
+      conditions: { StringEquals: { "AWS:SourceArn": `arn:${cdk.Aws.PARTITION}:cloudfront::${this.account}:distribution/${examplesDistribution.distributionId}` } },
+    }));
+    const examplesPublisher = iam.Role.fromRoleName(this, "ExamplesPublisher", "forgeia-github-deploy");
+    examplesPublisher.addToPrincipalPolicy(new iam.PolicyStatement({
+      actions: ["s3:GetObject", "s3:PutObject"],
+      resources: [uploadsBucket.arnForObjects("website-examples/*")],
+    }));
+    const examplesPreviewBaseUrl = `https://${examplesDistribution.distributionDomainName}`;
+
     // --- ECS Fargate ---
     const cluster = new ecs.Cluster(this, "Cluster", { vpc, clusterName: "forgeia" });
 
@@ -111,6 +155,7 @@ export class ForgeiaWebStack extends cdk.Stack {
         NEXT_PUBLIC_APP_URL: "https://www.forgeia.site",
         LEGACY_DOMAIN_REDIRECTS: props.redirectLegacyDomains ? "true" : "false",
         UPLOADS_BUCKET: uploadsBucket.bucketName,
+        WEBSITE_EXAMPLES_PREVIEW_BASE_URL: examplesPreviewBaseUrl,
         AWS_REGION: this.region,
       },
       secrets: Object.fromEntries(
@@ -118,6 +163,13 @@ export class ForgeiaWebStack extends cdk.Stack {
       ),
     });
     uploadsBucket.grantPut(taskDef.taskRole, "uploads/resources/*");
+    taskDef.addToTaskRolePolicy(new iam.PolicyStatement({
+      actions: ["s3:GetObject"],
+      resources: [
+        uploadsBucket.arnForObjects("website-examples/downloads/*"),
+        uploadsBucket.arnForObjects("website-examples/catalog/*"),
+      ],
+    }));
 
     const serviceSg = new ec2.SecurityGroup(this, "ServiceSg", {
       vpc,
@@ -242,6 +294,7 @@ export class ForgeiaWebStack extends cdk.Stack {
     }).addAlarmAction(alarmAction);
 
     new cdk.CfnOutput(this, "DistributionDomainName", { value: distribution.distributionDomainName });
+    new cdk.CfnOutput(this, "ExamplesPreviewBaseUrl", { value: examplesPreviewBaseUrl });
     new cdk.CfnOutput(this, "UploadsBucketName", { value: uploadsBucket.bucketName });
     new cdk.CfnOutput(this, "LoadBalancerDns", { value: alb.loadBalancerDnsName });
   }
