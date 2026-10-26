@@ -23,6 +23,10 @@ on:
         required: false
       preview_url:
         required: false
+      resume_archives:
+        type: boolean
+        default: false
+        required: false
 permissions:
   id-token: write
   contents: read
@@ -38,6 +42,7 @@ env:
   BUNDLE_BYTES: ${{ inputs.bytes }}
   UPLOAD_PUBLIC_KEY: ${{ inputs.public_key }}
   PREVIEW_URL: ${{ inputs.preview_url }}
+  RESUME_ARCHIVES: ${{ inputs.resume_archives }}
 jobs:
   audit:
     if: inputs.mode == 'audit'

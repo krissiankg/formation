@@ -29,10 +29,10 @@ if (mode === "audit") {
   const catalog = JSON.parse(await object.Body.transformToString());
   console.log(JSON.stringify({ activeCatalog: { release: catalog.release, total: catalog.total, sites: catalog.sites,
     collections: [...new Set(catalog.entries.map((entry) => entry.collection || "forgeia-1"))] } }));
-  for (const archive of ["404-2", "block-content-tab-1", "landing-4", "portfolio-sortable", "rs-demo-premium-whiteboard", "wysiwyg"]) {
+  for (const archive of ["404-2", "block-content-tab-1", "block-video-gallery-onhover-2", "combination-filter-select", "videographer", "index-fullscreen-image", "op-parallax-light-image-full", "portfolio-5-fullwidth-notitle", "rs-demo-carousel-classic", "rs-demo-premium-xmas", "wysiwyg"]) {
     try {
       const item = await client.send(new HeadObjectCommand({ Bucket: bucket, Key: `website-examples/downloads/${release}/${archive}.zip` }));
-      console.log(JSON.stringify({ archive, bytes: item.ContentLength, status: 200 }));
+      console.log(JSON.stringify({ archive, bytes: item.ContentLength, modifiedAt: item.LastModified?.toISOString(), status: 200 }));
     } catch (error) {
       if (![403, 404].includes(error.$metadata?.httpStatusCode)) throw error;
       console.log(JSON.stringify({ archive, status: error.$metadata.httpStatusCode }));
@@ -66,8 +66,27 @@ if (mode === "audit") {
   const recipes = JSON.parse(await fs.readFile("crafto-build/recipes.json", "utf8"));
   const expected = new Set(recipes.map((recipe) => recipe.id));
   const completed = {};
+  const resume = process.env.RESUME_ARCHIVES === "true";
+  if (resume) {
+    const response = await client.send(new GetObjectCommand({ Bucket: bucket, Key: "website-examples/catalog/current.json" }));
+    const active = JSON.parse(await response.Body.transformToString());
+    if (active.entries.some((entry) => (entry.release || active.release) === release)) throw new Error("Use a fresh release to change an active collection");
+    let position = 0;
+    await Promise.all(Array.from({ length: 12 }, async () => {
+      while (position < recipes.length) {
+        const recipe = recipes[position++];
+        try {
+          const item = await client.send(new HeadObjectCommand({ Bucket: bucket, Key: `website-examples/downloads/${release}/${recipe.id}.zip` }));
+          if (item.Metadata?.["source-sha256"] && item.Metadata["source-sha256"] !== checksum) throw new Error("Archive source mismatch");
+          if (item.ContentType === "application/zip" && item.ContentLength > 500) completed[recipe.id] = item.ContentLength;
+        } catch (error) { if (![403, 404].includes(error.$metadata?.httpStatusCode)) throw error; }
+      }
+    }));
+    console.log(JSON.stringify({ resumedArchives: Object.keys(completed).length, total: recipes.length }));
+    await fs.writeFile("crafto-build/previous-archives.json", JSON.stringify(Object.keys(completed)));
+  }
   const child = spawn("python", ["scripts/crafto/canvas.py", "archives", "crafto-build", "crafto-archives",
-    "--preview-url", `${process.env.PREVIEW_URL}/${release}`, "--stream"], { stdio: ["pipe", "pipe", "inherit"] });
+    "--preview-url", `${process.env.PREVIEW_URL}/${release}`, "--stream", ...(resume ? ["--skip-archives", "crafto-build/previous-archives.json"] : [])], { stdio: ["pipe", "pipe", "inherit"] });
   const finished = new Promise((resolve) => { child.once("exit", (code) => resolve(code)); child.once("error", () => resolve(-1)); });
   try {
     for await (const line of createInterface({ input: child.stdout, crlfDelay: Infinity })) {
@@ -77,7 +96,7 @@ if (mode === "audit") {
       const stat = await fs.stat(file);
       if (stat.size !== item.bytes || stat.size < 500) throw new Error("Incomplete archive");
       await client.send(new PutObjectCommand({ Bucket: bucket, Key: `website-examples/downloads/${release}/${item.archive}.zip`,
-        Body: createReadStream(file), ContentLength: stat.size, ContentType: "application/zip", CacheControl: "private, no-store" }));
+        Body: createReadStream(file), ContentLength: stat.size, ContentType: "application/zip", CacheControl: "private, no-store", Metadata: { "source-sha256": checksum } }));
       completed[item.archive] = stat.size;
       await fs.unlink(file);
       child.stdin.write("ok\n");

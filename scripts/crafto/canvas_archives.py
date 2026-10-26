@@ -13,8 +13,8 @@ ASSET = re.compile(r'''["'(]([^"'()<>\s]+\.(?:css|js|png|jpe?g|gif|svg|webp|mp4|
 STORED = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".mp4", ".webm", ".mp3", ".woff", ".woff2", ".zip"}
 
 
-def dependencies(seeds, root, files, root_pages):
-    found, queue = set(), deque(seeds)
+def dependencies(seeds, root, files, root_pages, included=()):
+    found, queue = set(included), deque(seeds)
     while queue:
         name = queue.popleft()
         if name in found or name not in files: continue
@@ -35,7 +35,7 @@ def write_file(archive, name, file):
     archive.write(file, safe_relative(name), compress_type=zipfile.ZIP_STORED if file.suffix.lower() in STORED else zipfile.ZIP_DEFLATED, compresslevel=4)
 
 
-def archives(build, destination, preview_url, streaming=False):
+def archives(build, destination, preview_url, streaming=False, skip=()):
     if not re.fullmatch(r"https://[a-z0-9]+\.cloudfront\.net/[a-z0-9-]+", preview_url): raise ValueError("Invalid preview URL")
     build, destination = Path(build).resolve(), Path(destination).resolve()
     root = build / "html"
@@ -53,12 +53,13 @@ def archives(build, destination, preview_url, streaming=False):
         with zipfile.ZipFile(base, "w", zipfile.ZIP_DEFLATED, compresslevel=4) as archive:
             for name in sorted(core): write_file(archive, name, files[name])
         for recipe in recipes:
+            if recipe["id"] in skip: continue
             chosen = set(recipe["pages"])
             family = recipe.get("family")
             if family: chosen.update(name for name in files if name.startswith(f"demos/{family}/"))
             if any("rs-plugin" in (root / page).read_text(encoding="utf-8") for page in recipe["pages"]):
                 chosen.update(name for name in files if name.startswith(("include/rs-plugin/js/", "include/rs-plugin/css/", "include/rs-plugin/fonts/")))
-            chosen = dependencies(chosen, root, files, root_pages) | set(recipe["pages"])
+            chosen = dependencies(chosen, root, files, root_pages, core) | set(recipe["pages"])
             target = destination / (recipe["id"] + ".zip")
             if not target.resolve().is_relative_to(destination): raise ValueError("Unsafe archive destination")
             shutil.copyfile(base, target)

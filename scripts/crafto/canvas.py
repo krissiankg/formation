@@ -237,9 +237,11 @@ if __name__ == "__main__":
     parser.add_argument("--preview-url", default="")
     parser.add_argument("--consume-extracted", action="store_true")
     parser.add_argument("--stream", action="store_true")
+    parser.add_argument("--skip-archives")
     args = parser.parse_args()
     if args.mode == "extract": extract(args.source, args.output)
     elif args.mode == "prepare": prepare(args.source, args.output, args.preview_url, args.consume_extracted)
     else:
         from canvas_archives import archives
-        archives(args.source, args.output, args.preview_url, args.stream)
+        skip = json.loads(Path(args.skip_archives).read_text(encoding="utf-8")) if args.skip_archives else []
+        archives(args.source, args.output, args.preview_url, args.stream, skip)
