@@ -159,6 +159,10 @@ class BrandHTML(HTMLParser):
 
 def brand_html(text, page, pack, canonical="", known_pages=(), source_root=None, page_map=None, thumbnails=None):
     text = re.sub(r"<!-- FORGEIA:brand-start -->.*?<!-- FORGEIA:brand-end -->", "", text, flags=re.S)
+    # HTML minifiers may omit head tags; restore the boundary before adding metadata.
+    if re.search(r"<html\b", text, re.I) and re.search(r"<body\b", text, re.I) and not re.search(r"<head\b", text, re.I):
+        text = re.sub(r"(<html\b[^>]*>)", r"\1<head>", text, count=1, flags=re.I)
+        text = re.sub(r"(<body\b)", r"</head>\1", text, count=1, flags=re.I)
     parser = BrandHTML(page, pack, canonical, known_pages, source_root, page_map, thumbnails)
     parser.feed(text)
     parser.close()

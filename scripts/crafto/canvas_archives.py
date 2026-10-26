@@ -44,7 +44,7 @@ def archives(build, destination, preview_url, streaming=False):
     files.update({p.relative_to(build).as_posix(): p for p in (build / "thumbnails").glob("*.jpg")})
     recipes = json.loads((build / "recipes.json").read_text(encoding="utf-8"))
     root_pages = {p.name for p in root.glob("*.html")}
-    core = {name for name in files if name.split("/")[0] in {"css", "js", "sass", "forgeia-brand"}}
+    core = {name for name in files if name.split("/")[0] in {"css", "js", "sass", "forgeia-brand", "forgeia-vendor"}}
     core.update(name for name in files if name in {"style.css", "style-rtl.css", "style.scss", "package.json", "gulpfile.js"})
     core.update(name for name in files if name.startswith("include/") and Path(name).suffix.lower() in {".php", ".json", ".md", ".txt", ".lock"})
     core = dependencies(core, root, files, root_pages)
