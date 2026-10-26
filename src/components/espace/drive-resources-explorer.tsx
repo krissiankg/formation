@@ -30,6 +30,7 @@ export function DriveResourcesExplorer() {
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [configured, setConfigured] = useState(true);
   const [search, setSearch] = useState("");
   const [onlyZip, setOnlyZip] = useState(true);
@@ -45,6 +46,7 @@ export function DriveResourcesExplorer() {
   const [unlockTarget, setUnlockTarget] = useState<DriveResourceFile | null>(null);
 
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const activeSearchRef = useRef<AbortController | null>(null);
 
   // Charger le solde et les fichiers débloqués
   async function loadWallet() {
@@ -65,9 +67,16 @@ export function DriveResourcesExplorer() {
 
   useEffect(() => {
     loadWallet();
+    return () => {
+      activeSearchRef.current?.abort();
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    };
   }, []);
 
   async function fetchFiles(query: string) {
+    activeSearchRef.current?.abort();
+    const controller = new AbortController();
+    activeSearchRef.current = controller;
     const trimmed = query.trim();
 
     // S'il n'y a pas de mot clé de recherche, on ne renvoie et n'affiche aucun fichier
@@ -75,36 +84,49 @@ export function DriveResourcesExplorer() {
       setFiles([]);
       setSearching(false);
       setLoading(false);
+      setNotice(null);
       return;
     }
 
     try {
       setSearching(true);
       setError(null);
+      setNotice(null);
       const url = `/api/ressources/drive?q=${encodeURIComponent(trimmed)}`;
 
-      const res = await fetch(url);
-      if (!res.ok) {
-        throw new Error("Impossible de charger les fichiers");
-      }
-      const data = await res.json();
-      if (data.configured === false) {
-        setConfigured(false);
-        setFiles([]);
-      } else {
+      while (!controller.signal.aborted) {
+        const res = await fetch(url, { signal: controller.signal, cache: "no-store" });
+        if (!res.ok) throw new Error("Impossible de charger les fichiers");
+        const data = await res.json();
+        if (controller.signal.aborted) return;
+        if (data.configured === false) {
+          setConfigured(false);
+          setFiles([]);
+          break;
+        }
         setConfigured(true);
         setFiles(data.files || []);
+        setNotice(data.isIndexing
+          ? "Recherche dans les sous-dossiers en cours..."
+          : data.warning ? "Une collection est temporairement indisponible. Les autres résultats restent accessibles." : null);
+        if (!data.isIndexing) break;
       }
     } catch (err) {
-      setError((err as Error).message || "Erreur réseau");
+      if (!controller.signal.aborted) setError((err as Error).message || "Erreur réseau");
     } finally {
-      setLoading(false);
-      setSearching(false);
+      if (activeSearchRef.current === controller && !controller.signal.aborted) {
+        activeSearchRef.current = null;
+        setLoading(false);
+        setSearching(false);
+      }
     }
   }
 
   // Détection de la saisie utilisateur avec debounce (350ms)
   function handleSearchChange(val: string) {
+    activeSearchRef.current?.abort();
+    activeSearchRef.current = null;
+    setNotice(null);
     setSearch(val);
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
@@ -124,6 +146,9 @@ export function DriveResourcesExplorer() {
 
   // Clic sur une suggestion : sélectionne ou DÉSÉLECTIONNE si déjà actif
   function handleTagClick(tagValue: string) {
+    activeSearchRef.current?.abort();
+    activeSearchRef.current = null;
+    setNotice(null);
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
     }
@@ -161,20 +186,20 @@ export function DriveResourcesExplorer() {
         />
       </div>
 
-      {/* En-tête avec Collection UI8 */}
+      {/* Collections de ressources autorisées */}
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-[color:var(--neutral-100)] px-3 py-1 font-mono text-xs font-semibold text-[color:var(--neutral-700)]">
               <span className="size-1.5 rounded-full bg-[color:var(--accent)]" />
-              Collection UI8
+              Collections de la formation
             </span>
           </div>
           <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
             Projets & Ressources ZIP
           </h2>
           <p className="max-w-2xl text-sm text-[color:var(--neutral-600)]">
-            Recherche parmi l&apos;intégralité des milliers de templates, kits UI et archives du dossier partagé de la formation. Débloque-les avec tes coins et conserve-les à vie.
+            Recherche parmi les templates, kits UI et archives des dossiers partagés de la formation. Débloque-les avec tes coins et conserve-les à vie.
           </p>
         </div>
 
@@ -282,6 +307,7 @@ export function DriveResourcesExplorer() {
       )}
 
       {/* Contenu principal */}
+      {notice && <p className="mt-4 text-xs text-[color:var(--neutral-600)]" role="status">{notice}</p>}
       <div className="mt-5">
         {searching && files.length === 0 ? (
           /* Skeletons pendant la recherche */

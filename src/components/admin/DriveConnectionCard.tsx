@@ -7,6 +7,7 @@ interface DriveStatus {
   hasCredentials: boolean;
   isConnected: boolean;
   folderId: string;
+  folders?: { id: string; name: string }[];
   connectedEmail: string | null;
   fileCount: number | null;
   fileCountIsExact: boolean;
@@ -125,7 +126,7 @@ export function DriveConnectionCard() {
             Accès Google Drive (Fichiers ZIP)
           </h2>
           <p className="mt-1 max-w-xl text-xs text-[color:var(--neutral-600)]">
-            Connecte ton compte Google en 1 clic pour que les étudiants puissent rechercher et télécharger les ZIP du dossier partagé spécifique.
+            Connecte ton compte Google pour que les étudiants puissent rechercher et télécharger les ZIP des dossiers autorisés.
           </p>
         </div>
 
@@ -180,10 +181,17 @@ export function DriveConnectionCard() {
       {/* Détails techniques */}
       <div className="mt-5 grid gap-3 sm:grid-cols-3">
         <div className="rounded-xl border border-[color:var(--border)] bg-white p-3">
-          <p className="font-mono text-[10px] uppercase text-[color:var(--neutral-500)]">Dossier Cible Verrouillé</p>
-          <p className="mt-1 font-mono text-xs font-semibold text-[color:var(--neutral-black)] truncate" title={status?.folderId}>
-            {status?.folderId || "1pPMsHu96fsTDiSV5EvRoSjP6fZr4UrOu"}
-          </p>
+          <p className="font-mono text-[10px] uppercase text-[color:var(--neutral-500)]">Dossiers autorisés</p>
+          <ul className="mt-2 space-y-2">
+            {(status?.folders ?? [{ id: status?.folderId || "1pPMsHu96fsTDiSV5EvRoSjP6fZr4UrOu", name: "Collection principale" }]).map((folder) => (
+              <li key={folder.id}>
+                <a href={`https://drive.google.com/drive/folders/${folder.id}`} target="_blank" rel="noreferrer" className="text-xs font-semibold text-[color:var(--accent-darkest)] hover:underline">
+                  {folder.name}
+                </a>
+                <p className="truncate font-mono text-[10px] text-[color:var(--neutral-600)]" title={folder.id}>{folder.id}</p>
+              </li>
+            ))}
+          </ul>
         </div>
 
         <div className="rounded-xl border border-[color:var(--border)] bg-white p-3">

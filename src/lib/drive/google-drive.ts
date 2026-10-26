@@ -2,9 +2,17 @@ import fs from "node:fs";
 import path from "node:path";
 import { getSupabaseAdmin, isSupabaseConfigured } from "@/lib/supabase/admin";
 import { createDriveFileCounter, type DriveCountPage } from "@/lib/drive/file-count";
+import { createDriveFolderScope, isWithinDriveFolders, type FolderScope } from "@/lib/drive/folder-scope";
 
 export const GOOGLE_DRIVE_FOLDER_ID =
   process.env.GOOGLE_DRIVE_FOLDER_ID || "1pPMsHu96fsTDiSV5EvRoSjP6fZr4UrOu";
+
+export const ADDITIONAL_DRIVE_FOLDER_ID = "1z5GK_fjOlFbDd4YoycLzjBs17xsRT30f";
+export const GOOGLE_DRIVE_FOLDERS = [
+  { id: GOOGLE_DRIVE_FOLDER_ID, name: "Collection principale" },
+  { id: ADDITIONAL_DRIVE_FOLDER_ID, name: "Dossier supplémentaire" },
+];
+let additionalFolderName = "Dossier supplémentaire";
 
 // Propriétaire de la collection partagée UI8 (garantit qu'aucun fichier personnel n'est exposé)
 export const SHARED_COLLECTION_OWNER =
@@ -229,7 +237,8 @@ export async function exchangeOAuthCode(code: string, redirectUri: string) {
 
   await saveStoredToken(stored);
   searchCache.clear();
-  fileCounter.clear();
+  additionalFolderScope.clear();
+  catalogCount = undefined;
 
   return stored;
 }
@@ -279,10 +288,10 @@ export async function getValidAccessToken(): Promise<string> {
   return data.access_token;
 }
 
-function collectionQuery(search = ""): string {
+function collectionQuery(search = "", scope = `'${SHARED_COLLECTION_OWNER}' in owners`): string {
   // Requête stricte : uniquement les fichiers appartenant à la collection partagée (contact_us@design-solutionz.co.nz)
   // et ignorant les dossiers
-  let q = `'${SHARED_COLLECTION_OWNER}' in owners and mimeType != 'application/vnd.google-apps.folder' and trashed = false`;
+  let q = `${scope} and mimeType != 'application/vnd.google-apps.folder' and trashed = false`;
 
   if (search) {
     const words = search
@@ -302,59 +311,53 @@ function collectionQuery(search = ""): string {
 /**
  * Recherche récursive et globale de fichiers dans la collection partagée UI8
  */
-export async function searchDriveFiles(options?: {
+export async function searchDriveCatalog(options?: {
   query?: string;
   pageSize?: number;
-}): Promise<DriveFileItem[]> {
+}): Promise<{ files: DriveFileItem[]; isIndexing: boolean; warning: string | null }> {
   const search = (options?.query ?? "").trim();
   const pageSize = options?.pageSize || 100;
-  const cacheKey = `${search.toLowerCase()}_${pageSize}`;
+  const scope = await additionalFolderScope.advance();
+  const isIndexing = !scope.isComplete && !scope.error;
+  const cacheKey = `${scope.generation}_${search.toLowerCase()}_${pageSize}`;
   const now = Date.now();
 
   const cached = searchCache.get(cacheKey);
-  if (cached && now - cached.timestamp < CACHE_TTL_MS) {
-    return cached.items;
+  if (!isIndexing && !scope.error && cached && now - cached.timestamp < CACHE_TTL_MS) {
+    return { files: cached.items, isIndexing: false, warning: null };
   }
 
-  const accessToken = await getValidAccessToken();
-
-  const url = new URL("https://www.googleapis.com/drive/v3/files");
-  url.searchParams.set("q", collectionQuery(search));
-  url.searchParams.set("fields", "files(id, name, mimeType, size, modifiedTime, iconLink)");
-  url.searchParams.set("orderBy", "modifiedTime desc");
-  url.searchParams.set("pageSize", String(pageSize));
-  url.searchParams.set("supportsAllDrives", "true");
-  url.searchParams.set("includeItemsFromAllDrives", "true");
-
-  const response = await fetch(url.toString(), {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(
-      errorData.error?.message || `Erreur API Google Drive: ${response.status} ${response.statusText}`
-    );
+  const queries = catalogQueries(scope, search);
+  const unique = new Map<string, DriveFileItem>();
+  for (let offset = 0; offset < queries.length; offset += 3) {
+    const pages = await Promise.all(queries.slice(offset, offset + 3).map((q) => listDrivePage<DriveFileItem>({
+      q, pageSize, fields: "files(id,name,mimeType,size,modifiedTime,iconLink)", orderBy: "modifiedTime desc",
+    })));
+    for (const page of pages) for (const file of page.files ?? []) unique.set(file.id, file);
   }
-
-  const data = (await response.json()) as { files?: DriveFileItem[] };
-  const items = data.files || [];
-
-  searchCache.set(cacheKey, { items, timestamp: now });
-  return items;
+  const items = [...unique.values()]
+    .sort((a, b) => (b.modifiedTime ?? "").localeCompare(a.modifiedTime ?? ""))
+    .slice(0, pageSize);
+  if (!isIndexing && !scope.error) searchCache.set(cacheKey, { items, timestamp: now });
+  return { files: items, isIndexing, warning: scope.error };
 }
 
-const fileCounter = createDriveFileCounter(async (pageToken): Promise<DriveCountPage> => {
+export async function searchDriveFiles(options?: { query?: string; pageSize?: number }) {
+  return (await searchDriveCatalog(options)).files;
+}
+
+async function listDrivePage<T>(options: {
+  q: string; fields: string; pageSize?: number; pageToken?: string; orderBy?: string;
+}): Promise<{ files?: T[]; nextPageToken?: string; incompleteSearch?: boolean }> {
   const accessToken = await getValidAccessToken();
   const url = new URL("https://www.googleapis.com/drive/v3/files");
-  url.searchParams.set("q", collectionQuery());
-  url.searchParams.set("fields", "nextPageToken,incompleteSearch,files(id)");
-  url.searchParams.set("pageSize", "1000");
+  url.searchParams.set("q", options.q);
+  url.searchParams.set("fields", options.fields);
+  url.searchParams.set("pageSize", String(options.pageSize ?? 1000));
   url.searchParams.set("supportsAllDrives", "true");
   url.searchParams.set("includeItemsFromAllDrives", "true");
-  if (pageToken) url.searchParams.set("pageToken", pageToken);
+  if (options.pageToken) url.searchParams.set("pageToken", options.pageToken);
+  if (options.orderBy) url.searchParams.set("orderBy", options.orderBy);
 
   const response = await fetch(url, {
     headers: { Authorization: `Bearer ${accessToken}` },
@@ -366,10 +369,99 @@ const fileCounter = createDriveFileCounter(async (pageToken): Promise<DriveCount
     throw new Error(errorData.error?.message || `Erreur API Google Drive : ${response.status}`);
   }
   return response.json();
+}
+
+async function getDriveMetadata<T>(fileId: string, fields: string): Promise<T> {
+  const accessToken = await getValidAccessToken();
+  const url = new URL(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}`);
+  url.searchParams.set("fields", fields);
+  url.searchParams.set("supportsAllDrives", "true");
+  const response = await fetch(url, {
+    headers: { Authorization: `Bearer ${accessToken}` }, cache: "no-store", signal: AbortSignal.timeout(10_000),
+  });
+  if (!response.ok) throw new Error("Ce dossier ou fichier n'est pas accessible au compte Google connecté.");
+  return response.json();
+}
+
+const additionalFolderScope = createDriveFolderScope([ADDITIONAL_DRIVE_FOLDER_ID], async (parents, pageToken) => {
+  if (parents.includes(ADDITIONAL_DRIVE_FOLDER_ID) && !pageToken) {
+    const root = await getDriveMetadata<{ name: string; mimeType: string; trashed?: boolean }>(
+      ADDITIONAL_DRIVE_FOLDER_ID, "name,mimeType,trashed",
+    );
+    if (root.trashed || root.mimeType !== "application/vnd.google-apps.folder") {
+      throw new Error("Le dossier supplémentaire n'est pas un dossier Google Drive actif.");
+    }
+    additionalFolderName = root.name;
+  }
+  return listDrivePage<{ id: string }>({
+    q: `(${parents.map((id) => `'${id}' in parents`).join(" or ")}) and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
+    fields: "files(id),nextPageToken,incompleteSearch", pageToken,
+  });
 });
 
-export function countDriveFiles(forceRefresh = false) {
-  return fileCounter.count(forceRefresh);
+function catalogQueries(scope: FolderScope, search = ""): string[] {
+  const queries = [collectionQuery(search)];
+  if (scope.error) return queries;
+  for (let offset = 0; offset < scope.folderIds.length; offset += 40) {
+    const parents = scope.folderIds.slice(offset, offset + 40).map((id) => `'${id}' in parents`).join(" or ");
+    // Les fichiers déjà présents dans la première collection ne sont comptés qu'une seule fois.
+    queries.push(collectionQuery(search, `((${parents}) and not ('${SHARED_COLLECTION_OWNER}' in owners))`));
+  }
+  return queries;
+}
+
+function catalogFolders() {
+  return [GOOGLE_DRIVE_FOLDERS[0], { id: ADDITIONAL_DRIVE_FOLDER_ID, name: additionalFolderName }];
+}
+
+interface CatalogCountSession {
+  generation: number;
+  scope: FolderScope;
+  counter: ReturnType<typeof createDriveFileCounter>;
+  finished: boolean;
+}
+let catalogCount: CatalogCountSession | undefined;
+
+async function readCatalogCount(session: CatalogCountSession, forceRefresh = false) {
+  try {
+    const result = await session.counter.count(forceRefresh);
+    session.finished = result.isComplete;
+    return {
+      ...result, incompleteSearch: result.incompleteSearch || Boolean(session.scope.error),
+      folders: catalogFolders(), warning: session.scope.error,
+    };
+  } catch (error) {
+    session.finished = true;
+    throw error;
+  }
+}
+
+export async function countDriveFiles(forceRefresh = false) {
+  if (catalogCount && !catalogCount.finished) return readCatalogCount(catalogCount);
+  const scope = await additionalFolderScope.advance(forceRefresh);
+  if (!scope.isComplete && !scope.error) {
+    return { count: 0, isComplete: false, incompleteSearch: false, folders: catalogFolders(), warning: null };
+  }
+  if (!catalogCount || catalogCount.generation !== scope.generation) {
+    const queries = catalogQueries(scope);
+    catalogCount = {
+      generation: scope.generation, scope, finished: false,
+      counter: createDriveFileCounter(async (cursor): Promise<DriveCountPage> => {
+        const { index, token } = cursor ? JSON.parse(cursor) as { index: number; token?: string } : { index: 0, token: undefined };
+        const page = await listDrivePage<{ id: string }>({
+          q: queries[index], fields: "nextPageToken,incompleteSearch,files(id)", pageToken: token,
+        });
+        const nextIndex = page.nextPageToken ? index : index + 1;
+        return {
+          ...page,
+          nextPageToken: nextIndex < queries.length
+            ? JSON.stringify({ index: nextIndex, ...(page.nextPageToken ? { token: page.nextPageToken } : {}) })
+            : undefined,
+        };
+      }),
+    };
+  }
+  return readCatalogCount(catalogCount, forceRefresh);
 }
 
 /**
@@ -381,37 +473,35 @@ export async function getFileDownloadStream(fileId: string): Promise<{
   contentType: string;
   contentLength?: string;
 }> {
-  const accessToken = await getValidAccessToken();
-
   // 1. Récupérer les métadonnées pour vérifier l'appartenance à la collection autorisée
-  const metaUrl = `https://www.googleapis.com/drive/v3/files/${fileId}?fields=id,name,mimeType,size,owners&supportsAllDrives=true`;
-  const metaRes = await fetch(metaUrl, {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
-
-  if (!metaRes.ok) {
-    throw new Error("Fichier introuvable sur Google Drive.");
-  }
-
-  const fileMeta = (await metaRes.json()) as {
+  const fileMeta = await getDriveMetadata<{
     id: string;
     name: string;
     mimeType: string;
     size?: string;
     owners?: Array<{ emailAddress?: string }>;
-  };
+    parents?: string[];
+    trashed?: boolean;
+  }>(fileId, "id,name,mimeType,size,owners,parents,trashed");
 
   // Sécurité absolue : s'assurer que le fichier appartient bien à la collection autorisée
   const isOwnerValid = fileMeta.owners?.some(
     (o) => o.emailAddress === SHARED_COLLECTION_OWNER
   );
 
-  if (!isOwnerValid) {
+  const isInAdditionalFolder = !isOwnerValid && await isWithinDriveFolders(
+    fileMeta.parents ?? [], [ADDITIONAL_DRIVE_FOLDER_ID], async (id) => {
+      const folder = await getDriveMetadata<{ parents?: string[]; trashed?: boolean }>(id, "parents,trashed");
+      return folder.trashed ? [] : folder.parents ?? [];
+    },
+  );
+  if (fileMeta.trashed || (!isOwnerValid && !isInAdditionalFolder)) {
     throw new Error("Accès refusé : ce fichier n'appartient pas à la collection autorisée.");
   }
 
   // 2. Télécharger le flux binaire brut
-  const downloadUrl = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&supportsAllDrives=true`;
+  const accessToken = await getValidAccessToken();
+  const downloadUrl = `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?alt=media&supportsAllDrives=true`;
   const response = await fetch(downloadUrl, {
     headers: {
       Authorization: `Bearer ${accessToken}`,

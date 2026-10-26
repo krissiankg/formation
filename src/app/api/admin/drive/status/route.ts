@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { ADMIN_SESSION_COOKIE, verifyAdminSessionToken } from "@/lib/auth/admin-session";
 import {
   GOOGLE_DRIVE_FOLDER_ID,
+  GOOGLE_DRIVE_FOLDERS,
   getStoredToken,
   isDriveConfigured,
   countDriveFiles,
@@ -30,6 +31,7 @@ export async function GET(request: Request) {
   let fileCountIsExact = false;
   let isCounting = false;
   let testError: string | null = null;
+  let folders = GOOGLE_DRIVE_FOLDERS;
 
   if (isConnected) {
     try {
@@ -38,7 +40,9 @@ export async function GET(request: Request) {
       fileCount = result.count;
       fileCountIsExact = result.isComplete && !result.incompleteSearch;
       isCounting = !result.isComplete;
-      if (result.incompleteSearch) {
+      folders = result.folders ?? GOOGLE_DRIVE_FOLDERS;
+      if (result.warning) testError = result.warning;
+      else if (result.incompleteSearch) {
         testError = "Google Drive signale une recherche partielle. Le nombre affiché est un minimum.";
       }
     } catch (err) {
@@ -50,6 +54,7 @@ export async function GET(request: Request) {
     hasCredentials,
     isConnected,
     folderId: GOOGLE_DRIVE_FOLDER_ID,
+    folders,
     connectedEmail: storedToken?.connectedEmail ?? null,
     fileCount,
     fileCountIsExact,

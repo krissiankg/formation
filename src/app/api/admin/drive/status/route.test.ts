@@ -9,12 +9,13 @@ vi.mock("@/lib/auth/admin-session", () => ({
 }));
 vi.mock("@/lib/drive/google-drive", () => ({
   GOOGLE_DRIVE_FOLDER_ID: "test-folder", getStoredToken: mocks.stored,
+  GOOGLE_DRIVE_FOLDERS: [{ id: "test-folder", name: "Collection principale" }, { id: "extra-folder", name: "Dossier supplémentaire" }],
   isDriveConfigured: mocks.configured, countDriveFiles: mocks.count,
 }));
 import { GET } from "./route";
 
 beforeEach(() => {
-  vi.clearAllMocks();
+  vi.resetAllMocks();
   mocks.verify.mockResolvedValue(true);
   mocks.configured.mockResolvedValue(true);
   mocks.stored.mockResolvedValue({ connectedEmail: "admin@example.test" });
@@ -55,5 +56,12 @@ describe("statut du comptage Drive administrateur", () => {
     const status = await response.json();
     expect(status).toMatchObject({ fileCount: 1050, fileCountIsExact: false, isCounting: false });
     expect(status.testError).toContain("minimum");
+  });
+
+  it("affiche les deux dossiers et un avertissement explicite si le second est inaccessible", async () => {
+    const folders = [{ id: "test-folder", name: "Première collection" }, { id: "extra-folder", name: "Deuxième collection" }];
+    mocks.count.mockResolvedValue({ count: 50, isComplete: true, incompleteSearch: true, folders, warning: "Partage du deuxième dossier à vérifier" });
+    const response = await GET(new Request("https://www.forgeia.site/api/admin/drive/status"));
+    expect(await response.json()).toMatchObject({ folders, fileCountIsExact: false, testError: "Partage du deuxième dossier à vérifier" });
   });
 });
