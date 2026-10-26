@@ -5,12 +5,12 @@ import {
   GOOGLE_DRIVE_FOLDER_ID,
   getStoredToken,
   isDriveConfigured,
-  listFolderFiles,
+  countDriveFiles,
 } from "@/lib/drive/google-drive";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request: Request) {
   const cookieStore = await cookies();
   const token = cookieStore.get(ADMIN_SESSION_COOKIE)?.value;
   const isAuth = await verifyAdminSessionToken(token);
@@ -26,13 +26,21 @@ export async function GET() {
   const hasCredentials = Boolean(clientId && clientSecret);
   const isConnected = await isDriveConfigured();
 
-  let fileCount = 0;
+  let fileCount: number | null = null;
+  let fileCountIsExact = false;
+  let isCounting = false;
   let testError: string | null = null;
 
   if (isConnected) {
     try {
-      const files = await listFolderFiles();
-      fileCount = files.length;
+      const forceRefresh = new URL(request.url).searchParams.get("refresh") === "1";
+      const result = await countDriveFiles(forceRefresh);
+      fileCount = result.count;
+      fileCountIsExact = result.isComplete && !result.incompleteSearch;
+      isCounting = !result.isComplete;
+      if (result.incompleteSearch) {
+        testError = "Google Drive signale une recherche partielle. Le nombre affiché est un minimum.";
+      }
     } catch (err) {
       testError = (err as Error).message;
     }
@@ -44,6 +52,8 @@ export async function GET() {
     folderId: GOOGLE_DRIVE_FOLDER_ID,
     connectedEmail: storedToken?.connectedEmail ?? null,
     fileCount,
+    fileCountIsExact,
+    isCounting,
     testError,
   });
 }

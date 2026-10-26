@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { getSupabaseAdmin, isSupabaseConfigured } from "@/lib/supabase/admin";
+import { createDriveFileCounter, type DriveCountPage } from "@/lib/drive/file-count";
 
 export const GOOGLE_DRIVE_FOLDER_ID =
   process.env.GOOGLE_DRIVE_FOLDER_ID || "1pPMsHu96fsTDiSV5EvRoSjP6fZr4UrOu";
@@ -228,6 +229,7 @@ export async function exchangeOAuthCode(code: string, redirectUri: string) {
 
   await saveStoredToken(stored);
   searchCache.clear();
+  fileCounter.clear();
 
   return stored;
 }
@@ -277,6 +279,26 @@ export async function getValidAccessToken(): Promise<string> {
   return data.access_token;
 }
 
+function collectionQuery(search = ""): string {
+  // Requête stricte : uniquement les fichiers appartenant à la collection partagée (contact_us@design-solutionz.co.nz)
+  // et ignorant les dossiers
+  let q = `'${SHARED_COLLECTION_OWNER}' in owners and mimeType != 'application/vnd.google-apps.folder' and trashed = false`;
+
+  if (search) {
+    const words = search
+      .split(/\s+/)
+      .map((w) => w.trim())
+      .filter((w) => w.length >= 2);
+
+    for (const word of words) {
+      const escaped = word.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+      q += ` and name contains '${escaped}'`;
+    }
+  }
+
+  return q;
+}
+
 /**
  * Recherche récursive et globale de fichiers dans la collection partagée UI8
  */
@@ -296,24 +318,8 @@ export async function searchDriveFiles(options?: {
 
   const accessToken = await getValidAccessToken();
 
-  // Requête stricte : uniquement les fichiers appartenant à la collection partagée (contact_us@design-solutionz.co.nz)
-  // et ignorant les dossiers
-  let q = `'${SHARED_COLLECTION_OWNER}' in owners and mimeType != 'application/vnd.google-apps.folder' and trashed = false`;
-
-  if (search) {
-    const words = search
-      .split(/\s+/)
-      .map((w) => w.trim())
-      .filter((w) => w.length >= 2);
-
-    for (const word of words) {
-      const escaped = word.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
-      q += ` and name contains '${escaped}'`;
-    }
-  }
-
   const url = new URL("https://www.googleapis.com/drive/v3/files");
-  url.searchParams.set("q", q);
+  url.searchParams.set("q", collectionQuery(search));
   url.searchParams.set("fields", "files(id, name, mimeType, size, modifiedTime, iconLink)");
   url.searchParams.set("orderBy", "modifiedTime desc");
   url.searchParams.set("pageSize", String(pageSize));
@@ -340,12 +346,30 @@ export async function searchDriveFiles(options?: {
   return items;
 }
 
-/**
- * Pour compatibilité avec l'existant
- */
-export async function listFolderFiles(forceRefresh = false): Promise<DriveFileItem[]> {
-  if (forceRefresh) searchCache.clear();
-  return searchDriveFiles({ pageSize: 50 });
+const fileCounter = createDriveFileCounter(async (pageToken): Promise<DriveCountPage> => {
+  const accessToken = await getValidAccessToken();
+  const url = new URL("https://www.googleapis.com/drive/v3/files");
+  url.searchParams.set("q", collectionQuery());
+  url.searchParams.set("fields", "nextPageToken,incompleteSearch,files(id)");
+  url.searchParams.set("pageSize", "1000");
+  url.searchParams.set("supportsAllDrives", "true");
+  url.searchParams.set("includeItemsFromAllDrives", "true");
+  if (pageToken) url.searchParams.set("pageToken", pageToken);
+
+  const response = await fetch(url, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    signal: AbortSignal.timeout(10_000),
+    cache: "no-store",
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error?.message || `Erreur API Google Drive : ${response.status}`);
+  }
+  return response.json();
+});
+
+export function countDriveFiles(forceRefresh = false) {
+  return fileCounter.count(forceRefresh);
 }
 
 /**
