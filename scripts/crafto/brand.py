@@ -42,6 +42,7 @@ class BrandHTML(HTMLParser):
         self.source_root = Path(source_root).resolve() if source_root else None
         self.stack, self.out = [], []
         self.logos = 0
+        self.title_start = 0
 
     def asset(self, name):
         return posixpath.relpath("forgeia-brand/" + name, posixpath.dirname(self.page) or ".")
@@ -115,9 +116,12 @@ class BrandHTML(HTMLParser):
                 for key in ["data-src", "srcset", "data-srcset"]:
                     if key in data: data[key] = thumbnail
         self.write_tag(tag, list(data.items()), closing)
+        if tag == "title": self.title_start = len(self.out)
         if not closing and tag not in VOID: self.stack.append((tag, data))
 
     def handle_endtag(self, tag):
+        if tag == "title" and "FORGEIA" not in "".join(self.out[self.title_start:]).upper():
+            self.out.append(" | FORGEIA")
         if tag == "head":
             self.out.append('<!-- FORGEIA:brand-start -->'
                             f'<link rel="icon" type="image/svg+xml" href="{self.asset("favicon.svg")}">\n'

@@ -55,6 +55,21 @@ try {
         await page.waitForTimeout(1400);
         const close = page.locator("button.mfp-close:visible").first();
         if (await close.count()) await close.click();
+        if (catalog.branding === "FORGEIA") {
+          const branding = await page.evaluate(() => {
+            const body = document.body.cloneNode(true);
+            body.querySelectorAll("script,style,code,pre,canvas").forEach((node) => node.remove());
+            return {
+              title: document.title,
+              oldText: /\b(?:Crafto|Canvas|ThemeZaa|SemiColonWeb)\b/i.test(body.textContent || ""),
+              favicon: document.querySelector('link[rel="icon"]')?.getAttribute("href"),
+              oldLinks: [...document.querySelectorAll("a[href]")].some((a) => /themezaa|semicolonweb|canvastemplate|themeforest.*(?:crafto|canvas)/i.test(a.href)),
+            };
+          });
+          if (!branding.title.includes("FORGEIA") || branding.oldText || branding.oldLinks || !branding.favicon?.includes("forgeia-brand/")) {
+            throw new Error(`Branding check failed: ${JSON.stringify(branding)}`);
+          }
+        }
         await page.addStyleTag({ content: ".preloader,.page-loader,.loader-wrapper{display:none!important} [data-anime],[data-anime] .word,[data-anime] .char{opacity:1!important;transform:none!important} *{animation-duration:0.01ms!important;transition-duration:0ms!important}" });
         const screenshot = await page.screenshot({ type: "jpeg", quality: 78, timeout: 10000 });
         await sharp(screenshot).resize(640, 480).jpeg({ quality: 76 }).toFile(output);

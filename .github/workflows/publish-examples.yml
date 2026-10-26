@@ -1,4 +1,4 @@
-name: Publier les exemples Crafto
+name: Publier les modèles FORGEIA
 on:
   workflow_dispatch:
     inputs:
@@ -99,3 +99,4 @@ jobs:
             crafto-build/thumbnails/demo-restaurant-menu.jpg
             crafto-build/thumbnails/demo-digital-agency-rtl.jpg
             crafto-build/thumbnails/element-accordion.jpg
+            crafto-build/thumbnails/index.jpg

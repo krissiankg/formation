@@ -46,4 +46,14 @@ L’import ignore les métadonnées Mac et refuse les chemins sortant de l’arc
 
 Les captures utilisent Chrome avec un profil temporaire, sans connexion à des comptes personnels. Les requêtes externes sont bloquées pendant le rendu des vignettes. Le rapport et des captures représentatives sont disponibles dans l’artefact `crafto-preview-review`.
 
+## Présentation FORGEIA
+
+Les logos fournis par l’administrateur sont conservés dans `assets/website-branding/`. Le traitement `scripts/crafto/brand.py` applique les variantes noire et blanche, l’icône couleur, les titres et les liens de présentation. Les logos carrés gardent un format carré. Les identifiants CSS, JavaScript, les éléments HTML `canvas` et les fichiers de licence conservent leur fonction.
+
+Les vignettes sont toutes recapturées après ce traitement. Les ZIP incluent les fichiers `forgeia-brand/`, le guide FORGEIA et les crédits séparés dans `LICENCES-SOURCES.txt`. Les commentaires de licence d’origine sont conservés.
+
+La release de présentation est `forgeia-sites-v2`. Le ZIP source peut être réutilisé depuis `crafto-v1` avec le champ `source_release` du workflow. Exemple : `dispatch.mjs publish <dossier-local> <zip-original> https://derguiqj76le8.cloudfront.net forgeia-sites-v2 crafto-v1`.
+
+Le même traitement a été validé sur les démos locales Canvas. Il s’appliquera à leur import complet, qui reste une étape distincte de cette modification de présentation.
+
 Validation : tests Vitest de l’authentification, des identifiants et des téléchargements ; tests Python du contenu et des chemins des ZIP ; capture des pages et vérification de la présence de chaque vignette et archive avant activation. Le workflow de déploiement de l’application ignore les modifications des seuls outils Crafto.
