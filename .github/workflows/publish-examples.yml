@@ -62,8 +62,17 @@ jobs:
       - name: Préparer les archives étudiantes
         if: inputs.mode == 'publish'
         run: |
+          python scripts/crafto/test_package.py
           python -c "import tarfile; tarfile.open('crafto.tar.gz').extractall('crafto-build', filter='data')"
           python scripts/crafto/package.py archives crafto-build crafto-archives --preview-url "${PREVIEW_URL}/${RELEASE}"
+      - name: Générer et vérifier les captures de chaque page
+        if: inputs.mode == 'publish'
+        env:
+          CRAFTO_NODE_MODULES: ${{ github.workspace }}/node_modules
+          CRAFTO_BROWSER: /usr/bin/google-chrome
+        run: |
+          npm install --no-save --package-lock=false playwright sharp --no-audit --no-fund
+          node scripts/crafto/capture.mjs crafto-build
       - name: Publier les aperçus et activer le catalogue complet
         if: inputs.mode == 'publish'
         run: node scripts/crafto/cloud.mjs publish
