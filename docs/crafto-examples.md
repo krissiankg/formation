@@ -38,7 +38,7 @@ Le workflow `publish-examples.yml` utilise le rôle OIDC GitHub existant. Le ZIP
 4. Envoyer le ZIP avec `scripts/crafto/upload.mjs put <dossier-local> <zip-original> <artefact-chiffré>`.
 5. Lancer `scripts/crafto/dispatch.mjs publish <dossier-local> <zip-original> <origine-cloudfront>`.
 
-Le script de lancement utilise `crafto-v1` pour cette première publication. Pour une nouvelle version de sources, choisir une nouvelle release dans le workflow et adapter le script de lancement : les URL des aperçus sont mises en cache comme fichiers immuables.
+La première publication utilisait `crafto-v1`. Le script de lancement utilise désormais `forgeia-sites-v2` par défaut et accepte la release cible et la release source en derniers arguments. Pour une nouvelle version de sources, choisir une nouvelle release : les URL des aperçus sont mises en cache comme fichiers immuables.
 
 Le mode `assets` complète les fichiers statiques d’une release existante (par exemple les curseurs des sliders), sans recréer les ZIP, les vignettes ou le manifeste. Utiliser une nouvelle release si le contenu d’un fichier existant change.
 

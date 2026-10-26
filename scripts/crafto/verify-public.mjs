@@ -5,6 +5,10 @@ if (!/^https:\/\/[a-z0-9]+\.cloudfront\.net$/.test(base || "") || !/^[a-z0-9-]+$
 const catalog = JSON.parse(await fs.readFile(catalogFile, "utf8"));
 const checks = [];
 checks.push({ path: "revolution/css/openhand.cur", type: "image/x-icon" }, { path: "revolution/css/closedhand.cur", type: "image/x-icon" });
+if (release.startsWith("forgeia-")) {
+  for (const file of ["logo-dark.svg", "logo-light.svg", "mark-dark.svg", "mark-light.svg", "favicon.svg"]) checks.push({ path: `forgeia-brand/${file}`, type: "image/svg+xml" });
+  checks.push({ path: "forgeia-brand/apple-icon.png", type: "image/png" }, { path: "forgeia-brand/brand.css", type: "text/css" });
+}
 for (const entry of catalog.entries) {
   if (!/^[a-z0-9-]+\.html$/.test(entry.page) || !/^thumbnails\/[a-z0-9-]+\.jpg$/.test(entry.thumbnail)) throw new Error("Invalid catalog path");
   checks.push({ path: entry.page, type: "text/html" }, { path: entry.thumbnail, type: "image/jpeg" });
