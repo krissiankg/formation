@@ -63,7 +63,7 @@ jobs:
         if: inputs.mode == 'publish'
         run: |
           python scripts/crafto/test_package.py
-          python -c "import tarfile; tarfile.open('crafto.tar.gz').extractall('crafto-build', filter='data')"
+          python scripts/crafto/extract.py crafto.zip crafto-original crafto-build
           python scripts/crafto/package.py archives crafto-build crafto-archives --preview-url "${PREVIEW_URL}/${RELEASE}"
       - name: Générer et vérifier les captures de chaque page
         if: inputs.mode == 'publish'

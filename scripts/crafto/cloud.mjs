@@ -12,7 +12,7 @@ const release = process.env.RELEASE;
 if (!/^[a-z0-9-]{1,60}$/.test(release || "")) throw new Error("Invalid release");
 const checksum = process.env.SHA256;
 if (!/^[a-f0-9]{64}$/.test(checksum || "")) throw new Error("Invalid SHA256");
-const key = `website-examples/staging/${release}/${checksum}.tar.gz`;
+const key = `website-examples/staging/${release}/${checksum}.zip`;
 const mode = process.argv[2];
 
 if (mode === "prepare") {
@@ -20,9 +20,9 @@ if (mode === "prepare") {
   if (!Number.isSafeInteger(bytes) || bytes <= 0 || bytes > 200_000_000) throw new Error("Invalid bundle size");
   const sha256 = Buffer.from(checksum, "hex").toString("base64");
   const url = await getSignedUrl(client, new PutObjectCommand({
-    Bucket: bucket, Key: key, ContentType: "application/gzip", ContentLength: bytes, ChecksumSHA256: sha256,
+    Bucket: bucket, Key: key, ContentType: "application/zip", ContentLength: bytes, ChecksumSHA256: sha256,
   }), { expiresIn: 3600, signableHeaders: new Set(["content-type"]), unhoistableHeaders: new Set(["x-amz-checksum-sha256"]) });
-  const target = JSON.stringify({ url, headers: { "content-type": "application/gzip", "content-length": String(bytes), "x-amz-checksum-sha256": sha256 } });
+  const target = JSON.stringify({ url, headers: { "content-type": "application/zip", "content-length": String(bytes), "x-amz-checksum-sha256": sha256 } });
   const symmetricKey = randomBytes(32);
   const iv = randomBytes(12);
   const cipher = createCipheriv("aes-256-gcm", symmetricKey, iv);
@@ -35,7 +35,7 @@ if (mode === "prepare") {
   const response = await client.send(new GetObjectCommand({ Bucket: bucket, Key: key }));
   const body = await response.Body.transformToByteArray();
   if (createHash("sha256").update(body).digest("hex") !== checksum) throw new Error("Bundle checksum mismatch");
-  await fs.writeFile("crafto.tar.gz", body);
+  await fs.writeFile("crafto.zip", body);
   console.log(`Verified source bundle: ${body.length} bytes`);
 } else if (mode === "publish") {
   const build = path.resolve("crafto-build");
