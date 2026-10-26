@@ -8,6 +8,8 @@ on:
         required: true
       release:
         required: true
+      source_release:
+        required: false
       sha256:
         required: true
       bytes:
@@ -25,6 +27,7 @@ concurrency:
 env:
   AWS_REGION: eu-west-3
   RELEASE: ${{ inputs.release }}
+  SOURCE_RELEASE: ${{ inputs.source_release }}
   SHA256: ${{ inputs.sha256 }}
   BUNDLE_BYTES: ${{ inputs.bytes }}
   UPLOAD_PUBLIC_KEY: ${{ inputs.public_key }}
@@ -63,11 +66,9 @@ jobs:
         if: inputs.mode != 'prepare'
         run: |
           python scripts/crafto/test_package.py
+          python scripts/crafto/test_brand.py
           python scripts/crafto/extract.py crafto.zip crafto-original crafto-build
-      - name: Préparer les archives étudiantes
-        if: inputs.mode == 'publish'
-        run: |
-          python scripts/crafto/package.py archives crafto-build crafto-archives --preview-url "${PREVIEW_URL}/${RELEASE}"
+          python scripts/crafto/brand.py crafto-build/html --pack crafto --catalog crafto-build/catalog.json --base-url "${PREVIEW_URL}/${RELEASE}"
       - name: Générer et vérifier les captures de chaque page
         if: inputs.mode == 'publish'
         env:
@@ -76,6 +77,9 @@ jobs:
         run: |
           npm install --no-save --package-lock=false playwright sharp --no-audit --no-fund
           node scripts/crafto/capture.mjs crafto-build
+      - name: Préparer les archives étudiantes
+        if: inputs.mode == 'publish'
+        run: python scripts/crafto/package.py archives crafto-build crafto-archives --preview-url "${PREVIEW_URL}/${RELEASE}"
       - name: Publier les aperçus et activer le catalogue complet
         if: inputs.mode == 'publish'
         run: node scripts/crafto/cloud.mjs publish
@@ -90,6 +94,8 @@ jobs:
           path: |
             crafto-build/capture-report.json
             crafto-build/thumbnails/demo-accounting-services.jpg
+            crafto-build/thumbnails/demo-accounting.jpg
+            crafto-build/thumbnails/demo-photography.jpg
             crafto-build/thumbnails/demo-restaurant-menu.jpg
             crafto-build/thumbnails/demo-digital-agency-rtl.jpg
             crafto-build/thumbnails/element-accordion.jpg
