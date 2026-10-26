@@ -63,10 +63,10 @@ try {
               title: document.title,
               oldText: /\b(?:Crafto|Canvas|ThemeZaa|SemiColonWeb)\b/i.test(body.textContent || ""),
               favicon: document.querySelector('link[rel="icon"]')?.getAttribute("href"),
-              oldLinks: [...document.querySelectorAll("a[href]")].some((a) => /themezaa|semicolonweb|canvastemplate|themeforest.*(?:crafto|canvas)/i.test(a.href)),
+              oldLinks: [...document.querySelectorAll("a[href]")].filter((a) => /themezaa|semicolonweb|canvastemplate|themeforest.*(?:crafto|canvas)/i.test(a.href)).slice(0, 2).map((a) => a.href),
             };
           });
-          if (!branding.title.includes("FORGEIA") || branding.oldText || branding.oldLinks || !branding.favicon?.includes("forgeia-brand/")) {
+          if (!branding.title.includes("FORGEIA") || branding.oldText || branding.oldLinks.length || !branding.favicon?.includes("forgeia-brand/")) {
             throw new Error(`Branding check failed: ${JSON.stringify(branding)}`);
           }
         }
@@ -75,7 +75,7 @@ try {
         await sharp(screenshot).resize(640, 480).jpeg({ quality: 76 }).toFile(output);
         captured++;
         if (captured % 25 === 0) console.log(JSON.stringify({ captured, scanned: position, total: catalog.total }));
-      } catch (error) { errors.push({ page: entry.page, error: error.message.slice(0, 180) }); }
+      } catch (error) { errors.push({ page: entry.page, error: error.message.slice(0, 400) }); }
     }
     await context.close();
   }));

@@ -53,6 +53,13 @@ class BrandTests(unittest.TestCase):
         self.assertIn('document.querySelector("canvas")', output)
         self.assertIn('Slider | FORGEIA</title>', output)
 
+    def test_publisher_contact_and_social_links(self):
+        source='<html><head></head><body><a href="mailto:info@themezaa.com">info@themezaa.com</a><a href="https://www.facebook.com/themezaastudio/">Facebook</a><a href="https://www.linkedin.com/company/themezaa/">LinkedIn</a></body></html>'
+        output,_=brand_html(source,'404.html','crafto')
+        self.assertNotIn('themezaa', output.lower())
+        self.assertIn('mailto:contact@forgeia.site',output)
+        self.assertIn('https://www.forgeia.site/espace/ressources?tab=sites',output)
+
 
 if __name__ == '__main__':
     unittest.main()
