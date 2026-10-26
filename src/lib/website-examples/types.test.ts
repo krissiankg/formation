@@ -20,4 +20,20 @@ describe("website examples catalog", () => {
     expect(() => parseCatalog(duplicate)).toThrow();
     expect(() => parseCatalog({ ...fixture(), total: 50 })).toThrow();
   });
+  it("keeps preview and download releases separate for combined collections", () => {
+    const data = fixture();
+    const second = { ...data.entries[0], id: "f2-demo-accounting", thumbnail: "thumbnails/f2-demo-accounting.jpg", release: "forgeia-collection-2-v1", collection: "forgeia-2" };
+    const catalog = parseCatalog({ ...data, sites: 2, total: 2, entries: [...data.entries, second] });
+    const entries = publicCatalog(catalog, "https://d123.cloudfront.net");
+    expect(entries[0].previewUrl).toContain("/crafto-v1/");
+    expect(entries[1].previewUrl).toBe("https://d123.cloudfront.net/forgeia-collection-2-v1/demo-accounting.html");
+    expect(entries[1].collection).toBe("forgeia-2");
+    expect(entries[1]).not.toHaveProperty("release");
+    expect(() => parseCatalog({ ...catalog, entries: [data.entries[0], { ...second, release: "../private" }] })).toThrow();
+  });
+  it("accepts the combined collection size with unique safe identifiers", () => {
+    const data = fixture();
+    const entries = Array.from({ length: 2013 }, (_, i) => ({ ...data.entries[0], id: `example-${i}`, thumbnail: `thumbnails/example-${i}.jpg` }));
+    expect(parseCatalog({ ...data, sites: entries.length, total: entries.length, entries }).total).toBe(2013);
+  });
 });

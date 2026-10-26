@@ -8,6 +8,8 @@ export type WebsiteExample = {
   thumbnail: string;
   pageCount: number;
   archiveBytes: number;
+  release?: string;
+  collection?: string;
 };
 
 export type ExamplesCatalog = {
@@ -19,25 +21,31 @@ export type ExamplesCatalog = {
   entries: WebsiteExample[];
 };
 
-export type PublicExample = Omit<WebsiteExample, "page" | "archive" | "thumbnail"> & {
+export type PublicExample = Omit<WebsiteExample, "page" | "archive" | "thumbnail" | "release"> & {
   previewUrl: string;
   thumbnailUrl: string;
+  collection: string;
 };
 
 const identifier = /^[a-z0-9][a-z0-9-]{0,100}$/;
+const releaseName = /^[a-z0-9][a-z0-9-]{0,59}$/;
+const pageName = /^[a-z0-9][a-z0-9_-]{0,150}\.html$/;
+const isIdentifier = (value: unknown): value is string => typeof value === "string" && identifier.test(value);
 
 export function parseCatalog(input: unknown): ExamplesCatalog {
   const value = input as ExamplesCatalog;
-  if (!value || value.version !== 1 || !identifier.test(value.release) || !Array.isArray(value.entries)
-    || value.entries.length < 1 || value.entries.length > 2000) throw new Error("Invalid examples catalog");
+  if (!value || value.version !== 1 || typeof value.release !== "string" || !releaseName.test(value.release) || !Array.isArray(value.entries)
+    || value.entries.length < 1 || value.entries.length > 5000) throw new Error("Invalid examples catalog");
   const ids = new Set<string>();
   for (const entry of value.entries) {
-    if (!entry || !identifier.test(entry.id) || !identifier.test(entry.archive)
-      || entry.page !== `${entry.id}.html` || entry.thumbnail !== `thumbnails/${entry.id}.jpg`
+    if (!entry || !isIdentifier(entry.id) || !isIdentifier(entry.archive)
+      || typeof entry.page !== "string" || !pageName.test(entry.page) || entry.thumbnail !== `thumbnails/${entry.id}.jpg`
       || typeof entry.title !== "string" || entry.title.length > 200
       || typeof entry.family !== "string" || !["sites", "pages", "components"].includes(entry.category)
       || !Number.isSafeInteger(entry.pageCount) || entry.pageCount < 1
-      || !Number.isSafeInteger(entry.archiveBytes) || entry.archiveBytes < 1 || ids.has(entry.id)) {
+      || !Number.isSafeInteger(entry.archiveBytes) || entry.archiveBytes < 1 || ids.has(entry.id)
+      || (entry.release !== undefined && (typeof entry.release !== "string" || !releaseName.test(entry.release)))
+      || (entry.collection !== undefined && !isIdentifier(entry.collection))) {
       throw new Error("Invalid example entry");
     }
     ids.add(entry.id);
@@ -50,9 +58,10 @@ export function parseCatalog(input: unknown): ExamplesCatalog {
 
 export function publicCatalog(catalog: ExamplesCatalog, baseUrl: string): PublicExample[] {
   if (!/^https:\/\/[a-z0-9]+\.cloudfront\.net$/.test(baseUrl)) throw new Error("Invalid examples origin");
-  return catalog.entries.map(({ page, archive: _archive, thumbnail, ...entry }) => ({
+  return catalog.entries.map(({ page, archive: _archive, thumbnail, release, ...entry }) => ({
     ...entry,
-    previewUrl: `${baseUrl}/${catalog.release}/${page}`,
-    thumbnailUrl: `${baseUrl}/${catalog.release}/${thumbnail}`,
+    collection: entry.collection || "forgeia-1",
+    previewUrl: `${baseUrl}/${release || catalog.release}/${page}`,
+    thumbnailUrl: `${baseUrl}/${release || catalog.release}/${thumbnail}`,
   }));
 }
