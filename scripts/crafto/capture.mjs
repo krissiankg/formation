@@ -27,7 +27,14 @@ const server = http.createServer(async (req, res) => {
 });
 await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
 const base = `http://127.0.0.1:${server.address().port}`;
-const browser = await chromium.launch({ headless: true });
+const installedBrowsers = [process.env.CRAFTO_BROWSER,
+  "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
+  "C:/Program Files/Google/Chrome/Application/chrome.exe"].filter(Boolean);
+let executablePath;
+for (const candidate of installedBrowsers) {
+  if (await fs.access(candidate).then(() => true, () => false)) { executablePath = candidate; break; }
+}
+const browser = await chromium.launch({ headless: true, ...(executablePath ? { executablePath } : {}) });
 let position = 0;
 let captured = 0;
 const errors = [];
