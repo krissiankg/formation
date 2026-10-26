@@ -1,4 +1,4 @@
-# Catalogue d’exemples Crafto
+# Catalogue d’exemples FORGEIA
 
 Le pack Crafto 4.0 fourni contient 619 pages HTML, dont 60 démos principales et la variante Digital Agency RTL, soit 61 sites. Les pages sont regroupées en 242 archives : chaque page d’un site télécharge le projet correspondant, avec ses pages associées.
 
@@ -54,6 +54,16 @@ Les vignettes sont toutes recapturées après ce traitement. Les ZIP incluent le
 
 La release de présentation est `forgeia-sites-v2`. Le ZIP source peut être réutilisé depuis `crafto-v1` avec le champ `source_release` du workflow. Exemple : `dispatch.mjs publish <dossier-local> <zip-original> https://derguiqj76le8.cloudfront.net forgeia-sites-v2 crafto-v1`.
 
-Le même traitement a été validé sur les démos locales Canvas. Il s’appliquera à leur import complet, qui reste une étape distincte de cette modification de présentation.
+## Deuxième collection
+
+Le pack Canvas 7.3 fourni contient 1 394 pages principales, dont 79 pages d’accueil de démos. L’import est pris en charge par `canvas.py`, sans migration vers une autre version du thème. Ses identifiants API commencent par `f2-` pour préserver ceux de la première collection. Les pages et leurs vignettes appartiennent à `forgeia-2`, avec un filtre de collection dans la galerie.
+
+Pour l’importer, créer le ZIP source privé avec `bundle-source.py <source> <zip>`, puis ajouter les arguments `<release> <source_release> canvas` aux commandes `dispatch.mjs prepare` et `publish`. La release initiale est `forgeia-collection-2-v1`. Le manifeste de transfert contient la taille et le SHA-256 calculés pendant la création du ZIP ; AWS vérifie cette somme lors de l’envoi et de la récupération.
+
+Les polices Revicons et le module Whiteboard absents de leur chemin attendu sont récupérés dans le pack. Le module LetMeScroll est fourni avec sa licence MIT. Le style Magazine absent est reconstitué. Les références aux images de casse incorrecte sont corrigées, les images absentes reçoivent des emplacements à personnaliser et les sources vidéo absentes sont retirées en conservant leurs posters. Les sources originales ne sont pas modifiées.
+
+Les archives sont construites à partir d’un noyau partagé et des pages, médias et dépendances du projet choisi. Elles sont envoyées une à une vers S3 puis retirées de l’espace temporaire du job pour limiter l’espace disque. Les aperçus gardent tous les fichiers statiques utilisables ; PHP reste désactivé sur leur hébergement.
+
+La publication fusionne les collections après l’envoi de tous les fichiers. Chaque entrée conserve sa propre release : les téléchargements et aperçus de la première collection continuent d’utiliser `forgeia-sites-v2`. L’ancien manifeste est sauvegardé dans `website-examples/catalog/history/` avant son remplacement. Republier une collection remplace uniquement les entrées de cette collection, sans modifier les autres. Le schéma accepte jusqu’à 5 000 entrées.
 
 Validation : tests Vitest de l’authentification, des identifiants et des téléchargements ; tests Python du contenu et des chemins des ZIP ; capture des pages et vérification de la présence de chaque vignette et archive avant activation. Le workflow de déploiement de l’application ignore les modifications des seuls outils Crafto.
