@@ -56,13 +56,17 @@ La release de présentation est `forgeia-sites-v2`. Le ZIP source peut être ré
 
 ## Deuxième collection
 
-Le pack Canvas 7.3 fourni contient 1 394 pages principales, dont 79 pages d’accueil de démos. L’import est pris en charge par `canvas.py`, sans migration vers une autre version du thème. Ses identifiants API commencent par `f2-` pour préserver ceux de la première collection. Les pages et leurs vignettes appartiennent à `forgeia-2`, avec un filtre de collection dans la galerie.
+Le pack Canvas 7.3 fourni contient 1 394 pages principales, dont 79 pages d’accueil de démos, regroupées en 1 249 ZIP. L’import est pris en charge par `canvas.py`, sans migration vers une autre version du thème. Ses identifiants API commencent par `f2-` pour préserver ceux de la première collection. Les pages et leurs vignettes appartiennent à `forgeia-2`, avec un filtre de collection dans la galerie.
 
 Pour l’importer, créer le ZIP source privé avec `bundle-source.py <source> <zip>`, puis ajouter les arguments `<release> <source_release> canvas` aux commandes `dispatch.mjs prepare` et `publish`. La release initiale est `forgeia-collection-2-v1`. Le manifeste de transfert contient la taille et le SHA-256 calculés pendant la création du ZIP ; AWS vérifie cette somme lors de l’envoi et de la récupération.
 
 Les polices Revicons et le module Whiteboard absents de leur chemin attendu sont récupérés dans le pack. Le module LetMeScroll est fourni avec sa licence MIT. Le style Magazine absent est reconstitué. Les références aux images de casse incorrecte sont corrigées, les images absentes reçoivent des emplacements à personnaliser et les sources vidéo absentes sont retirées en conservant leurs posters. Les sources originales ne sont pas modifiées.
 
 Les archives sont construites à partir d’un noyau partagé et des pages, médias et dépendances du projet choisi. Elles sont envoyées une à une vers S3 puis retirées de l’espace temporaire du job pour limiter l’espace disque. Les aperçus gardent tous les fichiers statiques utilisables ; PHP reste désactivé sur leur hébergement.
+
+Les dépendances du noyau sont analysées une seule fois. Pour reprendre une publication interrompue avec les mêmes sources et la même release encore inactive, activer `resume_archives` dans le workflow. Les ZIP complets déjà sur S3 sont conservés ; les nouvelles archives portent le SHA-256 du pack dans leurs métadonnées. Cette option refuse une release utilisée par le catalogue actif. Le mode `audit`, accessible aussi par `dispatch.mjs audit`, lit le catalogue et des points de contrôle S3 sans modifier les fichiers.
+
+Les bibliothèques JavaScript et CSS provenant des CDN du pack sont regroupées dans `forgeia-vendor/`, avec leurs sources et empreintes. Les cinq fragments HTML chargés par AJAX gardent leur format d’origine et disposent d’aperçus autonomes séparés. Le fichier HTML minifié reçoit un en-tête explicite pour le titre et le favicon FORGEIA.
 
 La publication fusionne les collections après l’envoi de tous les fichiers. Chaque entrée conserve sa propre release : les téléchargements et aperçus de la première collection continuent d’utiliser `forgeia-sites-v2`. L’ancien manifeste est sauvegardé dans `website-examples/catalog/history/` avant son remplacement. Republier une collection remplace uniquement les entrées de cette collection, sans modifier les autres. Le schéma accepte jusqu’à 5 000 entrées.
 

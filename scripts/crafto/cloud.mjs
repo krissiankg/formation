@@ -67,6 +67,8 @@ if (mode === "audit") {
   const expected = new Set(recipes.map((recipe) => recipe.id));
   const completed = {};
   const resume = process.env.RESUME_ARCHIVES === "true";
+  const rebuild = new Set((process.env.REBUILD_ARCHIVES || "").split(",").filter(Boolean));
+  if ([...rebuild].some((id) => !expected.has(id))) throw new Error("Unknown archive to rebuild");
   if (resume) {
     const response = await client.send(new GetObjectCommand({ Bucket: bucket, Key: "website-examples/catalog/current.json" }));
     const active = JSON.parse(await response.Body.transformToString());
@@ -75,6 +77,7 @@ if (mode === "audit") {
     await Promise.all(Array.from({ length: 12 }, async () => {
       while (position < recipes.length) {
         const recipe = recipes[position++];
+        if (rebuild.has(recipe.id)) continue;
         try {
           const item = await client.send(new HeadObjectCommand({ Bucket: bucket, Key: `website-examples/downloads/${release}/${recipe.id}.zip` }));
           if (item.Metadata?.["source-sha256"] && item.Metadata["source-sha256"] !== checksum) throw new Error("Archive source mismatch");

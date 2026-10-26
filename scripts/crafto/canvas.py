@@ -98,11 +98,17 @@ def repair(root):
         text = text.replace("https://bmsvieira.github.io/letmescroll.js/css/letmescroll.css", "css/letmescroll.css")
         if file.name == "demo-magazine.html":
             text = text.replace("selector: element,", "selector: '#' + (element.id || (element.id = 'forgeia-scroll-' + Array.from(document.querySelectorAll('.canvas-custom-scroll')).indexOf(element))),")
-        text = text.replace('data-scrollto="intro.html##section-onepage"', '').replace('intro.html##section-onepage', 'intro.html#section-onepage')
+        text = re.sub(r'''\s+data-(?:href|scrollto)=(["'])intro\.html##[^"']*\1''', '', text)
+        text = text.replace('intro.html##', 'index.html#')
         if file.name == "landing-4.html":
             text = text.replace('<script>', '<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script><script>', 1)
         if file.name == "right-hamburger.html":
-            text = re.sub(r"<script>\s*jQuery\('\.carousel-widget'\)\.appear\([\s\S]*?</script>", '<script>new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting)jQuery(entry.target).trigger("play.owl.autoplay",[5000]);});},{rootMargin:"120px"}).observe(document.querySelector(".carousel-widget"));</script>', text)
+            text = re.sub(r"<script>\s*jQuery\('\.carousel-widget'\)\.appear\([\s\S]*?</script>", '<script>const forgeiaCarousel=document.querySelector(".carousel-widget");if(forgeiaCarousel){new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting)jQuery(entry.target).trigger("play.owl.autoplay",[5000]);});},{rootMargin:"120px"}).observe(forgeiaCarousel);}</script>', text)
+        if file.name == "block-slider-1.html":
+            def social_link(match):
+                tag = match.group(0)
+                return re.sub(r'''\s+data-(?:animate|delay)=(["'])[^"']*\1''', '', tag) if 'social-icon' in tag else tag
+            text = re.sub(r'<a\b[^>]*>', social_link, text, flags=re.I)
         if file.name == "block-slider-1.html" and not re.search(r'''id=["']slider["']''', text):
             text = re.sub(r'''(<section\b)([^>]*class=["'][^"']*\bslider-element\b)''', r'\1 id="slider"\2', text, count=1)
         def holder(match):
