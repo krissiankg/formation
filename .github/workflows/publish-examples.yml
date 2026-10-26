@@ -6,6 +6,11 @@ on:
         type: choice
         options: [prepare, publish, assets]
         required: true
+      pack:
+        type: choice
+        options: [crafto, canvas]
+        default: crafto
+        required: false
       release:
         required: true
       source_release:
@@ -28,6 +33,7 @@ env:
   AWS_REGION: eu-west-3
   RELEASE: ${{ inputs.release }}
   SOURCE_RELEASE: ${{ inputs.source_release }}
+  SOURCE_PACK: ${{ inputs.pack || 'crafto' }}
   SHA256: ${{ inputs.sha256 }}
   BUNDLE_BYTES: ${{ inputs.bytes }}
   UPLOAD_PUBLIC_KEY: ${{ inputs.public_key }}
@@ -35,7 +41,7 @@ env:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -67,8 +73,18 @@ jobs:
         run: |
           python scripts/crafto/test_package.py
           python scripts/crafto/test_brand.py
+          python scripts/crafto/test_canvas.py
+          node --test scripts/crafto/catalog-merge.test.mjs
+      - name: Préparer la première collection
+        if: inputs.mode != 'prepare' && inputs.pack != 'canvas'
+        run: |
           python scripts/crafto/extract.py crafto.zip crafto-original crafto-build
           python scripts/crafto/brand.py crafto-build/html --pack crafto --catalog crafto-build/catalog.json --base-url "${PREVIEW_URL}/${RELEASE}"
+      - name: Préparer la nouvelle collection
+        if: inputs.mode != 'prepare' && inputs.pack == 'canvas'
+        run: |
+          python scripts/crafto/canvas.py extract crafto.zip canvas-original
+          python scripts/crafto/canvas.py prepare canvas-original crafto-build --consume-extracted --preview-url "${PREVIEW_URL}/${RELEASE}"
       - name: Générer et vérifier les captures de chaque page
         if: inputs.mode == 'publish'
         env:
@@ -78,8 +94,11 @@ jobs:
           npm install --no-save --package-lock=false playwright sharp --no-audit --no-fund
           node scripts/crafto/capture.mjs crafto-build
       - name: Préparer les archives étudiantes
-        if: inputs.mode == 'publish'
+        if: inputs.mode == 'publish' && inputs.pack != 'canvas'
         run: python scripts/crafto/package.py archives crafto-build crafto-archives --preview-url "${PREVIEW_URL}/${RELEASE}"
+      - name: Préparer les archives de la nouvelle collection
+        if: inputs.mode == 'publish' && inputs.pack == 'canvas'
+        run: node scripts/crafto/cloud.mjs archives
       - name: Publier les aperçus et activer le catalogue complet
         if: inputs.mode == 'publish'
         run: node scripts/crafto/cloud.mjs publish
@@ -100,3 +119,9 @@ jobs:
             crafto-build/thumbnails/demo-digital-agency-rtl.jpg
             crafto-build/thumbnails/element-accordion.jpg
             crafto-build/thumbnails/index.jpg
+            crafto-build/repair-report.json
+            crafto-build/catalog.json
+            crafto-build/archive-index.json
+            crafto-build/thumbnails/f2-demo-construction.jpg
+            crafto-build/thumbnails/f2-demo-magazine.jpg
+            crafto-build/thumbnails/f2-index.jpg

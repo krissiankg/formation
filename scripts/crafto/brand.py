@@ -35,12 +35,13 @@ def owner_link(value):
 
 
 class BrandHTML(HTMLParser):
-    def __init__(self, page, pack, canonical="", known_pages=(), source_root=None, page_map=None):
+    def __init__(self, page, pack, canonical="", known_pages=(), source_root=None, page_map=None, thumbnails=None):
         super().__init__(convert_charrefs=False)
         self.page, self.pack, self.canonical = page, pack, canonical
         self.known_pages = set(known_pages)
         self.source_root = Path(source_root).resolve() if source_root else None
         self.page_map = {a: b for a, b in (page_map or {}).items() if a != b}
+        self.thumbnails = thumbnails or {}
         self.stack, self.out = [], []
         self.logos = 0
         self.title_start = 0
@@ -118,7 +119,7 @@ class BrandHTML(HTMLParser):
         if tag == "img" and self.page == "index.html" and not own_logo:
             linked = next((item[1].get("href") for item in reversed(self.stack) if item[0] == "a"), "")
             if linked in self.known_pages and linked != self.page:
-                thumbnail = "thumbnails/" + linked.removesuffix(".html") + ".jpg"
+                thumbnail = self.thumbnails.get(linked, "thumbnails/" + linked.removesuffix(".html") + ".jpg")
                 data["src"] = thumbnail
                 for key in ["data-src", "srcset", "data-srcset"]:
                     if key in data: data[key] = thumbnail
@@ -156,9 +157,9 @@ class BrandHTML(HTMLParser):
     def handle_pi(self, value): self.out.append("<?" + value + ">")
 
 
-def brand_html(text, page, pack, canonical="", known_pages=(), source_root=None, page_map=None):
+def brand_html(text, page, pack, canonical="", known_pages=(), source_root=None, page_map=None, thumbnails=None):
     text = re.sub(r"<!-- FORGEIA:brand-start -->.*?<!-- FORGEIA:brand-end -->", "", text, flags=re.S)
-    parser = BrandHTML(page, pack, canonical, known_pages, source_root, page_map)
+    parser = BrandHTML(page, pack, canonical, known_pages, source_root, page_map, thumbnails)
     parser.feed(text)
     parser.close()
     return "".join(parser.out), parser.logos
@@ -186,26 +187,33 @@ def brand_tree(root, pack, base_url="", catalog_file=None, source_root=None):
     # The off-canvas component name is a framework term; slider names are branding.
     page_map = {p.relative_to(root).as_posix(): re.sub(r"(?<!off-)\b(?:canvas|crafto)\b", "forgeia", p.relative_to(root).as_posix(), flags=re.I) for p in pages}
     known = {page_map[p.name] for p in pages if p.parent == root}
-    logos = 0
-    for file in pages:
-        page = file.relative_to(root).as_posix()
-        target = root / page_map[page]
-        if target != file and target.exists(): raise ValueError("Branding page name collision")
-        content, count = brand_html(file.read_text(encoding="utf-8-sig"), page, pack, base_url.rstrip("/") + "/" + page_map[page] if base_url else "", known, source_root or root, page_map)
-        if target != file: file.rename(target)
-        target.write_text(content, encoding="utf-8")
-        logos += count
+    catalog = None
+    thumbnails = {}
     if catalog_file:
         catalog_file = Path(catalog_file)
         catalog = json.loads(catalog_file.read_text(encoding="utf-8"))
         for entry in catalog["entries"]:
             entry["title"] = brand_text(entry["title"])
-            if entry["page"] in page_map and page_map[entry["page"]] != entry["page"]:
-                entry["page"] = page_map[entry["page"]]
-                entry["id"] = entry["page"].removesuffix(".html")
+            original = entry["page"]
+            if original in page_map and page_map[original] != original:
+                old_stem = original.removesuffix(".html")
+                prefix = entry["id"][:-len(old_stem)] if entry["id"].endswith(old_stem) else ""
+                entry["page"] = page_map[original]
+                entry["id"] = prefix + entry["page"].removesuffix(".html")
                 entry["thumbnail"] = "thumbnails/" + entry["id"] + ".jpg"
             entry["archive"] = re.sub(r"(?<!off-)\b(?:canvas|crafto)\b", "forgeia", entry["archive"], flags=re.I)
+            thumbnails[entry["page"]] = entry["thumbnail"]
         catalog["branding"] = "FORGEIA"
+    logos = 0
+    for file in pages:
+        page = file.relative_to(root).as_posix()
+        target = root / page_map[page]
+        if target != file and target.exists(): raise ValueError("Branding page name collision")
+        content, count = brand_html(file.read_text(encoding="utf-8-sig"), page, pack, base_url.rstrip("/") + "/" + page_map[page] if base_url else "", known, source_root or root, page_map, thumbnails)
+        if target != file: file.rename(target)
+        target.write_text(content, encoding="utf-8")
+        logos += count
+    if catalog_file:
         catalog_file.write_text(json.dumps(catalog, ensure_ascii=False), encoding="utf-8")
         recipes_file = catalog_file.parent / "recipes.json"
         if recipes_file.exists():

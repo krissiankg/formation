@@ -26,7 +26,11 @@ if (mode === "key") {
       response.on("end", () => response.statusCode >= 200 && response.statusCode < 300 ? resolve() : reject(new Error(`Upload HTTP ${response.statusCode}`)));
     });
     request.on("error", () => reject(new Error("Upload connection failed")));
-    createReadStream(bundle).on("error", reject).pipe(request);
+    let bytes = 0;
+    let next = 64 * 1024 * 1024;
+    const input = createReadStream(bundle);
+    input.on("data", (chunk) => { bytes += chunk.length; if (bytes >= next) { console.log(JSON.stringify({ uploadedBytes: bytes })); next += 64 * 1024 * 1024; } });
+    input.on("error", (error) => { request.destroy(); reject(error); }).pipe(request);
   });
   console.log(`Uploaded ${(await fs.stat(bundle)).size} bytes successfully.`);
 } else throw new Error("Expected key or put");

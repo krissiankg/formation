@@ -8,6 +8,7 @@ on:
     paths-ignore:
       - 'scripts/crafto/**'
       - 'assets/website-branding/**'
+      - 'assets/website-examples-support/**'
       - '.github/workflows/publish-examples.yml'
       - 'docs/crafto-examples.md'
   workflow_dispatch:
