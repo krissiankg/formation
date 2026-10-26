@@ -1,5 +1,7 @@
 # Catalogue d’exemples FORGEIA
 
+Les deux collections publiées regroupent 2 013 pages et exemples, dont 140 sites complets, dans 1 491 archives ZIP. Les 619 entrées de la première collection sont conservées avec les 1 394 entrées de la deuxième.
+
 Le pack Crafto 4.0 fourni contient 619 pages HTML, dont 60 démos principales et la variante Digital Agency RTL, soit 61 sites. Les pages sont regroupées en 242 archives : chaque page d’un site télécharge le projet correspondant, avec ses pages associées.
 
 Les sources originales sont conservées. Les vignettes de sites proviennent du pack ; les autres aperçus sont des captures des pages fournies. Les photographies des vignettes ne sont pas incluses dans les sources : les étudiants personnalisent les emplacements prévus. Les services externes et formulaires nécessitent leur propre configuration.
@@ -64,7 +66,7 @@ Les polices Revicons et le module Whiteboard absents de leur chemin attendu sont
 
 Les archives sont construites à partir d’un noyau partagé et des pages, médias et dépendances du projet choisi. Elles sont envoyées une à une vers S3 puis retirées de l’espace temporaire du job pour limiter l’espace disque. Les aperçus gardent tous les fichiers statiques utilisables ; PHP reste désactivé sur leur hébergement.
 
-Les dépendances du noyau sont analysées une seule fois. Pour reprendre une publication interrompue avec les mêmes sources et la même release encore inactive, activer `resume_archives` dans le workflow. Les ZIP complets déjà sur S3 sont conservés ; les nouvelles archives portent le SHA-256 du pack dans leurs métadonnées. Cette option refuse une release utilisée par le catalogue actif. Le mode `audit`, accessible aussi par `dispatch.mjs audit`, lit le catalogue et des points de contrôle S3 sans modifier les fichiers.
+Les dépendances du noyau sont analysées une seule fois. Pour reprendre une publication interrompue avec les mêmes sources et la même release encore inactive, activer `resume_archives` dans le workflow. Les ZIP complets déjà sur S3 sont conservés ; les nouvelles archives portent le SHA-256 du pack dans leurs métadonnées. Si certains exemples ont reçu une correction, renseigner leurs identifiants d’archive dans `rebuild_archives` pour les reconstruire. Cette option refuse une release utilisée par le catalogue actif. Le mode `audit`, accessible aussi par `dispatch.mjs audit`, lit le catalogue et des points de contrôle S3 sans modifier les fichiers.
 
 Les bibliothèques JavaScript et CSS provenant des CDN du pack sont regroupées dans `forgeia-vendor/`, avec leurs sources et empreintes. Les cinq fragments HTML chargés par AJAX gardent leur format d’origine et disposent d’aperçus autonomes séparés. Le fichier HTML minifié reçoit un en-tête explicite pour le titre et le favicon FORGEIA.
 
