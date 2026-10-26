@@ -100,12 +100,12 @@ export class ForgeiaWebStack extends cdk.Stack {
         { header: "Cross-Origin-Opener-Policy", value: "same-origin", override: true },
       ] },
     });
+    const examplesAccessControl = new cloudfront.S3OriginAccessControl(this, "ExamplesAccessControl");
     const examplesDistribution = new cloudfront.Distribution(this, "ExamplesDistribution", {
       comment: "FORGEIA exemples pédagogiques",
       defaultBehavior: {
-        origin: origins.S3BucketOrigin.withOriginAccessControl(uploadsBucket, {
+        origin: origins.S3BucketOrigin.withBucketDefaults(uploadsBucket, {
           originPath: "/website-examples/previews",
-          originAccessLevels: [],
         }),
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD,
@@ -114,6 +114,10 @@ export class ForgeiaWebStack extends cdk.Stack {
         compress: true,
       },
     });
+    // L2 OAC grants access to the entire bucket. Bind OAC explicitly so this
+    // distribution receives only the preview prefix in the policy below.
+    (examplesDistribution.node.defaultChild as cloudfront.CfnDistribution)
+      .addPropertyOverride("DistributionConfig.Origins.0.OriginAccessControlId", examplesAccessControl.originAccessControlId);
     uploadsBucket.addToResourcePolicy(new iam.PolicyStatement({
       principals: [new iam.ServicePrincipal("cloudfront.amazonaws.com")],
       actions: ["s3:GetObject"],
