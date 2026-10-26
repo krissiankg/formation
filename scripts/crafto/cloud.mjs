@@ -8,7 +8,7 @@ import { spawn } from "node:child_process";
 import { createInterface } from "node:readline";
 import { mergeCatalogs } from "./catalog-merge.mjs";
 import { createHash, randomBytes, createCipheriv, publicEncrypt } from "node:crypto";
-import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, GetObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 const client = new S3Client({ region: "eu-west-3", requestChecksumCalculation: "WHEN_REQUIRED" });
@@ -24,7 +24,21 @@ const mode = process.argv[2];
 const pack = process.env.SOURCE_PACK || "crafto";
 if (!["crafto", "canvas"].includes(pack)) throw new Error("Invalid source pack");
 
-if (mode === "prepare") {
+if (mode === "audit") {
+  const object = await client.send(new GetObjectCommand({ Bucket: bucket, Key: "website-examples/catalog/current.json" }));
+  const catalog = JSON.parse(await object.Body.transformToString());
+  console.log(JSON.stringify({ activeCatalog: { release: catalog.release, total: catalog.total, sites: catalog.sites,
+    collections: [...new Set(catalog.entries.map((entry) => entry.collection || "forgeia-1"))] } }));
+  for (const archive of ["404-2", "block-content-tab-1", "landing-4", "portfolio-sortable", "rs-demo-premium-whiteboard", "wysiwyg"]) {
+    try {
+      const item = await client.send(new HeadObjectCommand({ Bucket: bucket, Key: `website-examples/downloads/${release}/${archive}.zip` }));
+      console.log(JSON.stringify({ archive, bytes: item.ContentLength, status: 200 }));
+    } catch (error) {
+      if (![403, 404].includes(error.$metadata?.httpStatusCode)) throw error;
+      console.log(JSON.stringify({ archive, status: error.$metadata.httpStatusCode }));
+    }
+  }
+} else if (mode === "prepare") {
   const bytes = Number(process.env.BUNDLE_BYTES);
   if (!Number.isSafeInteger(bytes) || bytes <= 0 || bytes > 2_000_000_000) throw new Error("Invalid bundle size");
   const sha256 = Buffer.from(checksum, "hex").toString("base64");

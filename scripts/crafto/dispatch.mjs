@@ -5,7 +5,7 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 
 const [mode, directory, bundle, previewUrl, release = "forgeia-sites-v2", sourceRelease = release, pack = "crafto"] = process.argv.slice(2);
-if (!["prepare", "publish", "assets"].includes(mode)) throw new Error("Expected prepare, publish or assets");
+if (!["prepare", "publish", "assets", "audit"].includes(mode)) throw new Error("Expected prepare, publish, assets or audit");
 const hash = createHash("sha256");
 let checksum;
 const bytes = (await fs.stat(bundle)).size;

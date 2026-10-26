@@ -4,7 +4,7 @@ on:
     inputs:
       mode:
         type: choice
-        options: [prepare, publish, assets]
+        options: [prepare, publish, assets, audit]
         required: true
       pack:
         type: choice
@@ -27,7 +27,7 @@ permissions:
   id-token: write
   contents: read
 concurrency:
-  group: publish-examples
+  group: ${{ inputs.mode == 'audit' && 'publish-examples-audit' || 'publish-examples' }}
   cancel-in-progress: false
 env:
   AWS_REGION: eu-west-3
@@ -39,7 +39,24 @@ env:
   UPLOAD_PUBLIC_KEY: ${{ inputs.public_key }}
   PREVIEW_URL: ${{ inputs.preview_url }}
 jobs:
+  audit:
+    if: inputs.mode == 'audit'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: eu-west-3
+      - name: Vérifier le catalogue et les archives sur AWS
+        run: node scripts/crafto/cloud.mjs audit
   publish:
+    if: inputs.mode != 'audit'
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
