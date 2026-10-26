@@ -54,7 +54,7 @@ export function WebsiteExamplesGallery() {
         <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800">Gratuit provisoirement</span>
       </div>
       <p className="mt-2 text-sm text-[color:var(--neutral-600)]">{catalog ? `${catalog.sites} sites complets · ${catalog.total} pages et exemples. ` : "Bibliothèque de sites HTML, CSS et JavaScript. "}Ouvre un aperçu dans un nouvel onglet ou télécharge ses sources en ZIP.</p>
-      <p className="mt-3 text-xs leading-relaxed text-[color:var(--neutral-600)]">Les vignettes des sites illustrent le résultat final. Les sources du pack contiennent des images à personnaliser. Les formulaires, paiements et autres services présentés dans les démos sont des exemples à configurer.</p>
+      <p className="mt-3 text-xs leading-relaxed text-[color:var(--neutral-600)]">Les aperçus présentent les modèles FORGEIA fournis. Les visuels et vidéos absents restent à personnaliser. Les formulaires, paiements et autres services présentés dans les démos sont des exemples à configurer.</p>
     </div>
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
       <label className="flex-1">

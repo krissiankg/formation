@@ -84,7 +84,7 @@ def prepare(source, output):
     print(json.dumps({"pages": len(entries), "sites": len(homes), "archives": len(recipes), "output": str(output)}))
 
 
-ASSET = re.compile(r"(?:\.\./)*(?:images|video)/[a-zA-Z0-9_@%+./-]+\.(?:png|jpe?g|gif|webp|svg|mp4|webm|ogg|mp3)", re.I)
+ASSET = re.compile(r"(?:\.\./)*(?:images|video|thumbnails)/[a-zA-Z0-9_@%+./-]+\.(?:png|jpe?g|gif|webp|svg|mp4|webm|ogg|mp3)", re.I)
 
 
 def archives(build, destination, preview_url):
@@ -95,7 +95,7 @@ def archives(build, destination, preview_url):
     destination.mkdir(parents=True, exist_ok=True)
     recipes = json.loads((build / "recipes.json").read_text(encoding="utf-8"))
     common = [p for p in root.rglob("*") if p.is_file() and p.relative_to(root).parts[0] in
-              {"css", "js", "fonts", "sass", "demos", "rtl-css", "revolution", "email-templates"}]
+              {"css", "js", "fonts", "sass", "demos", "rtl-css", "revolution", "email-templates", "forgeia-brand"}]
     common += [root / "package.json", root / "gulpfile.js"]
     common_images = set()
     for file in common:
@@ -114,7 +114,7 @@ def archives(build, destination, preview_url):
             rendered[page] = text
         files = {p.relative_to(root).as_posix(): p for p in common}
         for image in images:
-            file = root / safe_relative(image)
+            file = (build if image.startswith("thumbnails/") else root) / safe_relative(image)
             if file.is_file():
                 files[image] = file
         with zipfile.ZipFile(destination / (recipe["id"] + ".zip"), "w", zipfile.ZIP_DEFLATED, compresslevel=6) as archive:
@@ -124,7 +124,8 @@ def archives(build, destination, preview_url):
                 archive.writestr(safe_relative(name), text)
             if "index.html" not in rendered:
                 archive.writestr("index.html", rendered[recipe["home"]])
-            archive.writestr("LIRE-MOI-FORGEIA.txt", f"FORGEIA — {label(recipe['id'])}\n\nOuvrir index.html dans un navigateur. Pour un serveur local, utiliser npm install puis npm start (Node.js), ou python -m http.server 8080.\n\nLes fichiers HTML/CSS/JS sont déjà compilés. npm run build recompile les styles et scripts partagés avec Gulp.\n\n{len(recipe['pages'])} page(s) du modèle incluses. Les liens vers d'autres modèles ouvrent la bibliothèque en ligne.\n\nIMAGES À PERSONNALISER : le pack original contient des emplacements et non les photographies des vignettes. Les vignettes illustrent le modèle final ; remplacer les images dans images/. Les polices Google, cartes, vidéos et services externes nécessitent Internet.\n\nFORMULAIRES : exemples de présentation. Pour un envoi réel, configurer votre propre serveur PHP et vos paramètres de messagerie dans email-templates/. Ne jamais publier d'identifiants dans les sources. Les démos FORGEIA bloquent l'envoi des formulaires.\n\nAuteur et crédits d'origine : ThemeZaa, Crafto 4.0. Les mentions et les conditions du pack restent applicables. Documentation : {DOCS}\n\nTéléchargement gratuit provisoire pour les étudiants FORGEIA.\n")
+            archive.writestr("LIRE-MOI-FORGEIA.txt", f"FORGEIA — {label(recipe['id'])}\n\nOuvrir index.html dans un navigateur. Pour un serveur local, utiliser npm install puis npm start (Node.js), ou python -m http.server 8080.\n\nLes fichiers HTML/CSS/JS sont déjà compilés. npm run build recompile les styles et scripts partagés avec Gulp.\n\n{len(recipe['pages'])} page(s) du modèle incluses. Les liens vers d'autres modèles ouvrent la bibliothèque FORGEIA en ligne.\n\nIMAGES À PERSONNALISER : les visuels et vidéos absents du pack restent à personnaliser. Remplacer les images dans images/ et ajouter vos vidéos dans video/. Les polices Google, cartes et services externes nécessitent Internet.\n\nPERSONNALISATION : les logos, titres, liens de présentation et favicons utilisent FORGEIA. Les fichiers correspondants sont dans forgeia-brand/. Adapter aussi les métadonnées avant votre propre publication.\n\nFORMULAIRES : exemples de présentation. Pour un envoi réel, configurer votre propre serveur PHP et vos paramètres de messagerie dans email-templates/. Ne jamais publier d'identifiants dans les sources. Les démos FORGEIA bloquent l'envoi des formulaires.\n\nBibliothèque : https://www.forgeia.site/espace/ressources?tab=sites\nCrédits et conditions : voir LICENCES-SOURCES.txt et les mentions conservées dans les fichiers.\n\nTéléchargement gratuit provisoire pour les étudiants FORGEIA.\n")
+            archive.writestr("LICENCES-SOURCES.txt", f"Sources : Crafto 4.0, ThemeZaa.\nLa présentation FORGEIA ne modifie pas les droits et conditions du pack d'origine. Les mentions de copyright et licences des composants sont conservées.\nDocumentation d'origine : {DOCS}\n")
         print(json.dumps({"archive": recipe["id"], "bytes": (destination / (recipe["id"] + ".zip")).stat().st_size}), flush=True)
 
 

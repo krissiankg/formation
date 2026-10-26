@@ -12,7 +12,9 @@ const release = process.env.RELEASE;
 if (!/^[a-z0-9-]{1,60}$/.test(release || "")) throw new Error("Invalid release");
 const checksum = process.env.SHA256;
 if (!/^[a-f0-9]{64}$/.test(checksum || "")) throw new Error("Invalid SHA256");
-const key = `website-examples/staging/${release}/${checksum}.zip`;
+const sourceRelease = process.env.SOURCE_RELEASE || release;
+if (!/^[a-z0-9-]{1,60}$/.test(sourceRelease)) throw new Error("Invalid source release");
+const key = `website-examples/staging/${sourceRelease}/${checksum}.zip`;
 const mode = process.argv[2];
 
 if (mode === "prepare") {

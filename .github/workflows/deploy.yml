@@ -7,6 +7,7 @@ on:
     branches: [main]
     paths-ignore:
       - 'scripts/crafto/**'
+      - 'assets/website-branding/**'
       - '.github/workflows/publish-examples.yml'
       - 'docs/crafto-examples.md'
   workflow_dispatch:

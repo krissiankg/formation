@@ -10,14 +10,17 @@ const require = createRequire(process.env.CRAFTO_NODE_MODULES
 const { chromium } = require("playwright");
 const sharp = require("sharp");
 const catalog = JSON.parse(await fs.readFile(path.join(build, "catalog.json"), "utf8"));
+const entries = [...catalog.entries].sort((a, b) => Number(a.page === "index.html") - Number(b.page === "index.html"));
+const force = catalog.branding === "FORGEIA" && process.env.FORGEIA_CAPTURE_RESUME !== "1";
 const mime = { ".html": "text/html", ".css": "text/css", ".js": "application/javascript", ".svg": "image/svg+xml", ".woff2": "font/woff2", ".woff": "font/woff", ".jpg": "image/jpeg", ".png": "image/png" };
 const root = path.join(build, "html");
 const missing = new Set();
 const server = http.createServer(async (req, res) => {
   try {
     const relative = decodeURIComponent(new URL(req.url, "http://localhost").pathname).replace(/^\/+/, "");
-    const file = path.resolve(root, relative);
-    if (!file.startsWith(root + path.sep)) { res.writeHead(403).end(); return; }
+    const sourceRoot = relative.startsWith("thumbnails/") ? build : root;
+    const file = path.resolve(sourceRoot, relative);
+    if (!file.startsWith(sourceRoot + path.sep) || /\.(php|pem|env|key)$/i.test(file)) { res.writeHead(403).end(); return; }
     const bytes = await fs.readFile(file);
     res.writeHead(200, { "Content-Type": mime[path.extname(file)] || "application/octet-stream" }).end(bytes);
   } catch {
@@ -41,15 +44,17 @@ const errors = [];
 try {
   await Promise.all(Array.from({ length: 4 }, async () => {
     const context = await browser.newContext({ viewport: { width: 1280, height: 960 }, deviceScaleFactor: 1 });
-    await context.route("**/*", (route) => route.request().url().startsWith(base) || route.request().url().startsWith("data:") ? route.continue() : route.abort());
+    await context.route("**/*", (route) => (route.request().url().startsWith(base) || route.request().url().startsWith("data:")) && !/\.(mp4|webm|mp3)(?:\?|$)/i.test(route.request().url()) ? route.continue() : route.abort());
     const page = await context.newPage();
-    while (position < catalog.entries.length) {
-      const entry = catalog.entries[position++];
+    while (position < entries.length) {
+      const entry = entries[position++];
       const output = path.join(build, entry.thumbnail);
-      if (await fs.access(output).then(() => true, () => false)) continue;
+      if (!force && await fs.access(output).then(() => true, () => false)) continue;
       try {
         await page.goto(`${base}/${entry.page}`, { waitUntil: "load", timeout: 18000 });
-        await page.waitForTimeout(900);
+        await page.waitForTimeout(1400);
+        const close = page.locator("button.mfp-close:visible").first();
+        if (await close.count()) await close.click();
         await page.addStyleTag({ content: ".preloader,.page-loader,.loader-wrapper{display:none!important} [data-anime],[data-anime] .word,[data-anime] .char{opacity:1!important;transform:none!important} *{animation-duration:0.01ms!important;transition-duration:0ms!important}" });
         const screenshot = await page.screenshot({ type: "jpeg", quality: 78, timeout: 10000 });
         await sharp(screenshot).resize(640, 480).jpeg({ quality: 76 }).toFile(output);
