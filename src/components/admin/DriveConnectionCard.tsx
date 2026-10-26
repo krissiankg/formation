@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 interface DriveStatus {
@@ -8,7 +8,9 @@ interface DriveStatus {
   isConnected: boolean;
   folderId: string;
   connectedEmail: string | null;
-  fileCount: number;
+  fileCount: number | null;
+  fileCountIsExact: boolean;
+  isCounting: boolean;
   testError: string | null;
 }
 
@@ -17,29 +19,75 @@ export function DriveConnectionCard() {
   const [status, setStatus] = useState<DriveStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [statusError, setStatusError] = useState<string | null>(null);
+  const activeRequest = useRef<AbortController | null>(null);
 
   const driveParam = searchParams.get("drive");
   const driveMsg = searchParams.get("msg");
 
-  async function fetchStatus() {
+  const fetchStatus = useCallback(async (forceRefresh = false) => {
+    activeRequest.current?.abort();
+    const controller = new AbortController();
+    activeRequest.current = controller;
     try {
       setRefreshing(true);
-      const res = await fetch("/api/admin/drive/status");
-      if (res.ok) {
+      setStatusError(null);
+      let firstRequest = true;
+      while (!controller.signal.aborted) {
+        const suffix = forceRefresh && firstRequest ? "?refresh=1" : "";
+        const res = await fetch(`/api/admin/drive/status${suffix}`, {
+          signal: controller.signal,
+          cache: "no-store",
+        });
+        if (!res.ok) {
+          throw new Error(res.status === 401
+            ? "Ta session a expiré. Recharge la page pour te reconnecter."
+            : "Impossible de vérifier Google Drive. Relance la synchronisation.");
+        }
         const data = (await res.json()) as DriveStatus;
+        if (controller.signal.aborted) return;
         setStatus(data);
+        setLoading(false);
+        firstRequest = false;
+        if (!data.isCounting) break;
       }
-    } catch {
-      // ignore
+    } catch (error) {
+      if (!controller.signal.aborted) {
+        setStatusError(error instanceof Error ? error.message : "Impossible de vérifier Google Drive.");
+        setStatus((previous) => previous
+          ? { ...previous, fileCount: null, fileCountIsExact: false, isCounting: false }
+          : null);
+      }
     } finally {
-      setLoading(false);
-      setRefreshing(false);
+      if (activeRequest.current === controller) {
+        activeRequest.current = null;
+        if (!controller.signal.aborted) {
+          setLoading(false);
+          setRefreshing(false);
+        }
+      }
     }
-  }
+  }, []);
 
   useEffect(() => {
-    fetchStatus();
-  }, []);
+    void fetchStatus();
+    return () => activeRequest.current?.abort();
+  }, [fetchStatus]);
+
+  let fileCountLabel = loading ? "Vérification..." : "En attente de liaison";
+  if (!loading && !status) fileCountLabel = "Indisponible";
+  if (status?.isConnected) {
+    if (status.fileCount === null) {
+      fileCountLabel = "Indisponible";
+    } else if (status.isCounting && status.fileCount === 0) {
+      fileCountLabel = "Comptage en cours...";
+    } else {
+      const count = status.fileCount.toLocaleString("fr-FR");
+      const noun = status.fileCount === 1 ? "fichier" : "fichiers";
+      fileCountLabel = status.fileCountIsExact ? `${count} ${noun}` : `Au moins ${count} ${noun}`;
+    }
+  }
+  const testError = statusError || status?.testError;
 
   return (
     <section className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--neutral-50)] p-5 sm:p-6 shadow-xs">
@@ -87,11 +135,11 @@ export function DriveConnectionCard() {
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={fetchStatus}
+                onClick={() => void fetchStatus(true)}
                 disabled={refreshing}
                 className="rounded-xl border border-[color:var(--border)] bg-white px-3 py-2 text-xs font-semibold text-[color:var(--neutral-700)] shadow-2xs hover:bg-[color:var(--neutral-100)]"
               >
-                {refreshing ? "Vérification..." : "Tester la synchro"}
+                {refreshing ? (status?.isCounting ? "Comptage..." : "Vérification...") : "Tester la synchro"}
               </button>
               <a
                 href="/api/admin/drive/auth"
@@ -148,14 +196,17 @@ export function DriveConnectionCard() {
         <div className="rounded-xl border border-[color:var(--border)] bg-white p-3">
           <p className="font-mono text-[10px] uppercase text-[color:var(--neutral-500)]">Fichiers Détectés</p>
           <p className="mt-1 font-mono text-xs font-semibold text-[color:var(--neutral-black)]">
-            {status?.isConnected ? `${status.fileCount} fichiers` : "En attente de liaison"}
+            {fileCountLabel}
           </p>
+          {status?.isCounting && status.fileCount !== null && status.fileCount > 0 && (
+            <p className="mt-1 text-[11px] text-[color:var(--neutral-600)]">Comptage de la collection en cours...</p>
+          )}
         </div>
       </div>
 
-      {status?.testError && (
+      {testError && (
         <div className="mt-3 rounded-lg bg-rose-50 p-3 text-xs text-rose-700">
-          ⚠️ <strong>Avertissement :</strong> {status.testError}
+          ⚠️ <strong>Avertissement :</strong> {testError}
         </div>
       )}
 
