@@ -32,7 +32,7 @@ export async function getExamplesCatalog(): Promise<ExamplesCatalog> {
 export function signExampleDownload(catalog: ExamplesCatalog, entry: WebsiteExample) {
   return getSignedUrl(s3(), new GetObjectCommand({
     Bucket: process.env.UPLOADS_BUCKET,
-    Key: `website-examples/downloads/${catalog.release}/${entry.archive}.zip`,
+    Key: `website-examples/downloads/${entry.release || catalog.release}/${entry.archive}.zip`,
     ResponseContentType: "application/zip",
     ResponseContentDisposition: `attachment; filename="forgeia-${entry.archive}.zip"`,
   }), { expiresIn: 120 });

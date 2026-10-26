@@ -13,6 +13,7 @@ export function WebsiteExamplesGallery() {
   const [attempt, setAttempt] = useState(0);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("sites");
+  const [collection, setCollection] = useState("all");
   const [page, setPage] = useState(1);
   const [downloading, setDownloading] = useState<string | null>(null);
 
@@ -30,8 +31,11 @@ export function WebsiteExamplesGallery() {
   const entries = useMemo(() => {
     const words = query.trim().toLocaleLowerCase("fr").split(/\s+/);
     return (catalog?.entries || []).filter((entry) => (category === "all" || entry.category === category)
+      && (collection === "all" || entry.collection === collection)
       && words.every((word) => `${entry.title} ${entry.family}`.toLocaleLowerCase("fr").includes(word)));
-  }, [catalog, category, query]);
+  }, [catalog, category, collection, query]);
+  const collections = [...new Set((catalog?.entries || []).map((entry) => entry.collection))].sort();
+  const collectionLabel = (id: string) => /^forgeia-\d+$/.test(id) ? `Collection ${id.split("-").at(-1)}` : "Collection FORGEIA";
   const totalPages = Math.max(1, Math.ceil(entries.length / pageSize));
   const currentPage = Math.min(page, totalPages);
 
@@ -61,6 +65,13 @@ export function WebsiteExamplesGallery() {
         <span className="sr-only">Rechercher un exemple</span>
         <input type="search" value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} placeholder="Rechercher : restaurant, portfolio, agency…" className="w-full rounded-xl border border-[color:var(--border)] bg-white px-4 py-3 text-sm" />
       </label>
+      {collections.length > 1 && <label>
+        <span className="sr-only">Collection de modèles</span>
+        <select value={collection} onChange={(e) => { setCollection(e.target.value); setPage(1); }} className="w-full rounded-xl border border-[color:var(--border)] bg-white px-4 py-3 text-sm">
+          <option value="all">Toutes les collections</option>
+          {collections.map((id) => <option key={id} value={id}>{collectionLabel(id)}</option>)}
+        </select>
+      </label>}
       <label>
         <span className="sr-only">Type d’exemple</span>
         <select value={category} onChange={(e) => { setCategory(e.target.value); setPage(1); }} className="w-full rounded-xl border border-[color:var(--border)] bg-white px-4 py-3 text-sm">
@@ -80,7 +91,7 @@ export function WebsiteExamplesGallery() {
             <img src={entry.thumbnailUrl} alt={`Aperçu de ${entry.title}`} width={640} height={480} loading="lazy" className="aspect-[4/3] w-full object-cover object-top transition-transform duration-300 hover:scale-[1.03]" />
           </a>
           <div className="p-4">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--neutral-600)]">{entry.category === "sites" ? "Site complet" : entry.category === "pages" ? "Page du site" : "Exemple HTML"} · {entry.pageCount} page{entry.pageCount > 1 ? "s" : ""} dans le ZIP</p>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--neutral-600)]">{collections.length > 1 ? `${collectionLabel(entry.collection)} · ` : ""}{entry.category === "sites" ? "Site complet" : entry.category === "pages" ? "Page du site" : "Exemple HTML"} · {entry.pageCount} page{entry.pageCount > 1 ? "s" : ""} dans le ZIP</p>
             <h3 className="mt-2 font-display text-base font-bold capitalize">{entry.title}</h3>
             <div className="mt-4 flex gap-2">
               <a href={entry.previewUrl} target="_blank" rel="noopener noreferrer" className="flex-1 rounded-lg border border-[color:var(--border)] px-2 py-2.5 text-center text-xs font-semibold hover:bg-stone-50">Voir le site ↗</a>
