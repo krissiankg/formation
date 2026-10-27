@@ -12,7 +12,7 @@ describe("example access", () => {
   it("allows the administrator without a student session", async () => {
     vi.mocked(isAdminAuthenticated).mockResolvedValue(true);
     expect(await canAccessExamples()).toBe(true);
-    expect(getSessionEnrollment).not.toHaveBeenCalled();
+    expect(getSessionEnrollment).toHaveBeenCalled();
   });
   it("rejects anonymous and suspended accounts", async () => {
     vi.mocked(getSessionEnrollment).mockResolvedValue(null);
@@ -20,7 +20,7 @@ describe("example access", () => {
     vi.mocked(getSessionEnrollment).mockResolvedValue({ accessOverride: "blocked", payments: [] } as never);
     expect(await canAccessExamples()).toBe(false);
   });
-  it("allows students to download the provisionally free examples", async () => {
+  it("allows students to browse the examples catalog", async () => {
     vi.mocked(getSessionEnrollment).mockResolvedValue({ payments: [] } as never);
     expect(await canAccessExamples()).toBe(true);
   });

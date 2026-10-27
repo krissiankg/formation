@@ -1,8 +1,6 @@
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { getSessionEnrollment } from "@/lib/auth/session";
-import { isAdminAuthenticated } from "@/lib/auth/admin";
-import { getCourseAccess } from "@/lib/access/course-access";
+import { getExamplesViewer } from "./access";
 import { parseCatalog, type ExamplesCatalog, type WebsiteExample } from "./types";
 
 let client: S3Client | undefined;
@@ -13,9 +11,7 @@ function s3() {
 }
 
 export async function canAccessExamples() {
-  if (await isAdminAuthenticated()) return true;
-  const enrollment = await getSessionEnrollment();
-  return Boolean(enrollment && !getCourseAccess(enrollment).blocked);
+  return Boolean(await getExamplesViewer());
 }
 
 export async function getExamplesCatalog(): Promise<ExamplesCatalog> {

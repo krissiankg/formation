@@ -8,18 +8,20 @@ import { getOrCreateStudentWallet, listStudentUnlockedFileIds, listStudentTransa
 import { GET } from "./route";
 describe("wallet role consistency", () => {
   beforeEach(() => vi.resetAllMocks());
-  it("gives the admin a free preview even when a student cookie also exists", async () => {
+  it("gives the administrator access when no student session is present", async () => {
     vi.mocked(isAdminAuthenticated).mockResolvedValue(true);
+    vi.mocked(getSessionEnrollment).mockResolvedValue(null);
     expect(await (await GET()).json()).toMatchObject({ isAdmin: true });
-    expect(getSessionEnrollment).not.toHaveBeenCalled();
     expect(getOrCreateStudentWallet).not.toHaveBeenCalled();
   });
   it("returns the student's own paid rights and real balance", async () => {
+    vi.mocked(isAdminAuthenticated).mockResolvedValue(true);
     vi.mocked(getSessionEnrollment).mockResolvedValue({ id: "student" } as never);
     vi.mocked(getOrCreateStudentWallet).mockResolvedValue({ balanceCoins: 25 } as never);
     vi.mocked(listStudentUnlockedFileIds).mockResolvedValue(["html:forgeia-1:restaurant"]);
     vi.mocked(listStudentTransactions).mockResolvedValue([]);
     expect(await (await GET()).json()).toMatchObject({ isAdmin: false, balance: 25, unlockedFileIds: ["html:forgeia-1:restaurant"] });
     expect(getOrCreateStudentWallet).toHaveBeenCalledWith("student");
+    expect(isAdminAuthenticated).not.toHaveBeenCalled();
   });
 });

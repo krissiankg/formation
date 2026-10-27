@@ -7,12 +7,13 @@ import { COIN_PACKS } from "@/lib/wallet/types";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  // Même priorité que les téléchargements : l'administration dispose d'un accès libre.
-  if (await isAdminAuthenticated()) {
-    return NextResponse.json({ authenticated: true, isAdmin: true, balance: 999999, unlockedFileIds: ["*"], transactions: [], packs: COIN_PACKS });
-  }
   const student = await getSessionEnrollment();
-  if (!student) return NextResponse.json({ error: "Non connecté" }, { status: 401 });
+  if (!student) {
+    if (await isAdminAuthenticated()) {
+      return NextResponse.json({ authenticated: true, isAdmin: true, balance: 999999, unlockedFileIds: ["*"], transactions: [], packs: COIN_PACKS });
+    }
+    return NextResponse.json({ error: "Non connecté" }, { status: 401 });
+  }
   const wallet = await getOrCreateStudentWallet(student.id);
   const unlockedFileIds = await listStudentUnlockedFileIds(student.id);
   const transactions = await listStudentTransactions(student.id, 10);
