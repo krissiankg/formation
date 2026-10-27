@@ -5,6 +5,7 @@ import type { PublicExample } from "@/lib/website-examples/types";
 import { UnlockConfirmModal } from "@/components/espace/UnlockConfirmModal";
 import { WalletWidget } from "@/components/espace/WalletWidget";
 import type { CoinPack, CoinTransaction } from "@/lib/wallet/types";
+import { resourceApiBase, type ResourceAudience } from "@/lib/resources/audience";
 
 type Catalog = { entries: PublicExample[]; sites: number; total: number };
 type Wallet = { balance: number; isAdmin: boolean; unlockedFileIds: string[]; packs: CoinPack[]; transactions: CoinTransaction[] };
@@ -12,7 +13,9 @@ const categories = [{ id: "sites", label: "Sites complets" }, { id: "pages", lab
 const pageSize = 24;
 const thumbnailShapes = ["aspect-[4/3]", "aspect-video", "aspect-[3/2]", "aspect-[16/10]", "aspect-[4/3]"];
 
-export function WebsiteExamplesGallery() {
+export function WebsiteExamplesGallery({ audience = "student" }: { audience?: ResourceAudience }) {
+  const isAdmin = audience === "admin";
+  const apiBase = resourceApiBase(audience);
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
@@ -26,7 +29,7 @@ export function WebsiteExamplesGallery() {
 
   useEffect(() => {
     const controller = new AbortController();
-    Promise.all(["/api/ressources/exemples", "/api/wallet"].map(async (url) => {
+    Promise.all([`${apiBase}/exemples`, ...(isAdmin ? [] : ["/api/wallet"])].map(async (url) => {
       const response = await fetch(url, { signal: controller.signal, cache: "no-store" });
       const body = await response.json();
       if (!response.ok) throw new Error(body.error || "Impossible de charger les exemples ou le portefeuille.");
@@ -34,10 +37,10 @@ export function WebsiteExamplesGallery() {
     }))
       .then(([catalogBody, walletBody]) => {
         setCatalog(catalogBody);
-        setWallet(walletBody);
+        if (!isAdmin) setWallet(walletBody);
       }).catch((e) => { if (e.name !== "AbortError") setError(e.message); });
     return () => controller.abort();
-  }, [attempt]);
+  }, [apiBase, isAdmin, attempt]);
 
   const entries = useMemo(() => {
     const words = query.trim().toLocaleLowerCase("fr").split(/\s+/);
@@ -54,7 +57,7 @@ export function WebsiteExamplesGallery() {
     setDownloading(entry.id);
     setError("");
     try {
-      const response = await fetch(`/api/ressources/exemples/${entry.id}/download`, { cache: "no-store" });
+      const response = await fetch(`${apiBase}/exemples/${entry.id}/download`, { cache: "no-store" });
       const body = await response.json();
       if (!response.ok) throw new Error(body.error || "Le téléchargement a échoué.");
       window.location.assign(body.url);
@@ -66,13 +69,13 @@ export function WebsiteExamplesGallery() {
     <div className="rounded-2xl border border-[color:var(--border)] bg-white p-5 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-display text-xl font-bold">Sites HTML à personnaliser</h2>
-        <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-900">Déblocage en coins</span>
+        <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-900">{isAdmin ? "Accès administrateur illimité" : "Déblocage en coins"}</span>
       </div>
       <p className="mt-2 text-sm text-[color:var(--neutral-600)]">{catalog ? `${catalog.sites} sites complets · ${catalog.total} pages et exemples. ` : "Bibliothèque de sites HTML, CSS et JavaScript. "}Ouvre un aperçu dans un nouvel onglet ou télécharge ses sources en ZIP.</p>
-      <p className="mt-3 text-xs leading-relaxed text-[color:var(--neutral-600)]">Les aperçus sont gratuits. Le coût du ZIP dépend de son poids, comme pour les ressources Drive. Une archive débloquée reste téléchargeable sans nouveau débit, depuis toutes les pages qui partagent ce ZIP.</p>
+      <p className="mt-3 text-xs leading-relaxed text-[color:var(--neutral-600)]">{isAdmin ? "Toutes les archives sont accessibles directement avec ta session administrateur, sans achat ni débit de coins." : "Les aperçus sont gratuits. Le coût du ZIP dépend de son poids, comme pour les ressources Drive. Une archive débloquée reste téléchargeable sans nouveau débit, depuis toutes les pages qui partagent ce ZIP."}</p>
       <p className="mt-3 text-xs leading-relaxed text-[color:var(--neutral-600)]">Les aperçus présentent les modèles FORGEIA fournis. Les visuels et vidéos absents restent à personnaliser. Les formulaires, paiements et autres services présentés dans les démos sont des exemples à configurer.</p>
     </div>
-    {wallet && <WalletWidget balance={wallet.balance} isAdmin={wallet.isAdmin} packs={wallet.packs} transactions={wallet.transactions} onRefresh={() => { setError(""); setAttempt((value) => value + 1); }} />}
+    {!isAdmin && wallet && <WalletWidget balance={wallet.balance} isAdmin={false} packs={wallet.packs} transactions={wallet.transactions} onRefresh={() => { setError(""); setAttempt((value) => value + 1); }} />}
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
       <label className="flex-1">
         <span className="sr-only">Rechercher un exemple</span>
@@ -108,10 +111,10 @@ export function WebsiteExamplesGallery() {
             <h3 className="mt-2 break-words font-display text-sm font-bold capitalize">{entry.title}</h3>
             <div className="mt-4 flex flex-wrap gap-2">
               <a href={entry.previewUrl} target="_blank" rel="noopener noreferrer" className="min-w-20 flex-1 rounded-lg border border-[color:var(--border)] px-2 py-2.5 text-center text-xs font-semibold hover:bg-stone-50">Voir le site ↗</a>
-              <button type="button" disabled={downloading !== null || !wallet} onClick={() => wallet?.isAdmin || wallet?.unlockedFileIds.includes(entry.unlockId) ? download(entry) : setUnlockTarget(entry)} className="min-w-24 flex-1 rounded-lg bg-[color:var(--neutral-black)] px-2 py-2.5 text-xs font-semibold text-white disabled:opacity-50">{downloading === entry.id ? "Préparation…" : wallet?.isAdmin || wallet?.unlockedFileIds.includes(entry.unlockId) ? "Télécharger ZIP" : `Débloquer · ${entry.coinsCost} coins`}</button>
+              <button type="button" disabled={downloading !== null || (!isAdmin && !wallet)} onClick={() => isAdmin || wallet?.unlockedFileIds.includes(entry.unlockId) ? download(entry) : setUnlockTarget(entry)} className="min-w-24 flex-1 rounded-lg bg-[color:var(--neutral-black)] px-2 py-2.5 text-xs font-semibold text-white disabled:opacity-50">{downloading === entry.id ? "Préparation…" : isAdmin || wallet?.unlockedFileIds.includes(entry.unlockId) ? "Télécharger ZIP" : `Débloquer · ${entry.coinsCost} coins`}</button>
             </div>
             <p className="mt-2 text-right text-[10px] text-[color:var(--neutral-600)]">Sources · {(entry.archiveBytes / 1024 / 1024).toLocaleString("fr", { maximumFractionDigits: 1 })} Mo</p>
-            {(wallet?.isAdmin || wallet?.unlockedFileIds.includes(entry.unlockId)) && <p className="mt-2 text-xs font-semibold text-emerald-800">✓ {wallet?.isAdmin ? "Accès administrateur" : "Archive déjà débloquée"}</p>}
+            {(isAdmin || wallet?.unlockedFileIds.includes(entry.unlockId)) && <p className="mt-2 text-xs font-semibold text-emerald-800">✓ {isAdmin ? "Accès administrateur" : "Archive déjà débloquée"}</p>}
           </div>
         </article>)}
       </div>
@@ -122,11 +125,11 @@ export function WebsiteExamplesGallery() {
         <button type="button" disabled={currentPage === totalPages} onClick={() => setPage(currentPage + 1)} className="rounded-lg border border-[color:var(--border)] px-4 py-2 text-sm disabled:opacity-40">Suivant</button>
       </nav>}
     </>}
-    <UnlockConfirmModal key={unlockTarget?.unlockId || "closed"}
+    {!isAdmin && <UnlockConfirmModal key={unlockTarget?.unlockId || "closed"}
       file={unlockTarget ? { id: unlockTarget.unlockId, exampleId: unlockTarget.id, name: unlockTarget.title, size: unlockTarget.archiveBytes, formattedSize: (unlockTarget.archiveBytes / 1024 / 1024).toLocaleString("fr", { maximumFractionDigits: 1 }) + " Mo", coinsCost: unlockTarget.coinsCost } : null}
       balance={wallet?.balance ?? 0} onClose={() => setUnlockTarget(null)}
       onSuccess={(balance, id) => setWallet((current) => current ? { ...current, balance, unlockedFileIds: [...new Set([...current.unlockedFileIds, id])] } : current)}
       onDownload={() => unlockTarget ? download(unlockTarget) : Promise.resolve()}
-      onOpenRecharge={() => { setUnlockTarget(null); window.dispatchEvent(new CustomEvent("open-coins-tab")); }} />
+      onOpenRecharge={() => { setUnlockTarget(null); window.dispatchEvent(new CustomEvent("open-coins-tab")); }} />}
   </section>;
 }

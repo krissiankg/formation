@@ -22,19 +22,20 @@ const collections = [
 ] as const;
 
 export function ResourcesHubClient({ contents, examplesAvailable, initialTab, audience = "student" }: ResourcesHubClientProps) {
-  const [activeTab, setActiveTab] = useState<ResourceTab>(() => resolveResourceTab(initialTab, examplesAvailable));
+  const [activeTab, setActiveTab] = useState<ResourceTab>(() => resolveResourceTab(initialTab, examplesAvailable, audience));
   const publishedCount = contents.filter((content) => content.published).length;
 
   const selectTab = useCallback((tab: ResourceTab) => {
+    if (audience === "admin" && (tab === "coins" || tab === "course-docs")) return;
     setActiveTab(tab);
     const url = new URL(window.location.href);
     url.searchParams.set("tab", tab);
     window.history.pushState(null, "", url);
-  }, []);
+  }, [audience]);
 
   useEffect(() => {
     function restoreTab() {
-      setActiveTab(resolveResourceTab(new URLSearchParams(window.location.search).get("tab") ?? undefined, examplesAvailable));
+      setActiveTab(resolveResourceTab(new URLSearchParams(window.location.search).get("tab") ?? undefined, examplesAvailable, audience));
     }
     function openCoins() { selectTab("coins"); }
     window.addEventListener("popstate", restoreTab);
@@ -43,7 +44,7 @@ export function ResourcesHubClient({ contents, examplesAvailable, initialTab, au
       window.removeEventListener("popstate", restoreTab);
       window.removeEventListener("open-coins-tab", openCoins);
     };
-  }, [examplesAvailable, selectTab]);
+  }, [audience, examplesAvailable, selectTab]);
 
   const secondaryTabs: { id: ResourceTab; label: string }[] = [
     { id: "drive", label: "Toutes les archives Drive" },
@@ -62,7 +63,9 @@ export function ResourcesHubClient({ contents, examplesAvailable, initialTab, au
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[color:var(--neutral-600)]">
             Choisis une ressource selon ton projet : concevoir une interface, créer un site WordPress ou adapter un site HTML.
           </p>
-          <p className="mt-2 text-xs font-semibold text-amber-900">Tous les fichiers se débloquent avec tes coins. Le prix est affiché avant chaque achat.</p>
+          {audience === "student"
+            ? <p className="mt-2 text-xs font-semibold text-amber-900">Tous les fichiers se débloquent avec tes coins. Le prix est affiché avant chaque achat.</p>
+            : <p className="mt-2 text-xs font-semibold text-emerald-800">Accès administrateur illimité à toutes les ressources. Téléchargement direct, sans coins.</p>}
         </div>
         {audience === "admin" && <a href="/admin/contenus" className="rounded-xl border border-[color:var(--border)] bg-white px-4 py-2.5 text-xs font-semibold hover:bg-stone-50">Gérer les publications & Drive ↗</a>}
       </header>
@@ -87,13 +90,14 @@ export function ResourcesHubClient({ contents, examplesAvailable, initialTab, au
       </nav>
 
       <div key={activeTab}>
-        {activeTab === "sites" && <WebsiteExamplesGallery />}
+        {activeTab === "sites" && <WebsiteExamplesGallery audience={audience} />}
         {(activeTab === "ui-kits" || activeTab === "wordpress" || activeTab === "drive") && <DriveResourcesExplorer
+          audience={audience}
           kind={activeTab === "ui-kits" ? "design-code" : activeTab === "wordpress" ? "wordpress" : "all"}
           onBrowseAll={() => selectTab("drive")}
         />}
-        {activeTab === "course-docs" && <PaidResourcesPanel contents={contents} />}
-        {activeTab === "coins" && <CoinsShopSection />}
+        {audience === "student" && activeTab === "course-docs" && <PaidResourcesPanel contents={contents} />}
+        {audience === "student" && activeTab === "coins" && <CoinsShopSection />}
       </div>
     </div>
   );

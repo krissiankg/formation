@@ -6,6 +6,7 @@ import { UnlockConfirmModal } from "@/components/espace/UnlockConfirmModal";
 import type { CoinPack, CoinTransaction } from "@/lib/wallet/types";
 import { COIN_PACKS } from "@/lib/wallet/types";
 import type { DriveResourceKind } from "@/lib/drive/resource-kind";
+import { resourceApiBase, type ResourceAudience } from "@/lib/resources/audience";
 
 interface DriveResourceFile {
   id: string;
@@ -38,7 +39,9 @@ const collectionCopy = {
   },
 };
 
-export function DriveResourcesExplorer({ kind = "all", onBrowseAll }: { kind?: DriveResourceKind; onBrowseAll?: () => void }) {
+export function DriveResourcesExplorer({ kind = "all", onBrowseAll, audience = "student" }: { kind?: DriveResourceKind; onBrowseAll?: () => void; audience?: ResourceAudience }) {
+  const isAdmin = audience === "admin";
+  const apiBase = resourceApiBase(audience);
   const [files, setFiles] = useState<DriveResourceFile[]>([]);
   const [searching, setSearching] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +51,6 @@ export function DriveResourcesExplorer({ kind = "all", onBrowseAll }: { kind?: D
   const [onlyZip, setOnlyZip] = useState(true);
   const [attempt, setAttempt] = useState(0);
   const [walletBalance, setWalletBalance] = useState(0);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [unlockedFileIds, setUnlockedFileIds] = useState<string[]>([]);
   const [packs, setPacks] = useState<CoinPack[]>(COIN_PACKS);
   const [transactions, setTransactions] = useState<CoinTransaction[]>([]);
@@ -58,12 +60,12 @@ export function DriveResourcesExplorer({ kind = "all", onBrowseAll }: { kind?: D
   const hasQuery = query.length >= 2;
 
   const loadWallet = useCallback(async () => {
+    if (isAdmin) return;
     try {
       const response = await fetch("/api/wallet");
       if (response.ok) {
         const data = await response.json();
         setWalletBalance(data.balance ?? 0);
-        setIsAdmin(Boolean(data.isAdmin));
         setUnlockedFileIds(data.unlockedFileIds ?? []);
         if (data.packs) setPacks(data.packs);
         if (data.transactions) setTransactions(data.transactions);
@@ -71,7 +73,7 @@ export function DriveResourcesExplorer({ kind = "all", onBrowseAll }: { kind?: D
     } catch (err) {
       console.error("[Wallet Fetch Error]", err);
     }
-  }, []);
+  }, [isAdmin]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => { void loadWallet(); }, 0);
@@ -88,7 +90,7 @@ export function DriveResourcesExplorer({ kind = "all", onBrowseAll }: { kind?: D
       const params = new URLSearchParams({ kind, q: query });
       try {
         while (!controller.signal.aborted) {
-          const response = await fetch("/api/ressources/drive?" + params, { signal: controller.signal, cache: "no-store" });
+          const response = await fetch(apiBase + "/drive?" + params, { signal: controller.signal, cache: "no-store" });
           const data = await response.json();
           if (!response.ok) throw new Error(data.error || "Impossible de charger les ressources.");
           if (controller.signal.aborted) return;
@@ -106,7 +108,7 @@ export function DriveResourcesExplorer({ kind = "all", onBrowseAll }: { kind?: D
       }
     }, query ? 350 : 0);
     return () => { controller.abort(); window.clearTimeout(timer); };
-  }, [kind, query, attempt]);
+  }, [apiBase, kind, query, attempt]);
 
   function updateSearch(value: string) {
     setSearch(value);
@@ -124,15 +126,15 @@ export function DriveResourcesExplorer({ kind = "all", onBrowseAll }: { kind?: D
             <h2 className="font-display text-xl font-bold">{copy.title}</h2>
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[color:var(--neutral-600)]">{copy.description}</p>
           </div>
-          <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-900">Déblocage en coins</span>
+          <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-900">{isAdmin ? "Accès administrateur illimité" : "Déblocage en coins"}</span>
         </div>
-        <p className="mt-3 text-xs leading-relaxed text-[color:var(--neutral-600)]">Consulte le coût de chaque archive avant de la débloquer. Les fichiers déjà débloqués restent téléchargeables sans nouveau débit.</p>
+        <p className="mt-3 text-xs leading-relaxed text-[color:var(--neutral-600)]">{isAdmin ? "Télécharge toutes les ressources directement, sans achat ni débit de coins." : "Consulte le coût de chaque archive avant de la débloquer. Les fichiers déjà débloqués restent téléchargeables sans nouveau débit."}</p>
         {kind !== "all" && onBrowseAll && <p className="mt-2 text-xs leading-relaxed text-[color:var(--neutral-600)]">
           Le classement repose sur le nom des archives. Un fichier manque ? <button type="button" onClick={onBrowseAll} className="font-semibold text-[color:var(--accent)] underline underline-offset-2">Voir toutes les archives Drive</button>
         </p>}
       </div>
 
-      <WalletWidget balance={walletBalance} isAdmin={isAdmin} packs={packs} transactions={transactions} onRefresh={loadWallet} />
+      {!isAdmin && <WalletWidget balance={walletBalance} isAdmin={false} packs={packs} transactions={transactions} onRefresh={loadWallet} />}
 
       <div className="space-y-3">
         <label className="block">
@@ -182,21 +184,21 @@ export function DriveResourcesExplorer({ kind = "all", onBrowseAll }: { kind?: D
             return <article key={file.id} className="mb-4 inline-block w-full break-inside-avoid rounded-2xl border border-[color:var(--border)] bg-white p-4 align-top shadow-sm">
               <div className="flex items-center justify-between gap-2">
                 <span aria-hidden="true" className={"inline-flex size-10 items-center justify-center rounded-xl font-mono text-xs font-bold " + (kind === "wordpress" ? "bg-sky-50 text-sky-800" : "bg-violet-50 text-violet-800")}>{kind === "wordpress" ? "WP" : file.isZip ? "ZIP" : "FILE"}</span>
-                {unlocked && <span className="text-[10px] font-semibold text-emerald-800">✓ Débloqué</span>}
+                {unlocked && <span className="text-[10px] font-semibold text-emerald-800">✓ {isAdmin ? "Accès administrateur" : "Débloqué"}</span>}
               </div>
               <h3 className="mt-3 break-words text-sm font-semibold leading-relaxed">{file.name}</h3>
               <p className="mt-2 text-xs text-[color:var(--neutral-600)]">{file.formattedSize}{file.modifiedTime ? " · " + new Date(file.modifiedTime).toLocaleDateString("fr-FR") : ""}</p>
               <div className="mt-4 border-t border-[color:var(--border)] pt-3">
-                {unlocked ? <a href={"/api/ressources/drive/download/" + file.id} download={file.name} className="block rounded-lg bg-[color:var(--neutral-black)] px-3 py-2.5 text-center text-xs font-semibold text-white">Télécharger</a>
+                {unlocked ? <a href={apiBase + "/drive/download/" + encodeURIComponent(file.id)} download={file.name} className="block rounded-lg bg-[color:var(--neutral-black)] px-3 py-2.5 text-center text-xs font-semibold text-white">Télécharger</a>
                   : <button type="button" onClick={() => setUnlockTarget(file)} className="w-full rounded-lg bg-[color:var(--neutral-black)] px-3 py-2.5 text-xs font-semibold text-white">Débloquer · {file.coinsCost} coins</button>}
               </div>
             </article>;
           })}
         </div>}
 
-      <UnlockConfirmModal key={unlockTarget?.id || "closed"} file={unlockTarget} balance={walletBalance} onClose={() => setUnlockTarget(null)}
+      {!isAdmin && <UnlockConfirmModal key={unlockTarget?.id || "closed"} file={unlockTarget} balance={walletBalance} onClose={() => setUnlockTarget(null)}
         onSuccess={(balance, id) => { setWalletBalance(balance); setUnlockedFileIds((ids) => [...ids, id]); void loadWallet(); }}
-        onOpenRecharge={() => { setUnlockTarget(null); window.dispatchEvent(new CustomEvent("open-coins-tab")); }} />
+        onOpenRecharge={() => { setUnlockTarget(null); window.dispatchEvent(new CustomEvent("open-coins-tab")); }} />}
     </section>
   );
 }

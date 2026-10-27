@@ -4,6 +4,7 @@ import { getSessionEnrollment } from "@/lib/auth/session";
 import { ADMIN_SESSION_COOKIE, verifyAdminSessionToken } from "@/lib/auth/admin-session";
 import { searchDriveCatalog, isDriveConfigured } from "@/lib/drive/google-drive";
 import { parseDriveResourceKind } from "@/lib/drive/resource-kind";
+import { isAdminResourceRequest } from "@/lib/resources/audience";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +21,7 @@ function formatBytes(bytes?: string | number): string {
 
 export async function GET(request: Request) {
   // 1. Vérifier l'authentification (Étudiant inscrit OU Admin)
-  const student = await getSessionEnrollment();
+  const student = isAdminResourceRequest(request) ? null : await getSessionEnrollment();
   let isAuthorized = Boolean(student);
 
   if (!isAuthorized) {

@@ -10,8 +10,8 @@ function s3() {
   return client ??= new S3Client({ region: process.env.AWS_REGION || "eu-west-3" });
 }
 
-export async function canAccessExamples() {
-  return Boolean(await getExamplesViewer());
+export async function canAccessExamples(request?: Request) {
+  return Boolean(await getExamplesViewer(request));
 }
 
 export async function getExamplesCatalog(): Promise<ExamplesCatalog> {

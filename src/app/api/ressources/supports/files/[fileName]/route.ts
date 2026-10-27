@@ -8,7 +8,7 @@ const headers = { "Cache-Control": "private, no-store" };
 
 /** Les anciens liens /uploads/resources passent eux aussi par le contrôle des coins. */
 export async function GET(_request: Request, context: { params: Promise<{ fileName: string }> }) {
-  const viewer = await getResourcesViewer();
+  const viewer = await getResourcesViewer(_request);
   if (!viewer) return Response.json({ error: "Connexion requise." }, { status: 401, headers });
   const { fileName } = await context.params;
   const url = `/uploads/resources/${fileName}`;
