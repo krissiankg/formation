@@ -55,3 +55,6 @@ next-env.d.ts
 # Local Crafto packaging helpers
 /scripts/crafto/__pycache__/
 
+# État local de l'outil Supabase
+/supabase/.temp/
+

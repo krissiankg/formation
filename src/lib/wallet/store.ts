@@ -1,5 +1,5 @@
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
-import type { StudentWallet, CoinTransaction, UnlockedFile } from "@/lib/wallet/types";
+import type { StudentWallet, CoinTransaction } from "@/lib/wallet/types";
 
 const WELCOME_BONUS_COINS = 20;
 
@@ -17,7 +17,7 @@ export async function getOrCreateStudentWallet(enrollmentId: string): Promise<St
   const supabase = getSupabaseAdmin();
 
   // 1. Chercher le portefeuille existant
-  const { data: existing, error: fetchErr } = await supabase
+  const { data: existing } = await supabase
     .from("student_wallets")
     .select("*")
     .eq("enrollment_id", enrollmentId)
@@ -115,58 +115,24 @@ export async function debitCoinsForFile(
   fileName: string,
   coinsCost: number
 ): Promise<{ success: boolean; newBalance: number; alreadyUnlocked?: boolean; error?: string }> {
-  const supabase = getSupabaseAdmin();
-
-  // 1. Vérifier si déjà débloqué
-  const already = await hasStudentUnlockedFile(enrollmentId, fileId);
-  const wallet = await getOrCreateStudentWallet(enrollmentId);
-
-  if (already) {
-    return { success: true, newBalance: wallet.balanceCoins, alreadyUnlocked: true };
-  }
-
-  // 2. Vérifier le solde
-  if (wallet.balanceCoins < coinsCost) {
-    return {
-      success: false,
-      newBalance: wallet.balanceCoins,
-      error: `Solde insuffisant : vous avez ${wallet.balanceCoins} coins, ce fichier en nécessite ${coinsCost}.`,
-    };
-  }
-
-  const newBalance = wallet.balanceCoins - coinsCost;
-
-  // 3. Mettre à jour le solde
-  const { error: updateErr } = await supabase
-    .from("student_wallets")
-    .update({
-      balance_coins: newBalance,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("enrollment_id", enrollmentId);
-
-  if (updateErr) {
-    throw new Error("Échec de la mise à jour du portefeuille.");
-  }
-
-  // 4. Enregistrer dans les fichiers débloqués
-  await supabase.from("student_unlocked_files").insert({
-    enrollment_id: enrollmentId,
-    file_id: fileId,
-    file_name: fileName,
-    coins_spent: coinsCost,
+  if (!Number.isSafeInteger(coinsCost) || coinsCost <= 0) throw new Error("Coût de fichier invalide.");
+  await getOrCreateStudentWallet(enrollmentId);
+  const { data, error } = await getSupabaseAdmin().rpc("unlock_resource_with_coins", {
+    p_enrollment: enrollmentId,
+    p_file_id: fileId,
+    p_file_name: fileName,
+    p_cost: coinsCost,
   });
-
-  // 5. Enregistrer la transaction
-  await supabase.from("coin_transactions").insert({
-    enrollment_id: enrollmentId,
-    amount: -coinsCost,
-    type: "file_unlock",
-    description: `Déblocage du template : ${fileName}`,
-    reference_id: fileId,
-  });
-
-  return { success: true, newBalance, alreadyUnlocked: false };
+  const result = data?.[0];
+  if (error || !result || typeof result.success !== "boolean" || typeof result.already_unlocked !== "boolean" || !Number.isSafeInteger(result.new_balance) || result.new_balance < 0) {
+    throw new Error("Impossible de débloquer la ressource pour le moment.");
+  }
+  return {
+    success: Boolean(result.success),
+    newBalance: result.new_balance,
+    alreadyUnlocked: Boolean(result.already_unlocked),
+    ...(!result.success ? { error: `Solde insuffisant : tu as ${result.new_balance} coins, cette archive en nécessite ${coinsCost}.` } : {}),
+  };
 }
 
 /**
@@ -179,31 +145,14 @@ export async function creditCoins(
   description: string,
   referenceId?: string
 ): Promise<number> {
-  const supabase = getSupabaseAdmin();
-  const wallet = await getOrCreateStudentWallet(enrollmentId);
-  const newBalance = wallet.balanceCoins + amount;
-
-  const { error: updateErr } = await supabase
-    .from("student_wallets")
-    .update({
-      balance_coins: newBalance,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("enrollment_id", enrollmentId);
-
-  if (updateErr) {
-    throw new Error("Échec du crédit de coins sur le portefeuille.");
-  }
-
-  await supabase.from("coin_transactions").insert({
-    enrollment_id: enrollmentId,
-    amount,
-    type,
-    description,
-    reference_id: referenceId ?? null,
+  if (!Number.isSafeInteger(amount) || amount <= 0) throw new Error("Crédit de coins invalide.");
+  await getOrCreateStudentWallet(enrollmentId);
+  const { data, error } = await getSupabaseAdmin().rpc("credit_wallet_coins", {
+    p_enrollment: enrollmentId, p_amount: amount, p_type: type,
+    p_description: description, p_reference: referenceId ?? null,
   });
-
-  return newBalance;
+  if (error || !Number.isSafeInteger(data) || data < 0) throw new Error("Échec du crédit de coins sur le portefeuille.");
+  return data;
 }
 
 /**
@@ -223,7 +172,7 @@ export async function listStudentTransactions(
 
   if (error || !data) return [];
 
-  return data.map((row: any) => ({
+  return data.map((row: { id: string; enrollment_id: string; amount: number; type: CoinTransaction["type"]; description: string; reference_id: string | null; created_at: string }) => ({
     id: row.id,
     enrollmentId: row.enrollment_id,
     amount: row.amount,

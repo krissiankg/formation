@@ -32,7 +32,8 @@ export async function POST(request: Request) {
     const fileName = String(body.fileName ?? "").trim();
     const size = body.size;
 
-    if (!fileId || !fileName) {
+    // Les droits HTML sont réservés à leur route, qui vérifie le prix côté serveur.
+    if (!/^[a-zA-Z0-9_-]{1,200}$/.test(fileId) || !fileName) {
       return NextResponse.json({ error: "Paramètres de fichier invalides" }, { status: 400 });
     }
 

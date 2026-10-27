@@ -1,3 +1,6 @@
+import { calculateFileCoinsCost } from "@/lib/wallet/pricing";
+import { exampleUnlockId } from "./purchases";
+
 export type WebsiteExample = {
   id: string;
   title: string;
@@ -25,6 +28,8 @@ export type PublicExample = Omit<WebsiteExample, "page" | "archive" | "thumbnail
   previewUrl: string;
   thumbnailUrl: string;
   collection: string;
+  unlockId: string;
+  coinsCost: number;
 };
 
 const identifier = /^[a-z0-9][a-z0-9-]{0,100}$/;
@@ -58,9 +63,11 @@ export function parseCatalog(input: unknown): ExamplesCatalog {
 
 export function publicCatalog(catalog: ExamplesCatalog, baseUrl: string): PublicExample[] {
   if (!/^https:\/\/[a-z0-9]+\.cloudfront\.net$/.test(baseUrl)) throw new Error("Invalid examples origin");
-  return catalog.entries.map(({ page, archive: _archive, thumbnail, release, ...entry }) => ({
+  return catalog.entries.map(({ page, archive, thumbnail, release, ...entry }) => ({
     ...entry,
     collection: entry.collection || "forgeia-1",
+    unlockId: exampleUnlockId({ ...entry, archive }),
+    coinsCost: calculateFileCoinsCost(entry.archiveBytes),
     previewUrl: `${baseUrl}/${release || catalog.release}/${page}`,
     thumbnailUrl: `${baseUrl}/${release || catalog.release}/${thumbnail}`,
   }));
