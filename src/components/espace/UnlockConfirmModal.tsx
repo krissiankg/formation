@@ -8,6 +8,7 @@ interface UnlockFileTarget {
   size?: number;
   formattedSize: string;
   coinsCost: number;
+  exampleId?: string;
 }
 
 interface UnlockConfirmModalProps {
@@ -16,6 +17,7 @@ interface UnlockConfirmModalProps {
   onClose: () => void;
   onSuccess: (newBalance: number, fileId: string) => void;
   onOpenRecharge: () => void;
+  onDownload?: () => Promise<void>;
 }
 
 export function UnlockConfirmModal({
@@ -24,6 +26,7 @@ export function UnlockConfirmModal({
   onClose,
   onSuccess,
   onOpenRecharge,
+  onDownload,
 }: UnlockConfirmModalProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,10 +43,10 @@ export function UnlockConfirmModal({
     setError(null);
 
     try {
-      const res = await fetch("/api/wallet/unlock", {
+      const res = await fetch(file.exampleId ? `/api/ressources/exemples/${encodeURIComponent(file.exampleId)}/unlock` : "/api/wallet/unlock", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+        body: JSON.stringify(file.exampleId ? { expectedCost: file.coinsCost } : {
           fileId: file.id,
           fileName: file.name,
           size: file.size,
@@ -58,14 +61,16 @@ export function UnlockConfirmModal({
 
       onSuccess(data.newBalance, file.id);
 
-      // Déclenche le téléchargement immédiat
-      const downloadUrl = `/api/ressources/drive/download/${file.id}`;
-      const link = document.createElement("a");
-      link.href = downloadUrl;
-      link.setAttribute("download", file.name);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      if (onDownload) {
+        await onDownload();
+      } else {
+        const link = document.createElement("a");
+        link.href = `/api/ressources/drive/download/${file.id}`;
+        link.setAttribute("download", file.name);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
 
       onClose();
     } catch (err) {
@@ -75,7 +80,7 @@ export function UnlockConfirmModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
+    <div role="dialog" aria-modal="true" aria-labelledby="unlock-template-title" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
       <div className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl border border-[color:var(--border)] bg-white p-5 sm:p-6 shadow-2xl animate-in zoom-in-95">
         {/* En-tête */}
         <div className="flex items-start justify-between">
@@ -84,7 +89,7 @@ export function UnlockConfirmModal({
               🪙
             </span>
             <div>
-              <h3 className="font-display text-lg font-bold text-[color:var(--neutral-black)]">
+              <h3 id="unlock-template-title" className="font-display text-lg font-bold text-[color:var(--neutral-black)]">
                 Débloquer ce template
               </h3>
               <p className="text-xs text-[color:var(--neutral-500)]">Accès illimité à vie garanti</p>
@@ -93,6 +98,8 @@ export function UnlockConfirmModal({
 
           <button
             type="button"
+            disabled={loading}
+            aria-label="Fermer le déblocage"
             onClick={onClose}
             className="rounded-lg p-1 text-[color:var(--neutral-400)] hover:bg-[color:var(--neutral-100)] cursor-pointer"
           >

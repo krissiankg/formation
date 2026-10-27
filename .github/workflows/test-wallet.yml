@@ -1,0 +1,52 @@
+name: Tests du portefeuille
+on:
+  push:
+    branches: [main, codex/html-coins]
+    paths:
+      - 'src/lib/wallet/**'
+      - 'src/lib/website-examples/**'
+      - 'src/app/api/ressources/exemples/**'
+      - 'supabase/migrations/*atomic_wallet.sql'
+      - 'scripts/wallet-tests/**'
+      - '.github/workflows/test-wallet.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  wallet:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: wallet-test-only
+          POSTGRES_DB: wallet_tests
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s
+          --health-timeout 5s --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGDATABASE: wallet_tests
+      PGPASSWORD: wallet-test-only
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Tests de l'application
+        run: |
+          npm install --no-audit --no-fund
+          npx vitest run
+      - name: Préparer une base de test isolée
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -f scripts/wallet-tests/setup.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/003_coins_wallet.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261027103715_atomic_wallet.sql
+      - name: Transactions et autorisations
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/wallet-tests/assertions.sql
+      - name: Achats et recharges simultanés
+        run: bash scripts/wallet-tests/concurrent.sh

@@ -9,6 +9,8 @@ describe("website examples catalog", () => {
     const entries = publicCatalog(parseCatalog(fixture()), "https://d123.cloudfront.net");
     expect(entries[0].previewUrl).toBe("https://d123.cloudfront.net/crafto-v1/demo-accounting.html");
     expect(entries[0]).not.toHaveProperty("archive");
+    expect(entries[0].unlockId).toBe("html:forgeia-1:accounting");
+    expect(entries[0].coinsCost).toBe(10);
     expect(() => publicCatalog(parseCatalog(fixture()), "https://www.forgeia.site")).toThrow();
   });
   it.each(["../private", "a/b", "name.zip", "https://elsewhere"]) ("rejects an unsafe archive: %s", (archive) => {
