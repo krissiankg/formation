@@ -13,7 +13,7 @@ Les sources originales sont conservées. Les vignettes de sites proviennent du p
 - API de catalogue : `/api/ressources/exemples`.
 - API de téléchargement : `/api/ressources/exemples/[id]/download`.
 
-Le catalogue et les téléchargements demandent une session étudiant ou administrateur. Les comptes suspendus sont refusés. Les ZIP sont gratuits provisoirement, sans débit de coins. Leur prix ne vient jamais d’un paramètre du navigateur. La tarification ultérieure nécessitera une règle de prix et de paiement côté serveur.
+Le catalogue et les téléchargements demandent une session étudiant ou administrateur. Les comptes suspendus sont refusés. Les aperçus restent gratuits. Les ZIP se débloquent avec le portefeuille de coins, selon le même barème de poids que les archives Drive. Le serveur calcule le prix à partir du catalogue et exige la confirmation du coût affiché. Une archive commune à plusieurs pages utilise un seul droit permanent (`html:<collection>:<archive>`), conservé entre les publications. Le téléchargement signé exige ce droit, sauf pour l’administration.
 
 Les aperçus utilisent une origine CloudFront distincte : `https://derguiqj76le8.cloudfront.net`. Ils ne reçoivent pas les cookies de l’application. Les envois de formulaires y sont bloqués et aucun PHP n’y est exécuté.
 
@@ -73,3 +73,9 @@ Les bibliothèques JavaScript et CSS provenant des CDN du pack sont regroupées 
 La publication fusionne les collections après l’envoi de tous les fichiers. Chaque entrée conserve sa propre release : les téléchargements et aperçus de la première collection continuent d’utiliser `forgeia-sites-v2`. L’ancien manifeste est sauvegardé dans `website-examples/catalog/history/` avant son remplacement. Republier une collection remplace uniquement les entrées de cette collection, sans modifier les autres. Le schéma accepte jusqu’à 5 000 entrées.
 
 Validation : tests Vitest de l’authentification, des identifiants et des téléchargements ; tests Python du contenu et des chemins des ZIP ; capture des pages et vérification de la présence de chaque vignette et archive avant activation. Le workflow de déploiement de l’application ignore les modifications des seuls outils Crafto.
+
+## Transactions du portefeuille
+
+La migration `20261027103715_atomic_wallet.sql` doit être appliquée avant le déploiement du déblocage payant. Elle ajoute deux fonctions réservées à `service_role` : `unlock_resource_with_coins` (solde, droit et journal dans une seule transaction) et `credit_wallet_coins` (crédit atomique, recharges FedaPay idempotentes). Le verrou porte uniquement sur le portefeuille de l’apprenant. Les tables du portefeuille restent inaccessibles directement aux clients publics.
+
+Le workflow « Tests du portefeuille » utilise PostgreSQL 17 isolé, sans données de production. Il vérifie les achats simultanés, le refus du solde insuffisant, le rollback d’un journal en erreur et les notifications de recharge répétées.
