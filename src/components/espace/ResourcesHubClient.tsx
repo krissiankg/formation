@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { DriveResourcesExplorer } from "@/components/espace/drive-resources-explorer";
-import { ResourcesPanel } from "@/components/espace/shared";
+import { PaidResourcesPanel } from "@/components/espace/PaidResourcesPanel";
 import { CoinsShopSection } from "@/components/espace/CoinsShopSection";
 import { WebsiteExamplesGallery } from "@/components/espace/WebsiteExamplesGallery";
 import { resolveResourceTab, type ResourceTab } from "@/lib/resources/navigation";
@@ -62,6 +62,7 @@ export function ResourcesHubClient({ contents, examplesAvailable, initialTab, au
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[color:var(--neutral-600)]">
             Choisis une ressource selon ton projet : concevoir une interface, créer un site WordPress ou adapter un site HTML.
           </p>
+          <p className="mt-2 text-xs font-semibold text-amber-900">Tous les fichiers se débloquent avec tes coins. Le prix est affiché avant chaque achat.</p>
         </div>
         {audience === "admin" && <a href="/admin/contenus" className="rounded-xl border border-[color:var(--border)] bg-white px-4 py-2.5 text-xs font-semibold hover:bg-stone-50">Gérer les publications & Drive ↗</a>}
       </header>
@@ -91,7 +92,7 @@ export function ResourcesHubClient({ contents, examplesAvailable, initialTab, au
           kind={activeTab === "ui-kits" ? "design-code" : activeTab === "wordpress" ? "wordpress" : "all"}
           onBrowseAll={() => selectTab("drive")}
         />}
-        {activeTab === "course-docs" && <ResourcesPanel contents={contents} />}
+        {activeTab === "course-docs" && <PaidResourcesPanel contents={contents} />}
         {activeTab === "coins" && <CoinsShopSection />}
       </div>
     </div>

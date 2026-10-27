@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { contact, formation } from "@/lib/config/formation";
 import type { PaymentDisplayItem } from "@/lib/programme/payments";
 import { LESSON_TYPE_LABELS } from "@/lib/programme/lesson-types";
@@ -8,11 +9,10 @@ import type {
   ModuleStatus,
   StudentTodo,
 } from "@/lib/programme/types";
-import type { ContentItem } from "@/lib/store/content";
+import type { ContentAttachment, ContentItem } from "@/lib/store/content";
 import type { FormationSession } from "@/lib/programme/types";
 import { formatSessionDateLabel } from "@/lib/store/sessions";
 import type { ScheduleId } from "@/lib/types";
-import { formatFileSize, getFileIcon } from "@/lib/format";
 
 export function PageHeader({
   kicker,
@@ -215,7 +215,7 @@ export function ProgrammeList({ modules }: { modules: CurriculumModule[] }) {
   );
 }
 
-export function ResourcesPanel({ contents }: { contents: ContentItem[] }) {
+export function ResourcesPanel({ contents, renderAttachment }: { contents: ContentItem[]; renderAttachment: (attachment: ContentAttachment) => ReactNode }) {
   return (
     <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--neutral-50)] p-5 sm:p-6 shadow-2xs">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-[color:var(--border)]/60 pb-4">
@@ -283,35 +283,7 @@ export function ResourcesPanel({ contents }: { contents: ContentItem[] }) {
                   </span>
 
                   <div className="grid gap-2.5 sm:grid-cols-2">
-                    {c.attachments.map((att) => (
-                      <a
-                        key={att.id}
-                        href={att.url}
-                        download={att.name}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="group flex items-center justify-between gap-3 rounded-xl border border-[color:var(--border)] bg-[color:var(--neutral-50)] p-3 hover:bg-[color:var(--accent)]/5 hover:border-[color:var(--accent)] transition shadow-2xs cursor-pointer"
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-white border border-[color:var(--border)] text-lg shadow-2xs group-hover:scale-105 transition">
-                            {getFileIcon(att.name)}
-                          </div>
-                          <div className="min-w-0">
-                            <p className="font-medium text-xs text-[color:var(--neutral-800)] truncate group-hover:text-[color:var(--accent)] transition">
-                              {att.name}
-                            </p>
-                            <p className="font-mono text-[10px] text-[color:var(--neutral-500)] mt-0.5">
-                              {att.formattedSize || formatFileSize(att.size)}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="shrink-0 inline-flex items-center gap-1.5 rounded-lg bg-white px-2.5 py-1.5 text-xs font-semibold text-[color:var(--neutral-700)] border border-[color:var(--border)] group-hover:bg-[color:var(--accent)] group-hover:text-white group-hover:border-transparent transition shadow-2xs">
-                          <span>⬇️</span>
-                          <span className="hidden sm:inline">Télécharger</span>
-                        </div>
-                      </a>
-                    ))}
+                    {c.attachments.map(renderAttachment)}
                   </div>
                 </div>
               )}

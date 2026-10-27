@@ -4,6 +4,7 @@ import { getSessionEnrollment } from "@/lib/auth/session";
 import { ADMIN_SESSION_COOKIE, verifyAdminSessionToken } from "@/lib/auth/admin-session";
 import { debitCoinsForFile } from "@/lib/wallet/store";
 import { calculateFileCoinsCost } from "@/lib/wallet/pricing";
+import { getFileDownloadMetadata } from "@/lib/drive/google-drive";
 
 export const dynamic = "force-dynamic";
 
@@ -29,16 +30,21 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const fileId = String(body.fileId ?? "").trim();
-    const fileName = String(body.fileName ?? "").trim();
-    const size = body.size;
 
     // Les droits HTML sont réservés à leur route, qui vérifie le prix côté serveur.
-    if (!/^[a-zA-Z0-9_-]{1,200}$/.test(fileId) || !fileName) {
+    if (!/^[a-zA-Z0-9_-]{1,200}$/.test(fileId)) {
       return NextResponse.json({ error: "Paramètres de fichier invalides" }, { status: 400 });
     }
 
-    const coinsCost = calculateFileCoinsCost(size);
-    const result = await debitCoinsForFile(student.id, fileId, fileName, coinsCost);
+    const file = await getFileDownloadMetadata(fileId);
+    const coinsCost = calculateFileCoinsCost(file.size);
+    if (!Number.isSafeInteger(body.expectedCost)) {
+      return NextResponse.json({ error: "Confirme le coût affiché pour débloquer ce fichier." }, { status: 400 });
+    }
+    if (body.expectedCost !== coinsCost) {
+      return NextResponse.json({ error: "Le prix a changé. Actualise la page avant de confirmer.", cost: coinsCost }, { status: 409 });
+    }
+    const result = await debitCoinsForFile(student.id, fileId, file.name, coinsCost);
 
     if (!result.success) {
       return NextResponse.json(
@@ -50,7 +56,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       newBalance: result.newBalance,
-      cost: coinsCost,
+      cost: result.alreadyUnlocked ? 0 : coinsCost,
       alreadyUnlocked: result.alreadyUnlocked,
     });
   } catch (err) {

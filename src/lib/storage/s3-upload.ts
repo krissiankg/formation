@@ -1,4 +1,4 @@
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 let client: S3Client | null = null;
@@ -17,7 +17,7 @@ export function isS3UploadEnabled(): boolean {
 
 /**
  * URL PUT pré-signée (1 h) pour envoyer le fichier directement du navigateur vers S3.
- * La clé "uploads/resources/<fileName>" est servie par CloudFront sur "/uploads/resources/<fileName>".
+ * Le téléchargement de "uploads/resources/<fileName>" exige ensuite un achat en coins.
  */
 export async function createResourceUploadUrl(fileName: string, contentType: string): Promise<string> {
   const command = new PutObjectCommand({
@@ -26,4 +26,12 @@ export async function createResourceUploadUrl(fileName: string, contentType: str
     ContentType: contentType,
   });
   return getSignedUrl(getClient(), command, { expiresIn: 3600 });
+}
+
+export function createResourceDownloadUrl(fileName: string, displayName: string): Promise<string> {
+  return getSignedUrl(getClient(), new GetObjectCommand({
+    Bucket: process.env.UPLOADS_BUCKET,
+    Key: `uploads/resources/${fileName}`,
+    ResponseContentDisposition: `attachment; filename="${fileName}"; filename*=UTF-8''${encodeURIComponent(displayName)}`,
+  }), { expiresIn: 120 });
 }

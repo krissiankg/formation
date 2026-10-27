@@ -18,6 +18,12 @@ export async function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
+  if (pathname.startsWith("/uploads/resources/")) {
+    const downloadUrl = request.nextUrl.clone();
+    downloadUrl.pathname = pathname.replace("/uploads/resources/", "/api/ressources/supports/files/");
+    return NextResponse.rewrite(downloadUrl);
+  }
+
   if (pathname.startsWith("/api/admin/auth/")) {
     return NextResponse.next();
   }

@@ -4,6 +4,7 @@ import { listPublishedContent } from "@/lib/store/content";
 import { getStudentProgress, initStudentProgress } from "@/lib/store/progress";
 import { getNextSession } from "@/lib/store/sessions";
 import { getStudentTodos } from "@/lib/store/todos";
+import { studentContent } from "@/lib/resources/content-attachments";
 
 export async function getStudentContext() {
   const enrollment = await getSessionEnrollment();
@@ -26,5 +27,5 @@ export async function getStudentContext() {
     listPublishedContent(),
   ]);
 
-  return { enrollment, progress, nextSession, todos, contents, isPaid, access };
+  return { enrollment, progress, nextSession, todos, contents: studentContent(contents), isPaid, access };
 }

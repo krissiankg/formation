@@ -4,6 +4,7 @@ import { getSessionEnrollment } from "@/lib/auth/session";
 import { listPublishedContent } from "@/lib/store/content";
 import { ResourcesHubClient } from "@/components/espace/ResourcesHubClient";
 import { getExamplesCatalog } from "@/lib/website-examples/server";
+import { studentContent } from "@/lib/resources/content-attachments";
 
 export const metadata = {
   title: `Bibliothèque de ressources — ${brand.name}`,
@@ -25,7 +26,7 @@ export default async function RessourcesPage({ searchParams }: { searchParams: P
   return (
     <div className="mx-auto max-w-7xl">
       <ResourcesHubClient
-        contents={contents}
+        contents={studentContent(contents)}
         examplesAvailable={examplesAvailable}
         initialTab={tab}
       />
