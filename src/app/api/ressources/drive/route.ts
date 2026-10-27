@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { getSessionEnrollment } from "@/lib/auth/session";
 import { ADMIN_SESSION_COOKIE, verifyAdminSessionToken } from "@/lib/auth/admin-session";
 import { searchDriveCatalog, isDriveConfigured } from "@/lib/drive/google-drive";
+import { parseDriveResourceKind } from "@/lib/drive/resource-kind";
 
 export const dynamic = "force-dynamic";
 
@@ -48,6 +49,7 @@ export async function GET(request: Request) {
     const result = await searchDriveCatalog({
       query: searchQuery,
       pageSize: searchQuery ? 60 : 30,
+      kind: parseDriveResourceKind(url.searchParams.get("kind")),
     });
 
     const { calculateFileCoinsCost } = await import("@/lib/wallet/pricing");

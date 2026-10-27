@@ -93,6 +93,38 @@ describe("collections Google Drive", () => {
     expect(await countDriveFiles()).toMatchObject({ count: 1, isComplete: true, incompleteSearch: true });
   });
 
+  it("filtre WordPress dans chaque périmètre autorisé avant la limite des résultats", async () => {
+    const fetchMock = mockDrive(() => Response.json({ files: [] }));
+    const { searchDriveCatalog } = await import("./google-drive");
+    await searchDriveCatalog({ query: "restaurant", kind: "wordpress", pageSize: 60 });
+    const queries = fetchMock.mock.calls.map(([input]) => new URL(input))
+      .filter((url) => url.searchParams.has("orderBy")).map((url) => url.searchParams.get("q")!);
+    expect(queries).toHaveLength(2);
+    for (const q of queries) {
+      expect(q).toContain("trashed = false and name contains 'restaurant' and ((name contains 'wordpress' or");
+      expect(q).toContain("name contains 'elementor'");
+    }
+    expect(queries[0]).toMatch(/^'collection@example.test' in owners and/);
+    expect(queries[1]).toContain(`'${extraRoot}' in parents`);
+    expect(queries[1]).toContain("not ('collection@example.test' in owners)");
+  });
+
+  it("sépare les caches WordPress, design et toutes les archives", async () => {
+    const fetchMock = mockDrive((url) => {
+      if ((url.searchParams.get("q") ?? "").includes(" and not (")) return Response.json({ files: [] });
+      const q = url.searchParams.get("q") ?? "";
+      const id = q.includes("and (not (name contains") ? "design" : q.includes("name contains 'wordpress'") ? "wp" : "all";
+      return Response.json({ files: [{ id, name: id + ".zip" }] });
+    });
+    const { searchDriveCatalog } = await import("./google-drive");
+    for (const [kind, id] of [["wordpress", "wp"], ["design-code", "design"], ["all", "all"]] as const) {
+      expect((await searchDriveCatalog({ query: "kit", kind })).files[0].id).toBe(id);
+    }
+    const calls = fetchMock.mock.calls.length;
+    expect((await searchDriveCatalog({ query: "kit", kind: "wordpress" })).files[0].id).toBe("wp");
+    expect(fetchMock.mock.calls.length).toBe(calls);
+  });
+
   it.each(["direct", "imbriqué", "ancienne collection"])("autorise un téléchargement %s", async (kind) => {
     const fetchMock = mockDrive((url) => {
       if (url.searchParams.get("alt") === "media") return new Response("archive", { headers: { "Content-Type": "application/zip" } });

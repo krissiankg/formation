@@ -1,139 +1,98 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { DriveResourcesExplorer } from "@/components/espace/drive-resources-explorer";
 import { ResourcesPanel } from "@/components/espace/shared";
 import { CoinsShopSection } from "@/components/espace/CoinsShopSection";
 import { WebsiteExamplesGallery } from "@/components/espace/WebsiteExamplesGallery";
+import { resolveResourceTab, type ResourceTab } from "@/lib/resources/navigation";
+import type { ContentItem } from "@/lib/store/content";
 
 interface ResourcesHubClientProps {
-  contents: any[];
+  contents: ContentItem[];
   examplesAvailable: boolean;
+  initialTab?: string;
+  audience?: "student" | "admin";
 }
 
-type TabType = "sites" | "templates" | "course-docs" | "coins";
+const collections = [
+  { id: "ui-kits", mark: "UI", title: "Kits UI & code", description: "Maquettes, composants et sources UI8 pour créer tes interfaces.", detail: "Design & développement", colour: "bg-violet-50 text-violet-800" },
+  { id: "wordpress", mark: "W", title: "Templates WordPress", description: "Thèmes et ressources pour personnaliser un site WordPress.", detail: "Pour WordPress", colour: "bg-sky-50 text-sky-800" },
+  { id: "sites", mark: "</>", title: "Sites HTML", description: "Sites et pages FORGEIA à prévisualiser, télécharger et adapter.", detail: "HTML · CSS · JavaScript", colour: "bg-emerald-50 text-emerald-800" },
+] as const;
 
-export function ResourcesHubClient({ contents, examplesAvailable }: ResourcesHubClientProps) {
-  const [activeTab, setActiveTab] = useState<TabType>(examplesAvailable ? "sites" : "templates");
+export function ResourcesHubClient({ contents, examplesAvailable, initialTab, audience = "student" }: ResourcesHubClientProps) {
+  const [activeTab, setActiveTab] = useState<ResourceTab>(() => resolveResourceTab(initialTab, examplesAvailable));
+  const publishedCount = contents.filter((content) => content.published).length;
+
+  const selectTab = useCallback((tab: ResourceTab) => {
+    setActiveTab(tab);
+    const url = new URL(window.location.href);
+    url.searchParams.set("tab", tab);
+    window.history.pushState(null, "", url);
+  }, []);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      const tab = params.get("tab");
-      if (tab === "coins" || tab === "templates" || tab === "course-docs" || (tab === "sites" && examplesAvailable)) setActiveTab(tab);
+    function restoreTab() {
+      setActiveTab(resolveResourceTab(new URLSearchParams(window.location.search).get("tab") ?? undefined, examplesAvailable));
     }
+    function openCoins() { selectTab("coins"); }
+    window.addEventListener("popstate", restoreTab);
+    window.addEventListener("open-coins-tab", openCoins);
+    return () => {
+      window.removeEventListener("popstate", restoreTab);
+      window.removeEventListener("open-coins-tab", openCoins);
+    };
+  }, [examplesAvailable, selectTab]);
 
-    function handleOpenCoins() {
-      setActiveTab("coins");
-    }
-
-    window.addEventListener("open-coins-tab", handleOpenCoins);
-    return () => window.removeEventListener("open-coins-tab", handleOpenCoins);
-  }, [examplesAvailable]);
-
-  const publishedCount = contents.filter((c) => c.status === "published").length;
+  const secondaryTabs: { id: ResourceTab; label: string }[] = [
+    { id: "drive", label: "Toutes les archives Drive" },
+    ...(audience === "student" ? [
+      { id: "course-docs" as const, label: "Supports du cours" + (publishedCount ? " (" + publishedCount + ")" : "") },
+      { id: "coins" as const, label: "Mon portefeuille" },
+    ] : []),
+  ];
 
   return (
     <div className="space-y-6">
-      {/* En-tête Hub Élégant */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[color:var(--border)]/60 pb-6">
+      <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[color:var(--accent)]/10 px-2.5 py-0.5 font-mono text-[11px] font-semibold text-[color:var(--accent-darkest)]">
-              <span className="size-1.5 rounded-full bg-[color:var(--accent)]" />
-              Espace Ressources Pro
-            </span>
-          </div>
-          <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-[color:var(--neutral-black)] mt-1.5">
-            Hub Outils, IA & Templates
-          </h1>
-          <p className="text-xs sm:text-sm text-[color:var(--neutral-600)] mt-1 max-w-2xl">
-            Explore les exemples de sites web, télécharge leurs sources et retrouve tes kits et supports de formation.
+          <p className="section-kicker">Ressources FORGEIA</p>
+          <h1 className="mt-2 font-display text-2xl font-bold tracking-tight sm:text-3xl">Bibliothèque de ressources</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[color:var(--neutral-600)]">
+            Choisis une ressource selon ton projet : concevoir une interface, créer un site WordPress ou adapter un site HTML.
           </p>
         </div>
+        {audience === "admin" && <a href="/admin/contenus" className="rounded-xl border border-[color:var(--border)] bg-white px-4 py-2.5 text-xs font-semibold hover:bg-stone-50">Gérer les publications & Drive ↗</a>}
+      </header>
 
-        {/* Pilules de statut rapide */}
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="inline-flex items-center gap-1.5 rounded-xl border border-[color:var(--border)] bg-white px-3 py-1.5 text-xs shadow-2xs font-mono">
-            <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[color:var(--neutral-700)]">IA Privée Active</span>
-          </div>
-          <div className="inline-flex items-center gap-1.5 rounded-xl border border-[color:var(--border)] bg-white px-3 py-1.5 text-xs shadow-2xs font-mono">
-            <span className="text-amber-500">📦</span>
-            <span className="text-[color:var(--neutral-700)]">Kits UI8 & ZIP</span>
-          </div>
-        </div>
-      </div>
+      <nav aria-label="Collections de ressources" className="grid gap-3 sm:grid-cols-3">
+        {collections.filter((item) => item.id !== "sites" || examplesAvailable).map((item) => {
+          const active = activeTab === item.id;
+          return <button key={item.id} type="button" onClick={() => selectTab(item.id)} aria-pressed={active}
+            className={"group relative grid grid-cols-[2.25rem_1fr] items-center gap-x-3 rounded-2xl border p-4 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[color:var(--accent)] sm:block sm:p-5 " + (active ? "border-[color:var(--accent)] bg-white ring-1 ring-[color:var(--accent)]" : "border-[color:var(--border)] bg-white/60 hover:border-[color:var(--accent)] hover:bg-white")}>
+            <span aria-hidden="true" className={"row-span-2 inline-flex size-9 items-center justify-center rounded-xl font-mono text-sm font-bold sm:mb-3 " + item.colour}>{item.mark}</span>
+            <span className="block font-display text-sm font-bold">{item.title}</span>
+            <span className="mt-2 hidden text-xs leading-relaxed text-[color:var(--neutral-600)] sm:block">{item.description}</span>
+            <span className="mt-1 block text-[10px] font-semibold uppercase tracking-wider text-[color:var(--neutral-600)] sm:mt-3">{item.detail}</span>
+            <span aria-hidden="true" className={"absolute right-4 top-4 hidden text-sm sm:block " + (active ? "text-[color:var(--accent)]" : "text-[color:var(--neutral-400)]")}>{active ? "●" : "↗"}</span>
+          </button>;
+        })}
+      </nav>
 
-      {/* Barre de navigation par Onglets (Segmented Control Top-Tier Responsive) */}
-      <div className="flex items-center gap-1.5 rounded-2xl border border-[color:var(--border)] bg-[color:var(--neutral-50)] p-1.5 shadow-2xs overflow-x-auto scrollbar-none">
-        {examplesAvailable && <button type="button" onClick={() => setActiveTab("sites")}
-          className={`flex-1 min-w-fit rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold whitespace-nowrap cursor-pointer ${activeTab === "sites" ? "bg-white text-[color:var(--neutral-black)] shadow-xs border border-[color:var(--border)]" : "text-[color:var(--neutral-600)] hover:bg-white/50"}`}>
-          Exemples de sites
-        </button>}
-        <button
-          type="button"
-          onClick={() => setActiveTab("templates")}
-          className={`flex-1 min-w-fit inline-flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold transition whitespace-nowrap cursor-pointer ${
-            activeTab === "templates"
-              ? "bg-white text-[color:var(--neutral-black)] shadow-xs border border-[color:var(--border)]"
-              : "text-[color:var(--neutral-600)] hover:text-[color:var(--neutral-black)] hover:bg-white/50"
-          }`}
-        >
-          <span>📦</span>
-          <span>Templates<span className="hidden sm:inline"> & Kits UI8</span></span>
-        </button>
+      <nav aria-label="Autres ressources" className="flex flex-wrap items-center gap-2 border-b border-[color:var(--border)] pb-4">
+        {secondaryTabs.map((tab) => <button key={tab.id} type="button" onClick={() => selectTab(tab.id)} aria-pressed={activeTab === tab.id}
+          className={"rounded-full px-3.5 py-2 text-xs font-semibold transition-colors " + (activeTab === tab.id ? "bg-[color:var(--neutral-black)] text-white" : "text-[color:var(--neutral-600)] hover:bg-white hover:text-[color:var(--neutral-black)]")}>{tab.label}</button>)}
+      </nav>
 
-        <button
-          type="button"
-          onClick={() => setActiveTab("course-docs")}
-          className={`flex-1 min-w-fit inline-flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold transition whitespace-nowrap cursor-pointer ${
-            activeTab === "course-docs"
-              ? "bg-white text-[color:var(--neutral-black)] shadow-xs border border-[color:var(--border)]"
-              : "text-[color:var(--neutral-600)] hover:text-[color:var(--neutral-black)] hover:bg-white/50"
-          }`}
-        >
-          <span>📚</span>
-          <span>Supports<span className="hidden sm:inline"> du Formateur</span> {publishedCount > 0 ? `(${publishedCount})` : ""}</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab("coins")}
-          className={`flex-1 min-w-fit inline-flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold transition whitespace-nowrap cursor-pointer ${
-            activeTab === "coins"
-              ? "bg-amber-500 text-white shadow-xs font-bold"
-              : "text-[color:var(--neutral-600)] hover:text-amber-800 hover:bg-amber-500/10"
-          }`}
-        >
-          <span>🪙</span>
-          <span>Boutique Coins</span>
-        </button>
-      </div>
-
-      {/* Contenu de l'onglet actif */}
-      <div>
+      <div key={activeTab}>
         {activeTab === "sites" && <WebsiteExamplesGallery />}
-        {/* ONGLET 1 : Templates & Kits UI8 */}
-        {activeTab === "templates" && (
-          <div className="animate-in fade-in zoom-in-98 duration-200">
-            <DriveResourcesExplorer />
-          </div>
-        )}
-
-        {/* ONGLET 4 : Boutique & Recharge de Coins */}
-        {activeTab === "coins" && (
-          <div className="animate-in fade-in zoom-in-98 duration-200">
-            <CoinsShopSection />
-          </div>
-        )}
-
-        {/* ONGLET 3 : Supports du Formateur */}
-        {activeTab === "course-docs" && (
-          <div className="animate-in fade-in zoom-in-98 duration-200">
-            <ResourcesPanel contents={contents} />
-          </div>
-        )}
+        {(activeTab === "ui-kits" || activeTab === "wordpress" || activeTab === "drive") && <DriveResourcesExplorer
+          kind={activeTab === "ui-kits" ? "design-code" : activeTab === "wordpress" ? "wordpress" : "all"}
+          onBrowseAll={() => selectTab("drive")}
+        />}
+        {activeTab === "course-docs" && <ResourcesPanel contents={contents} />}
+        {activeTab === "coins" && <CoinsShopSection />}
       </div>
     </div>
   );

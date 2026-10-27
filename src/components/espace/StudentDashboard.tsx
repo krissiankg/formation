@@ -125,7 +125,7 @@ export function StudentDashboard({
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {[
           { href: "/espace/programme", label: "Mon programme", hint: "Modules & leçons" },
-          { href: "/espace/ressources", label: "Ressources & IA", hint: "Templates & supports" },
+          { href: "/espace/ressources", label: "Bibliothèque de ressources", hint: "Kits UI, WordPress & sites HTML" },
           { href: "/espace/paiements", label: "Paiements", hint: "Échéancier" },
           { href: "/espace/tests", label: "Tests", hint: "Quiz & validation" },
         ].map((item) => (

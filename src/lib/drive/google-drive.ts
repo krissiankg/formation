@@ -3,6 +3,7 @@ import path from "node:path";
 import { getSupabaseAdmin, isSupabaseConfigured } from "@/lib/supabase/admin";
 import { createDriveFileCounter, type DriveCountPage } from "@/lib/drive/file-count";
 import { createDriveFolderScope, isWithinDriveFolders, type FolderScope } from "@/lib/drive/folder-scope";
+import { driveResourceKindFilter, type DriveResourceKind } from "@/lib/drive/resource-kind";
 
 export const GOOGLE_DRIVE_FOLDER_ID =
   process.env.GOOGLE_DRIVE_FOLDER_ID || "1pPMsHu96fsTDiSV5EvRoSjP6fZr4UrOu";
@@ -314,12 +315,14 @@ function collectionQuery(search = "", scope = `'${SHARED_COLLECTION_OWNER}' in o
 export async function searchDriveCatalog(options?: {
   query?: string;
   pageSize?: number;
+  kind?: DriveResourceKind;
 }): Promise<{ files: DriveFileItem[]; isIndexing: boolean; warning: string | null }> {
   const search = (options?.query ?? "").trim();
   const pageSize = options?.pageSize || 100;
+  const kind = options?.kind ?? "all";
   const scope = await additionalFolderScope.advance();
   const isIndexing = !scope.isComplete && !scope.error;
-  const cacheKey = `${scope.generation}_${search.toLowerCase()}_${pageSize}`;
+  const cacheKey = `${scope.generation}_${kind}_${search.toLowerCase()}_${pageSize}`;
   const now = Date.now();
 
   const cached = searchCache.get(cacheKey);
@@ -327,7 +330,8 @@ export async function searchDriveCatalog(options?: {
     return { files: cached.items, isIndexing: false, warning: null };
   }
 
-  const queries = catalogQueries(scope, search);
+  const kindFilter = driveResourceKindFilter(kind);
+  const queries = catalogQueries(scope, search).map((q) => kindFilter ? `${q} and (${kindFilter})` : q);
   const unique = new Map<string, DriveFileItem>();
   for (let offset = 0; offset < queries.length; offset += 3) {
     const pages = await Promise.all(queries.slice(offset, offset + 3).map((q) => listDrivePage<DriveFileItem>({

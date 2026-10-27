@@ -33,8 +33,8 @@ const sections: { title: string | null; items: NavItem[] }[] = [
   {
     title: "Ressources",
     items: [
-      { label: "Bibliothèque & fichiers", href: "/admin/contenus" },
-      { label: "Exemples de sites", href: "/admin/exemples" },
+      { label: "Bibliothèque de ressources", href: "/admin/exemples" },
+      { label: "Publications & Drive", href: "/admin/contenus" },
     ],
   },
 ];
