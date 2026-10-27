@@ -468,15 +468,8 @@ export async function countDriveFiles(forceRefresh = false) {
   return readCatalogCount(catalogCount, forceRefresh);
 }
 
-/**
- * Vérifie la légitimité d'un fichier et prépare son téléchargement en streaming
- */
-export async function getFileDownloadStream(fileId: string): Promise<{
-  stream: ReadableStream<Uint8Array>;
-  file: DriveFileItem;
-  contentType: string;
-  contentLength?: string;
-}> {
+/** Métadonnées et appartenance à la collection, avant tout achat ou téléchargement. */
+export async function getFileDownloadMetadata(fileId: string): Promise<DriveFileItem> {
   // 1. Récupérer les métadonnées pour vérifier l'appartenance à la collection autorisée
   const fileMeta = await getDriveMetadata<{
     id: string;
@@ -502,6 +495,17 @@ export async function getFileDownloadStream(fileId: string): Promise<{
   if (fileMeta.trashed || (!isOwnerValid && !isInAdditionalFolder)) {
     throw new Error("Accès refusé : ce fichier n'appartient pas à la collection autorisée.");
   }
+
+  return fileMeta;
+}
+
+export async function getFileDownloadStream(fileId: string): Promise<{
+  stream: ReadableStream<Uint8Array>;
+  file: DriveFileItem;
+  contentType: string;
+  contentLength?: string;
+}> {
+  const fileMeta = await getFileDownloadMetadata(fileId);
 
   // 2. Télécharger le flux binaire brut
   const accessToken = await getValidAccessToken();

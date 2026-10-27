@@ -170,6 +170,7 @@ export class ForgeiaWebStack extends cdk.Stack {
     taskDef.addToTaskRolePolicy(new iam.PolicyStatement({
       actions: ["s3:GetObject"],
       resources: [
+        uploadsBucket.arnForObjects("uploads/resources/*"),
         uploadsBucket.arnForObjects("website-examples/downloads/*"),
         uploadsBucket.arnForObjects("website-examples/catalog/*"),
       ],
@@ -266,6 +267,12 @@ export class ForgeiaWebStack extends cdk.Stack {
           viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
           cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
           compress: true,
+        },
+        "/uploads/resources/*": {
+          origin: albOrigin,
+          viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+          cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
+          originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER_AND_CLOUDFRONT_2022,
         },
         "/uploads/*": {
           origin: uploadsOrigin,

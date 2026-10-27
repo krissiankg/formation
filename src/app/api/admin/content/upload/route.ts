@@ -18,7 +18,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Aucun fichier fourni." }, { status: 400 });
     }
 
-    const uploadDir = path.join(process.cwd(), "public", "uploads", "resources");
+    const uploadDir = path.join(process.cwd(), "data", "resources");
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }

@@ -9,6 +9,7 @@ interface UnlockFileTarget {
   formattedSize: string;
   coinsCost: number;
   exampleId?: string;
+  contentAttachmentId?: string;
 }
 
 interface UnlockConfirmModalProps {
@@ -43,13 +44,15 @@ export function UnlockConfirmModal({
     setError(null);
 
     try {
-      const res = await fetch(file.exampleId ? `/api/ressources/exemples/${encodeURIComponent(file.exampleId)}/unlock` : "/api/wallet/unlock", {
+      const endpoint = file.exampleId ? `/api/ressources/exemples/${encodeURIComponent(file.exampleId)}/unlock`
+        : file.contentAttachmentId ? `/api/ressources/supports/${encodeURIComponent(file.contentAttachmentId)}/unlock`
+        : "/api/wallet/unlock";
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(file.exampleId ? { expectedCost: file.coinsCost } : {
+        body: JSON.stringify({
+          expectedCost: file.coinsCost,
           fileId: file.id,
-          fileName: file.name,
-          size: file.size,
         }),
       });
 
@@ -75,6 +78,7 @@ export function UnlockConfirmModal({
       onClose();
     } catch (err) {
       setError((err as Error).message || "Erreur réseau");
+    } finally {
       setLoading(false);
     }
   }
@@ -90,9 +94,9 @@ export function UnlockConfirmModal({
             </span>
             <div>
               <h3 id="unlock-template-title" className="font-display text-lg font-bold text-[color:var(--neutral-black)]">
-                Débloquer ce template
+                Débloquer cette ressource
               </h3>
-              <p className="text-xs text-[color:var(--neutral-500)]">Accès illimité à vie garanti</p>
+              <p className="text-xs text-[color:var(--neutral-500)]">Un seul achat, sans nouveau débit au téléchargement</p>
             </div>
           </div>
 
@@ -114,15 +118,13 @@ export function UnlockConfirmModal({
           </p>
           <div className="mt-1 flex items-center gap-3 text-xs text-[color:var(--neutral-500)]">
             <span>Poids : <strong className="font-mono text-[color:var(--neutral-700)]">{file.formattedSize}</strong></span>
-            <span>·</span>
-            <span>Format : <strong className="font-mono text-[color:var(--neutral-700)]">Archive ZIP</strong></span>
           </div>
         </div>
 
         {/* Récapitulatif Coins */}
         <div className="mt-4 space-y-2 rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 text-xs">
           <div className="flex items-center justify-between">
-            <span className="text-amber-900">Coût du template :</span>
+            <span className="text-amber-900">Coût de la ressource :</span>
             <span className="font-mono text-sm font-bold text-amber-700">
               {file.coinsCost} Coins 🪙
             </span>

@@ -194,7 +194,7 @@ export function DriveResourcesExplorer({ kind = "all", onBrowseAll }: { kind?: D
           })}
         </div>}
 
-      <UnlockConfirmModal file={unlockTarget} balance={walletBalance} onClose={() => setUnlockTarget(null)}
+      <UnlockConfirmModal key={unlockTarget?.id || "closed"} file={unlockTarget} balance={walletBalance} onClose={() => setUnlockTarget(null)}
         onSuccess={(balance, id) => { setWalletBalance(balance); setUnlockedFileIds((ids) => [...ids, id]); void loadWallet(); }}
         onOpenRecharge={() => { setUnlockTarget(null); window.dispatchEvent(new CustomEvent("open-coins-tab")); }} />
     </section>
