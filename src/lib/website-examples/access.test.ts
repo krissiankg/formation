@@ -14,9 +14,21 @@ describe("HTML purchase identity", () => {
     vi.mocked(getSessionEnrollment).mockResolvedValue({ id: "student", accessOverride: "blocked", payments: [] } as never);
     expect(await getExamplesViewer()).toBeNull();
   });
-  it("prioritizes admin access even if a student cookie is also present", async () => {
+  it("uses student rights even if a valid admin cookie is also present", async () => {
+    vi.mocked(isAdminAuthenticated).mockResolvedValue(true);
+    vi.mocked(getSessionEnrollment).mockResolvedValue({ id: "student", payments: [] } as never);
+    expect(await getExamplesViewer()).toEqual({ isAdmin: false, enrollmentId: "student" });
+    expect(isAdminAuthenticated).not.toHaveBeenCalled();
+  });
+  it("does not let an old admin cookie bypass a student's suspension", async () => {
+    vi.mocked(isAdminAuthenticated).mockResolvedValue(true);
+    vi.mocked(getSessionEnrollment).mockResolvedValue({ id: "student", accessOverride: "blocked", payments: [] } as never);
+    expect(await getExamplesViewer()).toBeNull();
+    expect(isAdminAuthenticated).not.toHaveBeenCalled();
+  });
+  it("allows an administrator when no student session is present", async () => {
+    vi.mocked(getSessionEnrollment).mockResolvedValue(null);
     vi.mocked(isAdminAuthenticated).mockResolvedValue(true);
     expect(await getExamplesViewer()).toEqual({ isAdmin: true });
-    expect(getSessionEnrollment).not.toHaveBeenCalled();
   });
 });

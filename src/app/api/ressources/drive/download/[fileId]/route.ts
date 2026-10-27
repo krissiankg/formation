@@ -12,9 +12,12 @@ export async function GET(
 ) {
   // 1. Vérification session
   const student = await getSessionEnrollment();
-  const cookieStore = await cookies();
-  const adminToken = cookieStore.get(ADMIN_SESSION_COOKIE)?.value;
-  const isAdmin = await verifyAdminSessionToken(adminToken);
+  let isAdmin = false;
+  if (!student) {
+    const cookieStore = await cookies();
+    const adminToken = cookieStore.get(ADMIN_SESSION_COOKIE)?.value;
+    isAdmin = await verifyAdminSessionToken(adminToken);
+  }
 
   if (!student && !isAdmin) {
     return NextResponse.json({ error: "Connexion requise pour télécharger ce fichier." }, { status: 401 });

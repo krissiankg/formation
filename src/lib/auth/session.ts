@@ -1,12 +1,13 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
+import { ADMIN_SESSION_COOKIE, STUDENT_SESSION_COOKIE } from "./session-cookies";
 import type { Enrollment } from "@/lib/types";
 import {
   findEnrollmentByEmailAndWhatsapp,
   getEnrollment,
 } from "@/lib/store/enrollments";
 
-export const SESSION_COOKIE = "forge_session";
+export const SESSION_COOKIE = STUDENT_SESSION_COOKIE;
 const SESSION_DAYS = 30;
 
 export function normalizePhone(value: string) {
@@ -64,8 +65,11 @@ function readStudentToken(token: string | undefined): string | null {
 }
 
 export async function createSession(enrollmentId: string) {
+  const token = createStudentToken(enrollmentId);
   const jar = await cookies();
-  jar.set(SESSION_COOKIE, createStudentToken(enrollmentId), {
+  // Une connexion élève choisit les seuls droits de cet élève dans ce navigateur.
+  jar.delete(ADMIN_SESSION_COOKIE);
+  jar.set(SESSION_COOKIE, token, {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",

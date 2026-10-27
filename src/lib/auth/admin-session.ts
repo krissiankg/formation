@@ -1,6 +1,6 @@
 const encoder = new TextEncoder();
 
-export const ADMIN_SESSION_COOKIE = "forge_admin_session";
+export { ADMIN_SESSION_COOKIE } from "./session-cookies";
 const SESSION_MAX_AGE_SECONDS = 7 * 24 * 60 * 60;
 
 function getSessionSecret(): string {
