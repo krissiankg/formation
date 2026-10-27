@@ -1,6 +1,6 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
-import { ADMIN_SESSION_COOKIE, STUDENT_SESSION_COOKIE } from "./session-cookies";
+import { STUDENT_SESSION_COOKIE } from "./session-cookies";
 import type { Enrollment } from "@/lib/types";
 import {
   findEnrollmentByEmailAndWhatsapp,
@@ -67,8 +67,6 @@ function readStudentToken(token: string | undefined): string | null {
 export async function createSession(enrollmentId: string) {
   const token = createStudentToken(enrollmentId);
   const jar = await cookies();
-  // Une connexion élève choisit les seuls droits de cet élève dans ce navigateur.
-  jar.delete(ADMIN_SESSION_COOKIE);
   jar.set(SESSION_COOKIE, token, {
     httpOnly: true,
     sameSite: "lax",

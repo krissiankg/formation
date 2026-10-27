@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useRef } from "react";
 import type { ContentItem, ContentAttachment } from "@/lib/store/content";
+import { resourceFileName } from "@/lib/resources/content-attachments";
 import { PageHeader } from "@/components/espace/shared";
 import { ContentKindBadge } from "@/components/admin/ContentKindBadge";
 import { DriveConnectionCard } from "@/components/admin/DriveConnectionCard";
@@ -473,7 +474,7 @@ function ContentList({
                     {c.attachments.map((att) => (
                       <a
                         key={att.id}
-                        href={att.url}
+                        href={resourceFileName(att.url) ? `/api/admin/ressources/supports/files/${encodeURIComponent(resourceFileName(att.url)!)}` : att.url}
                         target="_blank"
                         rel="noopener noreferrer"
                         download={att.name}

@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { getSessionEnrollment } from "@/lib/auth/session";
 import { ADMIN_SESSION_COOKIE, verifyAdminSessionToken } from "@/lib/auth/admin-session";
 import { getFileDownloadStream } from "@/lib/drive/google-drive";
+import { isAdminResourceRequest } from "@/lib/resources/audience";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,7 @@ export async function GET(
   { params }: { params: Promise<{ fileId: string }> }
 ) {
   // 1. Vérification session
-  const student = await getSessionEnrollment();
+  const student = isAdminResourceRequest(_request) ? null : await getSessionEnrollment();
   let isAdmin = false;
   if (!student) {
     const cookieStore = await cookies();

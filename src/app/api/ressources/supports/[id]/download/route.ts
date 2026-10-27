@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 const headers = { "Cache-Control": "private, no-store" };
 
 export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) {
-  const viewer = await getResourcesViewer();
+  const viewer = await getResourcesViewer(_request);
   if (!viewer) return Response.json({ error: "Connexion requise." }, { status: 401, headers });
   const { id } = await context.params;
   try {

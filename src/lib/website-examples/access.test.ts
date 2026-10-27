@@ -31,4 +31,16 @@ describe("HTML purchase identity", () => {
     vi.mocked(isAdminAuthenticated).mockResolvedValue(true);
     expect(await getExamplesViewer()).toEqual({ isAdmin: true });
   });
+  it("uses administrator rights on the explicit administrator endpoint even with a blocked student session", async () => {
+    vi.mocked(isAdminAuthenticated).mockResolvedValue(true);
+    vi.mocked(getSessionEnrollment).mockResolvedValue({ id: "student", accessOverride: "blocked", payments: [] } as never);
+    expect(await getExamplesViewer(new Request("https://www.forgeia.site/api/admin/ressources/exemples"))).toEqual({ isAdmin: true });
+    expect(getSessionEnrollment).not.toHaveBeenCalled();
+  });
+  it("does not accept a student session as an administrator", async () => {
+    vi.mocked(isAdminAuthenticated).mockResolvedValue(false);
+    vi.mocked(getSessionEnrollment).mockResolvedValue({ id: "student", payments: [] } as never);
+    expect(await getExamplesViewer(new Request("https://www.forgeia.site/api/admin/ressources/exemples"))).toBeNull();
+    expect(getSessionEnrollment).not.toHaveBeenCalled();
+  });
 });

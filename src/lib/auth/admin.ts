@@ -1,7 +1,6 @@
 import { scrypt, timingSafeEqual, randomBytes } from "node:crypto";
 import { promisify } from "node:util";
 import { cookies } from "next/headers";
-import { STUDENT_SESSION_COOKIE } from "./session-cookies";
 import {
   ADMIN_SESSION_COOKIE,
   adminSessionMaxAge,
@@ -67,7 +66,6 @@ export async function verifyAdminCredentials(
 export async function createAdminSession() {
   const token = await createAdminSessionToken();
   const jar = await cookies();
-  jar.delete(STUDENT_SESSION_COOKIE);
   jar.set(ADMIN_SESSION_COOKIE, token, {
     httpOnly: true,
     sameSite: "lax",

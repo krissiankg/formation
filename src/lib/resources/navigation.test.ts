@@ -18,4 +18,10 @@ describe("navigation de la bibliothèque", () => {
     expect(parseDriveResourceKind("design-code")).toBe("design-code");
     expect(parseDriveResourceKind("' or trashed = true")).toBe("all");
   });
+  it("ne présente jamais la boutique de coins dans la bibliothèque administrateur", () => {
+    expect(resolveResourceTab("coins", true, "admin")).toBe("sites");
+    expect(resolveResourceTab("coins", false, "admin")).toBe("ui-kits");
+    expect(resolveResourceTab("course-docs", true, "admin")).toBe("sites");
+    expect(resolveResourceTab("wordpress", true, "admin")).toBe("wordpress");
+  });
 });

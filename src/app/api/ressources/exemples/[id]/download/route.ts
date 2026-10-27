@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 const headers = { "Cache-Control": "private, no-store" };
 
 export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) {
-  const viewer = await getExamplesViewer();
+  const viewer = await getExamplesViewer(_request);
   if (!viewer) return Response.json({ error: "Connecte-toi à ton espace étudiant." }, { status: 401, headers });
   const { id } = await context.params;
   if (!/^[a-z0-9][a-z0-9-]{0,100}$/.test(id)) return Response.json({ error: "Exemple introuvable." }, { status: 404, headers });
