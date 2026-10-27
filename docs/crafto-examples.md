@@ -8,7 +8,7 @@ Les sources originales sont conservées. Les vignettes de sites proviennent du p
 
 ## Accès
 
-- Étudiants : `/espace/ressources`, onglet « Exemples de sites ».
+- Étudiants : `/espace/ressources`, collection « Sites HTML » dans la Bibliothèque de ressources.
 - Administrateur : `/admin/exemples`.
 - API de catalogue : `/api/ressources/exemples`.
 - API de téléchargement : `/api/ressources/exemples/[id]/download`.

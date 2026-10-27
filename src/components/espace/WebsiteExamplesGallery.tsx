@@ -6,6 +6,7 @@ import type { PublicExample } from "@/lib/website-examples/types";
 type Catalog = { entries: PublicExample[]; sites: number; total: number };
 const categories = [{ id: "sites", label: "Sites complets" }, { id: "pages", label: "Pages des sites" }, { id: "components", label: "Autres exemples" }, { id: "all", label: "Tout voir" }];
 const pageSize = 24;
+const thumbnailShapes = ["aspect-[4/3]", "aspect-video", "aspect-[3/2]", "aspect-[16/10]", "aspect-[4/3]"];
 
 export function WebsiteExamplesGallery() {
   const [catalog, setCatalog] = useState<Catalog | null>(null);
@@ -51,10 +52,10 @@ export function WebsiteExamplesGallery() {
     finally { setDownloading(null); }
   }
 
-  return <section className="space-y-5" aria-label="Exemples de sites web">
+  return <section className="space-y-5" aria-label="Sites HTML">
     <div className="rounded-2xl border border-[color:var(--border)] bg-white p-5 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-display text-xl font-bold">Des sites à explorer et à personnaliser</h2>
+        <h2 className="font-display text-xl font-bold">Sites HTML à personnaliser</h2>
         <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800">Gratuit provisoirement</span>
       </div>
       <p className="mt-2 text-sm text-[color:var(--neutral-600)]">{catalog ? `${catalog.sites} sites complets · ${catalog.total} pages et exemples. ` : "Bibliothèque de sites HTML, CSS et JavaScript. "}Ouvre un aperçu dans un nouvel onglet ou télécharge ses sources en ZIP.</p>
@@ -83,19 +84,19 @@ export function WebsiteExamplesGallery() {
     {!catalog && !error && <p role="status" className="py-12 text-center text-sm">Chargement des exemples…</p>}
     {catalog && <>
       <p className="text-xs text-[color:var(--neutral-600)]" aria-live="polite">{entries.length} exemple{entries.length > 1 ? "s" : ""} · Page {currentPage} / {totalPages}</p>
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {entries.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((entry) => <article key={entry.id} className="overflow-hidden rounded-2xl border border-[color:var(--border)] bg-white shadow-sm">
-          <a href={entry.previewUrl} target="_blank" rel="noopener noreferrer" aria-label={`Voir ${entry.title} dans un nouvel onglet`} className="block overflow-hidden bg-stone-100">
+      <div className="columns-1 gap-4 sm:columns-2 lg:columns-4" data-resource-masonry>
+        {entries.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((entry, index) => <article key={entry.id} className="mb-4 inline-block w-full break-inside-avoid overflow-hidden rounded-2xl border border-[color:var(--border)] bg-white align-top shadow-sm">
+          <a href={entry.previewUrl} target="_blank" rel="noopener noreferrer" aria-label={`Voir ${entry.title} dans un nouvel onglet`} className={`relative block overflow-hidden bg-stone-100 ${thumbnailShapes[index % thumbnailShapes.length]}`}>
             {/* Screenshots are served directly from the isolated demo CDN. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={entry.thumbnailUrl} alt={`Aperçu de ${entry.title}`} width={640} height={480} loading="lazy" className="aspect-[4/3] w-full object-cover object-top transition-transform duration-300 hover:scale-[1.03]" />
+            <img src={entry.thumbnailUrl} alt={`Aperçu de ${entry.title}`} width={640} height={480} loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-300 motion-reduce:transition-none hover:scale-[1.03]" />
           </a>
-          <div className="p-4">
+          <div className="p-3.5">
             <p className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--neutral-600)]">{collections.length > 1 ? `${collectionLabel(entry.collection)} · ` : ""}{entry.category === "sites" ? "Site complet" : entry.category === "pages" ? "Page du site" : "Exemple HTML"} · {entry.pageCount} page{entry.pageCount > 1 ? "s" : ""} dans le ZIP</p>
-            <h3 className="mt-2 font-display text-base font-bold capitalize">{entry.title}</h3>
-            <div className="mt-4 flex gap-2">
-              <a href={entry.previewUrl} target="_blank" rel="noopener noreferrer" className="flex-1 rounded-lg border border-[color:var(--border)] px-2 py-2.5 text-center text-xs font-semibold hover:bg-stone-50">Voir le site ↗</a>
-              <button type="button" disabled={downloading !== null} onClick={() => download(entry)} className="flex-1 rounded-lg bg-[color:var(--neutral-black)] px-2 py-2.5 text-xs font-semibold text-white disabled:opacity-50">{downloading === entry.id ? "Préparation…" : "Télécharger ZIP"}</button>
+            <h3 className="mt-2 break-words font-display text-sm font-bold capitalize">{entry.title}</h3>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <a href={entry.previewUrl} target="_blank" rel="noopener noreferrer" className="min-w-20 flex-1 rounded-lg border border-[color:var(--border)] px-2 py-2.5 text-center text-xs font-semibold hover:bg-stone-50">Voir le site ↗</a>
+              <button type="button" disabled={downloading !== null} onClick={() => download(entry)} className="min-w-24 flex-1 rounded-lg bg-[color:var(--neutral-black)] px-2 py-2.5 text-xs font-semibold text-white disabled:opacity-50">{downloading === entry.id ? "Préparation…" : "Télécharger ZIP"}</button>
             </div>
             <p className="mt-2 text-right text-[10px] text-[color:var(--neutral-600)]">Sources · {(entry.archiveBytes / 1024 / 1024).toLocaleString("fr", { maximumFractionDigits: 1 })} Mo</p>
           </div>

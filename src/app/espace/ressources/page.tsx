@@ -6,26 +6,28 @@ import { ResourcesHubClient } from "@/components/espace/ResourcesHubClient";
 import { getExamplesCatalog } from "@/lib/website-examples/server";
 
 export const metadata = {
-  title: `Ressources & IA — ${brand.name}`,
+  title: `Bibliothèque de ressources — ${brand.name}`,
 };
 
 export const dynamic = "force-dynamic";
 
-export default async function RessourcesPage() {
+export default async function RessourcesPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   const enrollment = await getSessionEnrollment();
   if (!enrollment) redirect("/connexion");
 
   const contents = await listPublishedContent();
+  const { tab } = await searchParams;
   let examplesAvailable = false;
   if (process.env.WEBSITE_EXAMPLES_PREVIEW_BASE_URL) {
     try { examplesAvailable = (await getExamplesCatalog()).total > 0; } catch { /* Publication not yet complete. */ }
   }
 
   return (
-    <div className="mx-auto max-w-5xl">
+    <div className="mx-auto max-w-7xl">
       <ResourcesHubClient
         contents={contents}
         examplesAvailable={examplesAvailable}
+        initialTab={tab}
       />
     </div>
   );
