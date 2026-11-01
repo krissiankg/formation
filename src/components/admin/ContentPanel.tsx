@@ -95,7 +95,7 @@ export function ContentPanel({ contents }: { contents: ContentItem[] }) {
       setAttachments([]);
       setMessage(
         publish && notify
-          ? "Contenu publié avec pièces jointes — notification WhatsApp envoyée aux inscrits payés."
+          ? "Contenu publié avec pièces jointes — email envoyé aux inscrits payés."
           : publish
             ? "Contenu publié avec succès."
             : "Brouillon enregistré.",
@@ -137,7 +137,7 @@ export function ContentPanel({ contents }: { contents: ContentItem[] }) {
       <PageHeader
         kicker="Ressources"
         title="Publier pour les apprenants"
-        description="Outils, fichiers volumineux, codes, annonces. Les apprenants les retrouvent dans Ressources et reçoivent une alerte WhatsApp si tu coches la notification."
+        description="Outils, fichiers volumineux, codes, annonces. Les apprenants les retrouvent dans Ressources et reçoivent un email si tu coches la notification."
       />
 
       {/* 🚀 Passerelle Google Drive pour les fichiers ZIP */}
@@ -310,8 +310,8 @@ export function ContentPanel({ contents }: { contents: ContentItem[] }) {
               <Toggle
                 checked={notify}
                 onChange={setNotify}
-                label="Notifier sur WhatsApp"
-                hint="Envoie un message WhatsApp avec le lien aux inscrits payés"
+                label="Notifier par email"
+                hint="Envoie un email avec le lien aux inscrits payés"
                 disabled={!publish}
               />
             </div>

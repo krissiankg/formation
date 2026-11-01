@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { listAllProjects, reviewProject } from "@/lib/projects/store";
-import { notifyWhatsApp } from "@/lib/integrations";
+import { getEnrollment } from "@/lib/store/enrollments";
+import { notifyStudent } from "@/lib/email/notify";
+import { projectReviewedEmail } from "@/lib/email/messages";
 
 export async function GET() {
   try {
@@ -27,26 +29,19 @@ export async function PATCH(request: Request) {
       feedback,
     });
 
-    // Notification WhatsApp de retour à l'apprenant
-    if (project.studentWhatsapp) {
-      try {
-        const isApproved = status === "approved";
-        const statusLabel = isApproved ? "✅ *Validé avec succès !*" : "⚠️ *Modifications demandées*";
-        const scoreLine = project.score !== null ? `*Note attribuée :* ${project.score}/100\n` : "";
-        const feedbackLine = feedback ? `\n💬 *Commentaire du formateur :*\n« ${feedback} »\n` : "";
-
-        await notifyWhatsApp(
-          project.studentWhatsapp,
-          `🎯 *FORGEIA — Évaluation de ton projet SaaS*\n\n` +
-            `*Projet :* ${project.title}\n` +
-            `*Statut :* ${statusLabel}\n` +
-            scoreLine +
-            feedbackLine +
-            `\nConsulte les détails dans ton espace : https://www.forgeia.site/espace/projets`
-        );
-      } catch (waErr) {
-        console.error("[review:whatsapp:student:error]", waErr);
-      }
+    // Email de retour à l'apprenant
+    const student = await getEnrollment(project.enrollmentId);
+    if (student) {
+      await notifyStudent(
+        student,
+        projectReviewedEmail({
+          firstname: student.fullName.trim().split(/\s+/)[0] ?? "",
+          title: project.title,
+          approved: status === "approved",
+          score: project.score ?? null,
+          feedback: typeof feedback === "string" ? feedback : "",
+        }),
+      );
     }
 
     return NextResponse.json({ project });

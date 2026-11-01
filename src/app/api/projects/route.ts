@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { getSessionEnrollment } from "@/lib/auth/session";
 import { createProject, getStudentProjects } from "@/lib/projects/store";
-import { notifyAdminWhatsApp } from "@/lib/integrations";
+import { notifyAdmin } from "@/lib/email/notify";
+import { adminAlertEmail } from "@/lib/email/messages";
 import { canSubmitProjects } from "@/lib/access/server";
 
 export async function GET() {
@@ -49,20 +50,16 @@ export async function POST(request: Request) {
       demoCredentials,
     });
 
-    // Alerte WhatsApp pour le formateur / admin
-    try {
-      await notifyAdminWhatsApp(
-        `🚀 *FORGEIA — Nouveau projet SaaS soumis !*\n\n` +
-          `👤 *Apprenant :* ${enrollment.fullName}\n` +
-          `📱 *WhatsApp :* ${enrollment.whatsapp}\n` +
-          `📦 *Projet :* ${title}\n` +
-          `🔗 *Lien du site :* ${projectUrl}\n` +
-          (githubUrl ? `💻 *GitHub :* ${githubUrl}\n` : "") +
-          `\nConnecte-toi à l'admin pour l'évaluer : https://www.forgeia.site/admin/projets`
-      );
-    } catch (waErr) {
-      console.error("[project:whatsapp:admin:error]", waErr);
-    }
+    // Alerte email pour le formateur / admin
+    await notifyAdmin(
+      adminAlertEmail("Nouveau projet soumis", [
+        ["Apprenant", enrollment.fullName],
+        ["Email", enrollment.email],
+        ["Projet", title],
+        ["Lien du site", projectUrl],
+        ...(githubUrl ? ([["GitHub", githubUrl]] as [string, string][]) : []),
+      ]),
+    );
 
     return NextResponse.json({ project });
   } catch (error: any) {

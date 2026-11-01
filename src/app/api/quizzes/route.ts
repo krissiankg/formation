@@ -5,7 +5,6 @@ import {
   getStudentQuizzes,
   submitQuizAttempt,
 } from "@/lib/quiz/store";
-import { notifyWhatsApp } from "@/lib/integrations";
 import { getCourseAccess } from "@/lib/access/course-access";
 import { canAccessQuiz, getAccessibleLessonIds } from "@/lib/access/server";
 
@@ -77,27 +76,6 @@ export async function POST(request: Request) {
     }
 
     const result = await submitQuizAttempt(enrollment.id, quizId, answers);
-
-    // Notification WhatsApp du résultat à l'apprenant
-    try {
-      if (enrollment.whatsapp) {
-        const quizTitle = result.attempt.quizTitle || "Test interactif";
-        const statusText = result.passed
-          ? "✅ *Félicitations, test validé !*"
-          : "🔄 *Score insuffisant, tu peux recommencer !*";
-
-        await notifyWhatsApp(
-          enrollment.whatsapp,
-          `🎯 *FORGEIA — Résultat de Quiz*\n\n` +
-            `*Test :* ${quizTitle}\n` +
-            `*Score :* ${result.scorePercent}% (${result.correctAnswersCount}/${result.totalQuestions})\n` +
-            `*Statut :* ${statusText}\n\n` +
-            `Connecte-toi pour voir le corrigé détaillé : https://www.forgeia.site/espace/tests`,
-        );
-      }
-    } catch (notifErr) {
-      console.error("[quiz:whatsapp:error]", notifErr);
-    }
 
     return NextResponse.json(result);
   } catch (error: any) {

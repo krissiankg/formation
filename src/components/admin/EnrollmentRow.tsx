@@ -69,11 +69,11 @@ export function EnrollmentRow({
     }
   }
 
-  async function handleRemind(type: "registration" | "payment") {
+  async function handleRemind(type: "registration" | "payment" | "password") {
     setSending(true);
     setStatusMsg(null);
     try {
-      const res = await fetch("/api/admin/whatsapp/remind", {
+      const res = await fetch("/api/admin/remind", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ enrollmentId: enrollment.id, type }),
@@ -200,16 +200,28 @@ export function EnrollmentRow({
       {statusMsg ? (
         <span className="font-medium text-[color:var(--accent-dark)]">{statusMsg}</span>
       ) : (
-        <button
-          type="button"
-          disabled={sending}
-          onClick={() => handleRemind(paid ? "payment" : "registration")}
-          className="inline-flex cursor-pointer items-center justify-center gap-1 whitespace-nowrap rounded-lg border border-[color:var(--border)] bg-[color:var(--neutral-50)] px-2.5 py-1.5 font-medium text-[color:var(--neutral-black)] transition hover:border-[color:var(--accent)] hover:bg-[color:var(--accent-lightest)] disabled:opacity-50"
-          title={paid ? "Relancer paiement tranches suivantes" : "Relancer paiement inscription"}
-        >
-          <span aria-hidden>💬</span>
-          <span>{paid ? "Relance solde" : "Relancer"}</span>
-        </button>
+        <>
+          <button
+            type="button"
+            disabled={sending}
+            onClick={() => handleRemind(paid ? "payment" : "registration")}
+            className="inline-flex cursor-pointer items-center justify-center gap-1 whitespace-nowrap rounded-lg border border-[color:var(--border)] bg-[color:var(--neutral-50)] px-2.5 py-1.5 font-medium text-[color:var(--neutral-black)] transition hover:border-[color:var(--accent)] hover:bg-[color:var(--accent-lightest)] disabled:opacity-50"
+            title={paid ? "Relancer par email : tranches suivantes" : "Relancer par email : préinscription à payer"}
+          >
+            <span aria-hidden>✉️</span>
+            <span>{paid ? "Relance solde" : "Relancer par email"}</span>
+          </button>
+          <button
+            type="button"
+            disabled={sending}
+            onClick={() => handleRemind("password")}
+            className="inline-flex cursor-pointer items-center justify-center gap-1 whitespace-nowrap rounded-lg border border-[color:var(--border)] bg-[color:var(--neutral-50)] px-2.5 py-1.5 font-medium text-[color:var(--neutral-black)] transition hover:border-[color:var(--accent)] hover:bg-[color:var(--accent-lightest)] disabled:opacity-50"
+            title="Envoyer par email un lien pour créer ou changer le mot de passe"
+          >
+            <span aria-hidden>🔑</span>
+            <span>Lien mot de passe</span>
+          </button>
+        </>
       )}
 
       {onGrantCoins && (

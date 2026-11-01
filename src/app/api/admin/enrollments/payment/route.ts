@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
-import { formatFcfa } from "@/lib/format";
-import { notifyWhatsApp } from "@/lib/integrations";
+import { formation } from "@/lib/config/formation";
+import { notifyStudent } from "@/lib/email/notify";
+import { paymentReceivedEmail, registrationConfirmedEmail } from "@/lib/email/messages";
+import { getWhatsAppGroupUrl } from "@/lib/settings/whatsapp-group";
 import { getInstallmentLabel, MANUAL_PAYMENT_REF } from "@/lib/programme/installments";
 import {
   getEnrollment,
@@ -42,14 +44,17 @@ export async function POST(request: Request) {
 
     await markPaymentPaid(id, kind, MANUAL_PAYMENT_REF);
 
-    try {
-      await notifyWhatsApp(
-        enrollment.whatsapp,
-        `Paiement reçu (${getInstallmentLabel(kind)} : ${formatFcfa(target.amount)}) — merci ! Ton échéancier a été mis à jour dans ton espace apprenant.`,
-      );
-    } catch (waErr) {
-      console.error("[admin:payment:whatsapp]", waErr);
-    }
+    const firstname = enrollment.fullName.trim().split(/\s+/)[0] ?? "";
+    await notifyStudent(
+      enrollment,
+      kind === "registration"
+        ? registrationConfirmedEmail({
+            firstname,
+            scheduleLabel: formation.schedule[enrollment.schedule].label,
+            groupUrl: await getWhatsAppGroupUrl(),
+          })
+        : paymentReceivedEmail({ firstname, label: getInstallmentLabel(kind), amount: target.amount, kind }),
+    );
 
     return NextResponse.json({ ok: true });
   } catch (error: any) {

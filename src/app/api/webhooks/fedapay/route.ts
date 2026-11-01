@@ -1,6 +1,14 @@
 import { NextResponse } from "next/server";
 import { markRegistrationPaid, markPaymentPaid, getEnrollment } from "@/lib/store/enrollments";
-import { notifyTelegram, notifyWhatsApp, notifyAdminWhatsApp } from "@/lib/integrations";
+import { notifyTelegram } from "@/lib/integrations";
+import { notifyAdmin, notifyStudent } from "@/lib/email/notify";
+import {
+  adminAlertEmail,
+  coinsCreditedEmail,
+  paymentReceivedEmail,
+  registrationConfirmedEmail,
+} from "@/lib/email/messages";
+import { getWhatsAppGroupUrl } from "@/lib/settings/whatsapp-group";
 import { formation } from "@/lib/config/formation";
 import { formatFcfa } from "@/lib/format";
 import { verifyFedapayWebhook } from "@/lib/fedapay/webhook";
@@ -104,19 +112,19 @@ export async function POST(request: Request) {
           `Montant: ${formattedAmount} · tx ${txId}`
       );
 
-      await notifyAdminWhatsApp(
-        `FORGE IA — Recharge Coins reçue\n` +
-          `Coins: +${coins} 🪙\n` +
-          `Apprenant: ${student.fullName}\n` +
-          `Montant: ${formattedAmount}`
-      );
-
-      if (student.whatsapp) {
-        await notifyWhatsApp(
-          student.whatsapp,
-          `FORGE IA : Ton portefeuille a bien été rechargé de +${coins} coins (Montant: ${formattedAmount}). Tu peux dès maintenant débloquer tes templates UI8 sur ton espace ressources !`
-        );
-      }
+      await Promise.all([
+        notifyAdmin(
+          adminAlertEmail("Recharge de coins", [
+            ["Apprenant", student.fullName],
+            ["Coins", `+${coins}`],
+            ["Montant", formattedAmount],
+          ]),
+        ),
+        notifyStudent(
+          student,
+          coinsCreditedEmail({ firstname: firstNameOf(student.fullName), coins, amount: formattedAmount }),
+        ),
+      ]);
 
       return NextResponse.json({ ok: true, coinsCredited: coins });
     }
@@ -154,22 +162,32 @@ export async function POST(request: Request) {
         `Montant: ${formattedAmount} · tx ${txId}`,
     );
 
-    await notifyAdminWhatsApp(
-      `FORGE IA — Nouveau paiement reçu\n` +
-        `Tranche: ${trancheLabel}\n` +
-        `Nom: ${enrollment.fullName}\n` +
-        `WhatsApp: ${enrollment.whatsapp}\n` +
-        `Montant: ${formattedAmount}`,
-    );
-
-    await notifyWhatsApp(
-      enrollment.whatsapp,
-      `Paiement reçu (${trancheLabel} : ${formattedAmount}) — merci ! Ton échéancier a été mis à jour dans ton espace apprenant.`,
-    );
+    const firstname = firstNameOf(enrollment.fullName);
+    const scheduleLabel = formation.schedule[enrollment.schedule].label;
+    await Promise.all([
+      notifyAdmin(
+        adminAlertEmail(`Paiement reçu : ${trancheLabel}`, [
+          ["Apprenant", enrollment.fullName],
+          ["Email", enrollment.email],
+          ["Créneau", scheduleLabel],
+          ["Montant", formattedAmount],
+        ]),
+      ),
+      notifyStudent(
+        enrollment,
+        kind === "registration"
+          ? registrationConfirmedEmail({ firstname, scheduleLabel, groupUrl: await getWhatsAppGroupUrl() })
+          : paymentReceivedEmail({ firstname, label: trancheLabel, amount: amount || targetPayment?.amount || 0, kind }),
+      ),
+    ]);
 
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("[fedapay:webhook]", error);
     return NextResponse.json({ error: "webhook_error" }, { status: 500 });
   }
+}
+
+function firstNameOf(fullName: string) {
+  return fullName.trim().split(/\s+/)[0] ?? "";
 }
