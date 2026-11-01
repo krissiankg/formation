@@ -1,8 +1,10 @@
 import { redirect } from "next/navigation";
 import { StudentShell } from "@/components/espace/StudentShell";
+import { hasRegistrationAccess } from "@/lib/access/registration";
 import { getSessionEnrollment } from "@/lib/auth/session";
 import { formation } from "@/lib/config/formation";
 import { getStudentPending } from "@/lib/espace/pending";
+import { getWhatsAppGroupUrl } from "@/lib/settings/whatsapp-group";
 
 export default async function EspaceLayout({
   children,
@@ -11,13 +13,16 @@ export default async function EspaceLayout({
 }) {
   const enrollment = await getSessionEnrollment();
   if (!enrollment) redirect("/connexion");
+  // L'espace s'ouvre une fois la préinscription payée (ou l'accès complet accordé par l'admin).
+  if (!hasRegistrationAccess(enrollment)) redirect("/inscription/paiement");
 
   const firstName = enrollment.fullName.trim().split(/\s+/)[0] || "Apprenant";
-  const pending = await getStudentPending(enrollment);
+  const [pending, whatsappGroupUrl] = await Promise.all([getStudentPending(enrollment), getWhatsAppGroupUrl()]);
 
   return (
     <StudentShell
       pending={pending}
+      whatsappGroupUrl={whatsappGroupUrl}
       student={{
         firstName,
         fullName: enrollment.fullName,

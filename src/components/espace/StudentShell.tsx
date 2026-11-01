@@ -100,9 +100,19 @@ function NavLinks({
   );
 }
 
-function FooterLinks({ onNavigate }: { onNavigate?: () => void }) {
+function FooterLinks({ onNavigate, whatsappGroupUrl }: { onNavigate?: () => void; whatsappGroupUrl: string | null }) {
   return (
     <div className="space-y-1 border-t border-[color:var(--border)] p-3">
+      {whatsappGroupUrl ? (
+        <a
+          href={whatsappGroupUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-[#128c4a] transition hover:bg-[#e8f8ef]"
+        >
+          👥 Groupe WhatsApp FORGEIA
+        </a>
+      ) : null}
       <a
         href={contact.whatsappUrl}
         target="_blank"
@@ -126,6 +136,7 @@ export function StudentShell({
   children,
   student,
   pending,
+  whatsappGroupUrl,
 }: {
   children: React.ReactNode;
   student: {
@@ -138,6 +149,8 @@ export function StudentShell({
     avatarUrl?: string | null;
   };
   pending: StudentPending;
+  /** Lien du groupe WhatsApp, fourni seulement aux apprenants dont la préinscription est payée. */
+  whatsappGroupUrl: string | null;
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -183,7 +196,7 @@ export function StudentShell({
             <NavLinks pathname={pathname} pending={pending} />
           </nav>
 
-          <FooterLinks />
+          <FooterLinks whatsappGroupUrl={whatsappGroupUrl} />
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col">
@@ -203,7 +216,7 @@ export function StudentShell({
               <div className="p-3">
                 <NavLinks pathname={pathname} pending={pending} onNavigate={() => setMobileOpen(false)} />
               </div>
-              <FooterLinks onNavigate={() => setMobileOpen(false)} />
+              <FooterLinks onNavigate={() => setMobileOpen(false)} whatsappGroupUrl={whatsappGroupUrl} />
               <div className="border-t border-[color:var(--border)] p-3">
                 <button
                   type="button"

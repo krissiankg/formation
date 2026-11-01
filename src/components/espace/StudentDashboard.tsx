@@ -13,6 +13,7 @@ import {
   TodoPanel,
 } from "@/components/espace/shared";
 import { formatSessionDateLabel } from "@/lib/store/sessions";
+import { WhatsAppGroupBanner } from "@/components/espace/WhatsAppGroupBanner";
 
 export function StudentDashboard({
   enrollment,
@@ -20,12 +21,14 @@ export function StudentDashboard({
   nextSession,
   todos,
   contents,
+  whatsappGroupUrl,
 }: {
   enrollment: Enrollment;
   progress: StudentProgress;
   nextSession: FormationSession | null;
   todos: StudentTodo[];
   contents: ContentItem[];
+  whatsappGroupUrl: string | null;
 }) {
   const currentModule = progress.currentModule;
   const nextPayment = getNextPayment(enrollment);
@@ -43,6 +46,7 @@ export function StudentDashboard({
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
+      <WhatsAppGroupBanner url={whatsappGroupUrl} />
       <section className="grid gap-4 lg:grid-cols-[1.4fr_0.8fr] [&>*]:min-w-0">
         <div className="relative overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[color:var(--neutral-50)] p-6 sm:p-7">
           <div className="pointer-events-none absolute -right-10 -top-12 size-44 rounded-full bg-[color:color-mix(in_srgb,var(--accent)_22%,transparent)] blur-3xl" />
