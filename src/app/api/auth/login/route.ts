@@ -1,73 +1,40 @@
 import { NextResponse } from "next/server";
-import {
-  createSession,
-  findEnrollmentByCredentials,
-} from "@/lib/auth/session";
+import { createSession } from "@/lib/auth/session";
+import { findEnrollmentByEmail, verifyPassword } from "@/lib/store/enrollments";
 
+const WRONG_CREDENTIALS = "Email ou mot de passe incorrect.";
+
+/** Connexion apprenant : email + mot de passe uniquement. */
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as {
-      email?: string;
-      whatsapp?: string;
-      password?: string;
-    };
-
+    const body = (await request.json()) as { email?: string; password?: string };
     const email = String(body.email ?? "").trim();
-    const whatsapp = String(body.whatsapp ?? "").trim();
-    const password = String(body.password ?? "").trim();
+    const password = String(body.password ?? "");
 
     if (!email) {
-      return NextResponse.json(
-        { error: "L'adresse email est requise." },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "L'adresse email est requise." }, { status: 400 });
     }
 
-    const { findEnrollmentByEmail, verifyPassword } = await import("@/lib/store/enrollments");
-
-    let enrollment = null;
-
-    // Tentative de connexion par mot de passe
-    if (password) {
-      const found = await findEnrollmentByEmail(email);
-      if (found && found.passwordHash && verifyPassword(password, found.passwordHash)) {
-        enrollment = found;
-      } else if (!whatsapp) {
-        return NextResponse.json(
-          { error: "Mot de passe incorrect ou compte introuvable." },
-          { status: 401 },
-        );
-      }
-    }
-
-    // Si pas connecté par mot de passe, vérifier via WhatsApp
-    if (!enrollment && whatsapp) {
-      enrollment = await findEnrollmentByCredentials(email, whatsapp);
-    }
-
-    if (!enrollment) {
+    const enrollment = await findEnrollmentByEmail(email);
+    if (enrollment && !enrollment.passwordHash) {
+      // Inscrit avant le passage aux mots de passe : il le crée par « mot de passe oublié ».
       return NextResponse.json(
         {
-          error:
-            "Aucun compte trouvé. Vérifie ton email et ton WhatsApp ou mot de passe, ou inscris-toi d'abord.",
+          error: "Ton compte n'a pas encore de mot de passe. Clique sur « Mot de passe oublié » pour le créer.",
+          needsPassword: true,
         },
         { status: 401 },
       );
     }
 
-    await createSession(enrollment.id);
+    if (!enrollment?.passwordHash || !password || !verifyPassword(password, enrollment.passwordHash)) {
+      return NextResponse.json({ error: WRONG_CREDENTIALS }, { status: 401 });
+    }
 
-    return NextResponse.json({
-      ok: true,
-      enrollmentId: enrollment.id,
-      fullName: enrollment.fullName,
-      redirectTo: "/espace",
-    });
+    await createSession(enrollment.id);
+    return NextResponse.json({ ok: true, redirectTo: "/espace" });
   } catch (error) {
     console.error(error);
-    return NextResponse.json(
-      { error: "Erreur serveur lors de la connexion." },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Erreur serveur lors de la connexion." }, { status: 500 });
   }
 }

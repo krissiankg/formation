@@ -158,23 +158,6 @@ export async function getEnrollment(id: string) {
   return mapRow(data as EnrollmentRow);
 }
 
-export async function findEnrollmentByEmailAndWhatsapp(
-  email: string,
-  whatsapp: string,
-) {
-  const items = await listEnrollments();
-  const normalizedEmail = email.trim().toLowerCase();
-  const digits = whatsapp.replace(/\D/g, "");
-
-  return (
-    items.find((e) => {
-      if (e.email !== normalizedEmail) return false;
-      const ew = e.whatsapp.replace(/\D/g, "");
-      return ew === digits || ew.slice(-8) === digits.slice(-8);
-    }) ?? null
-  );
-}
-
 /** Compte le plus récent pour cet email (l'ancien parcours a pu créer des doublons). */
 export async function findEnrollmentByEmail(email: string) {
   const normalizedEmail = email.trim().toLowerCase();
@@ -230,7 +213,7 @@ export async function updateEnrollmentProfile(
   if (updates.avatarUrl !== undefined) {
     payload.avatar_url = updates.avatarUrl;
   }
-  if (updates.password && updates.password.trim().length >= 6) {
+  if (updates.password && updates.password.trim().length >= 8) {
     payload.password_hash = hashPassword(updates.password.trim());
   }
 

@@ -45,9 +45,9 @@ export async function PUT(request: Request) {
     const avatarUrl = typeof body.avatarUrl === "string" ? body.avatarUrl : undefined;
     const password = typeof body.password === "string" ? body.password : undefined;
 
-    if (password && password.trim().length > 0 && password.trim().length < 6) {
+    if (password && password.trim().length > 0 && password.trim().length < 8) {
       return NextResponse.json(
-        { error: "Le mot de passe doit contenir au moins 6 caractères." },
+        { error: "Le mot de passe doit contenir au moins 8 caractères." },
         { status: 400 }
       );
     }
@@ -56,7 +56,7 @@ export async function PUT(request: Request) {
       fullName,
       whatsapp,
       avatarUrl,
-      password: password && password.trim().length >= 6 ? password.trim() : undefined,
+      password: password && password.trim().length >= 8 ? password.trim() : undefined,
     });
 
     const wallet = await getOrCreateStudentWallet(student.id);

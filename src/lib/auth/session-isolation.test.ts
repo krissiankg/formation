@@ -8,7 +8,6 @@ vi.mock("next/headers", () => ({ cookies: async () => ({
 }) }));
 vi.mock("@/lib/store/enrollments", () => ({
   getEnrollment: async (id: string) => ({ id, fullName: "Test", payments: [] }),
-  findEnrollmentByEmailAndWhatsapp: vi.fn(),
 }));
 vi.mock("@/lib/wallet/store", () => ({
   getOrCreateStudentWallet: async () => ({ balanceCoins: 10 }),

@@ -25,8 +25,7 @@ export default async function ConnexionPage() {
             Accède à ton espace apprenant
           </h1>
           <p className="mt-4 leading-relaxed text-[color:var(--neutral-600)]">
-            Entre l&apos;email et le numéro WhatsApp utilisés lors de ton
-            inscription à {formation.title}.
+            Connecte-toi avec l&apos;email et le mot de passe de ton compte {formation.title}.
           </p>
           <ul className="mt-8 space-y-3 text-sm text-[color:var(--neutral-600)]">
             <li>• Programme, outils et codes</li>
@@ -34,11 +33,11 @@ export default async function ConnexionPage() {
             <li>• Tests et progression</li>
           </ul>
           <p className="mt-8 text-sm text-[color:var(--neutral-600)]">
-            Besoin d&apos;aide pour te connecter ?{" "}
-            <Link href="/inscription" className="accent-text hover:underline">
-              Réinscris-toi
-            </Link>{" "}
-            ou contacte-nous via WhatsApp.
+            Mot de passe perdu ou jamais créé ?{" "}
+            <Link href="/mot-de-passe-oublie" className="accent-text hover:underline">
+              Reçois un lien par email
+            </Link>
+            .
           </p>
         </div>
 
