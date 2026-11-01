@@ -1,16 +1,16 @@
 import { NextResponse } from "next/server";
 import { validateInscription } from "@/lib/types";
-import { createEnrollment } from "@/lib/store/enrollments";
+import { createEnrollment, findEnrollmentByEmail, hashPassword } from "@/lib/store/enrollments";
 import { formation } from "@/lib/config/formation";
-import {
-  createFedapayTransaction,
-  notifyTelegram,
-  notifyWhatsApp,
-  notifyAdminWhatsApp,
-} from "@/lib/integrations";
+import { createFedapayTransaction, notifyTelegram } from "@/lib/integrations";
+import { createSession } from "@/lib/auth/session";
+import { notifyAdmin, notifyStudent } from "@/lib/email/notify";
+import { accountCreatedEmail, adminAlertEmail } from "@/lib/email/messages";
 import { formatFcfa } from "@/lib/format";
 import { getPublicOrigin } from "@/lib/http/public-origin";
 import { getSeats } from "@/lib/enrollment/seats-server";
+
+const PAYMENT_PAGE = "/inscription/paiement";
 
 export async function POST(request: Request) {
   try {
@@ -22,6 +22,13 @@ export async function POST(request: Request) {
     }
 
     const data = parsed.data;
+
+    if (await findEnrollmentByEmail(data.email)) {
+      return NextResponse.json(
+        { error: "Un compte existe déjà avec cet email. Connecte-toi pour continuer." },
+        { status: 409 },
+      );
+    }
 
     // 20 places maximum par classe : un créneau complet n'accepte plus de préinscription.
     const seats = await getSeats();
@@ -35,7 +42,11 @@ export async function POST(request: Request) {
     }
 
     const enrollment = await createEnrollment({
-      ...data,
+      fullName: data.fullName,
+      email: data.email,
+      whatsapp: data.whatsapp,
+      schedule: data.schedule,
+      passwordHash: hashPassword(data.password),
       payments: [
         {
           kind: "registration",
@@ -50,77 +61,60 @@ export async function POST(request: Request) {
       ],
     });
 
-    const origin = getPublicOrigin(request, "www.forgeia.site");
-    const callbackUrl = `${origin}/inscription/confirmation?id=${enrollment.id}`;
+    // Le compte existe : l'apprenant est connecté et pourra payer plus tard depuis son compte.
+    await createSession(enrollment.id);
 
     const [firstname, ...rest] = data.fullName.trim().split(/\s+/);
     const lastname = rest.join(" ") || firstname;
+    const scheduleLabel = formation.schedule[data.schedule]?.label || data.schedule;
+    const fee = formatFcfa(formation.registrationFee);
 
-    const tx = await createFedapayTransaction({
-      amount: formation.registrationFee,
-      description: `Préinscription — ${formation.title}`,
-      customer: {
-        firstname,
-        lastname,
-        email: data.email,
-        phone: data.whatsapp,
-      },
-      callbackUrl,
-      customMetadata: {
-        enrollmentId: enrollment.id,
-        kind: "registration",
-      },
-    });
+    await Promise.all([
+      notifyStudent(enrollment, accountCreatedEmail({ firstname, scheduleLabel, amount: formation.registrationFee })),
+      notifyAdmin(
+        adminAlertEmail("Nouvelle inscription", [
+          ["Nom", data.fullName],
+          ["Email", data.email],
+          ["WhatsApp", data.whatsapp],
+          ["Créneau", scheduleLabel],
+          ["Préinscription", `${fee} (en attente de paiement)`],
+        ]),
+      ),
+      notifyTelegram(
+        `<b>Inscription démarrée</b>\n` +
+          `${data.fullName} · ${scheduleLabel}\n` +
+          `WhatsApp: ${data.whatsapp}\n` +
+          `Email: ${data.email}\n` +
+          `Montant: ${fee}`,
+      ),
+    ]);
 
-    const scheduleLabel =
-      formation.schedule[data.schedule]?.label || data.schedule;
+    const origin = getPublicOrigin(request, "www.forgeia.site");
+    const callbackUrl = `${origin}${PAYMENT_PAGE}?retour=1`;
 
-    await notifyTelegram(
-      `<b>Inscription démarrée</b>\n` +
-        `${data.fullName} · ${scheduleLabel}\n` +
-        `WhatsApp: ${data.whatsapp}\n` +
-        `Montant: ${formatFcfa(formation.registrationFee)}\n` +
-        `Mode: ${tx.stub ? "démo (sans clé FedaPay)" : "FedaPay"}`,
-    );
-
-    const paymentUrl = tx.stub
-      ? `${callbackUrl}&mock_payment=1&tx=${tx.id}`
-      : tx.paymentUrl;
-
-    // Envoi WhatsApp immédiat de confirmation à l'apprenant
     try {
-      await notifyWhatsApp(
-        data.whatsapp,
-        `*Bienvenue sur FORGEIA, ${firstname} !*\n\n` +
-          `Ta préinscription pour la cohorte de novembre 2026 (${scheduleLabel}) est bien enregistrée.\n\n` +
-          `👉 *Réserve ta place en réglant ta préinscription (${formatFcfa(formation.registrationFee)}) :*\n` +
-          `${paymentUrl}\n\n` +
-          `Une fois ton paiement validé, ton espace apprenant sera débloqué immédiatement.\n\n` +
-          `_L'équipe FORGEIA_`,
-      );
-    } catch (waErr) {
-      console.error("[inscriptions:whatsapp:student:error]", waErr);
+      const tx = await createFedapayTransaction({
+        amount: formation.registrationFee,
+        description: `Préinscription — ${formation.title}`,
+        customer: {
+          firstname,
+          lastname,
+          email: data.email,
+          phone: data.whatsapp,
+        },
+        callbackUrl,
+        customMetadata: {
+          enrollmentId: enrollment.id,
+          kind: "registration",
+        },
+      });
+      const paymentUrl = tx.stub ? `${callbackUrl}&mock_payment=1&tx=${tx.id}` : tx.paymentUrl;
+      return NextResponse.json({ enrollmentId: enrollment.id, paymentUrl });
+    } catch (paymentError) {
+      // FedaPay indisponible : le compte est créé, l'apprenant réessaie depuis la page de paiement.
+      console.error("[inscriptions:fedapay]", paymentError);
+      return NextResponse.json({ enrollmentId: enrollment.id, paymentUrl: null, redirectTo: PAYMENT_PAGE });
     }
-
-    // Envoi WhatsApp d'alerte à l'administrateur
-    try {
-      await notifyAdminWhatsApp(
-        `🚀 *FORGEIA — Nouvelle inscription démarrée*\n\n` +
-          `👤 *Nom :* ${data.fullName}\n` +
-          `📱 *WhatsApp :* ${data.whatsapp}\n` +
-          `📅 *Créneau :* ${scheduleLabel}\n` +
-          `✉️ *Email :* ${data.email}\n` +
-          `💰 *Montant :* ${formatFcfa(formation.registrationFee)}`,
-      );
-    } catch (waAdminErr) {
-      console.error("[inscriptions:whatsapp:admin:error]", waAdminErr);
-    }
-
-    return NextResponse.json({
-      enrollmentId: enrollment.id,
-      paymentUrl,
-      stub: tx.stub,
-    });
   } catch (error) {
     console.error(error);
     return NextResponse.json(

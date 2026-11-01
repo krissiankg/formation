@@ -52,6 +52,7 @@ export async function createEnrollment(input: {
   email: string;
   whatsapp: string;
   schedule: ScheduleId;
+  passwordHash: string;
   payments: Enrollment["payments"];
 }): Promise<Enrollment> {
   const supabase = getSupabaseAdmin();
@@ -62,6 +63,7 @@ export async function createEnrollment(input: {
       email: input.email.trim().toLowerCase(),
       whatsapp: input.whatsapp.trim(),
       schedule: input.schedule,
+      password_hash: input.passwordHash,
       status: "awaiting_registration_payment",
       payments: input.payments,
     })
@@ -173,6 +175,7 @@ export async function findEnrollmentByEmailAndWhatsapp(
   );
 }
 
+/** Compte le plus récent pour cet email (l'ancien parcours a pu créer des doublons). */
 export async function findEnrollmentByEmail(email: string) {
   const normalizedEmail = email.trim().toLowerCase();
   const supabase = getSupabaseAdmin();
@@ -180,6 +183,8 @@ export async function findEnrollmentByEmail(email: string) {
     .from("enrollments")
     .select("*")
     .eq("email", normalizedEmail)
+    .order("created_at", { ascending: false })
+    .limit(1)
     .maybeSingle();
 
   if (error || !data) return null;

@@ -6,6 +6,7 @@ import { formation } from "@/lib/config/formation";
 import type { ScheduleId } from "@/lib/types";
 import { formatFcfa } from "@/lib/format";
 import type { Seats } from "@/lib/enrollment/seats";
+import { SignupSteps } from "@/components/inscription/SignupSteps";
 
 type InscriptionState = {
   fullName: string;
@@ -14,6 +15,8 @@ type InscriptionState = {
   schedule: ScheduleId;
   acceptTerms: boolean;
   promoCode: string;
+  password: string;
+  passwordConfirm: string;
 };
 
 export function InscriptionForm({ seats }: { seats: Seats }) {
@@ -27,6 +30,8 @@ export function InscriptionForm({ seats }: { seats: Seats }) {
     schedule: firstOpen,
     acceptTerms: false,
     promoCode: "",
+    password: "",
+    passwordConfirm: "",
   });
 
   const [error, setError] = useState<string | null>(null);
@@ -61,6 +66,15 @@ export function InscriptionForm({ seats }: { seats: Seats }) {
     e.preventDefault();
     setError(null);
 
+    if (form.password.length < 8) {
+      setError("Le mot de passe doit contenir au moins 8 caractères.");
+      return;
+    }
+    if (form.password !== form.passwordConfirm) {
+      setError("Les deux mots de passe ne correspondent pas.");
+      return;
+    }
+
     if (!form.acceptTerms) {
       setError("Tu dois accepter les conditions pour continuer.");
       return;
@@ -78,6 +92,8 @@ export function InscriptionForm({ seats }: { seats: Seats }) {
           whatsapp: form.whatsapp,
           schedule: form.schedule,
           acceptTerms: form.acceptTerms,
+          password: form.password,
+          passwordConfirm: form.passwordConfirm,
           promoCode: promoApplied ? form.promoCode.trim() : undefined,
         }),
       });
@@ -102,6 +118,14 @@ export function InscriptionForm({ seats }: { seats: Seats }) {
         return;
       }
 
+      // Compte créé mais paiement indisponible pour l'instant : on réessaie depuis la page de paiement.
+      if (data.redirectTo) {
+        startTransition(() => {
+          window.location.assign(data.redirectTo);
+        });
+        return;
+      }
+
       setError("Impossible d'initialiser le paiement.");
       setLoading(false);
     } catch {
@@ -112,6 +136,7 @@ export function InscriptionForm({ seats }: { seats: Seats }) {
 
   return (
     <form onSubmit={onSubmit} className="space-y-6">
+      <SignupSteps current={1} />
       <Field
         label="Nom complet"
         value={form.fullName}
@@ -131,10 +156,27 @@ export function InscriptionForm({ seats }: { seats: Seats }) {
         label="Numéro WhatsApp"
         value={form.whatsapp}
         onChange={(v) => setForm((s) => ({ ...s, whatsapp: v }))}
-        placeholder="+229 XX XX XX XX"
-        hint="Obligatoire pour recevoir les alertes de nouveaux contenus."
+        placeholder="+229 01 XX XX XX XX"
+        hint="Pour te contacter et t'ajouter au groupe WhatsApp de la formation."
         required
       />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field
+          label="Mot de passe"
+          type="password"
+          value={form.password}
+          onChange={(v) => setForm((s) => ({ ...s, password: v }))}
+          placeholder="8 caractères minimum"
+          required
+        />
+        <Field
+          label="Confirme le mot de passe"
+          type="password"
+          value={form.passwordConfirm}
+          onChange={(v) => setForm((s) => ({ ...s, passwordConfirm: v }))}
+          required
+        />
+      </div>
 
       <fieldset>
         <legend className="mb-2 text-sm font-medium text-[color:var(--neutral-black)]">
@@ -288,7 +330,7 @@ export function InscriptionForm({ seats }: { seats: Seats }) {
           ? "Traitement en cours…"
           : promoApplied
             ? "Confirmer mon inscription (0 FCFA)"
-            : `Payer la préinscription (${formatFcfa(formation.registrationFee)})`}
+            : `Créer mon compte et payer (${formatFcfa(formation.registrationFee)})`}
       </button>
     </form>
   );

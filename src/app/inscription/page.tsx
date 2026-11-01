@@ -25,14 +25,15 @@ export default async function InscriptionPage() {
             Rejoins la cohorte {formation.startLabel}
           </h1>
           <p className="mt-4 leading-relaxed text-[color:var(--neutral-600)]">
-            Remplis le formulaire, choisis ta classe (samedi matin, samedi après-midi ou dimanche matin),
-            puis paie la préinscription de {formatFcfa(formation.registrationFee)} pour réserver ta place.
+            Crée ton compte, choisis ta classe (samedi matin, samedi après-midi ou dimanche matin),
+            puis paie la préinscription de {formatFcfa(formation.registrationFee)} pour réserver ta place et ouvrir ton espace.
           </p>
           <ul className="mt-8 space-y-3 text-sm text-[color:var(--neutral-600)]">
             <li>• {formation.sessionsCount} séances en présentiel · {formation.startLabel} → {formation.endLabel}</li>
             <li>• {formation.seatsHint} · lieu communiqué avant la première séance</li>
             <li>• Total : {formatFcfa(formation.totalPrice)}</li>
-            <li>• WhatsApp obligatoire pour les notifications de contenu</li>
+            <li>• Ton compte : email + mot de passe · notifications par email</li>
+            <li>• Accès au groupe WhatsApp de la formation après la préinscription</li>
             <li>• Paiement par Mobile Money</li>
           </ul>
           <p className="mt-8 text-sm text-[color:var(--neutral-600)]">

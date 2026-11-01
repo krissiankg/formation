@@ -6,7 +6,19 @@ export type InscriptionInput = {
   whatsapp: string;
   schedule: ScheduleId;
   acceptTerms: boolean;
+  password: string;
 };
+
+export const PASSWORD_MIN_LENGTH = 8;
+export const PASSWORD_TOO_SHORT = "Le mot de passe doit contenir au moins 8 caractères.";
+export const PASSWORDS_MISMATCH = "Les deux mots de passe ne correspondent pas.";
+
+/** Mot de passe choisi par l'apprenant (inscription, réinitialisation) : null si valide, sinon le message d'erreur. */
+export function passwordError(password: string, confirm: string): string | null {
+  if (password.length < PASSWORD_MIN_LENGTH) return PASSWORD_TOO_SHORT;
+  if (password !== confirm) return PASSWORDS_MISMATCH;
+  return null;
+}
 
 export function validateInscription(body: unknown): {
   data?: InscriptionInput;
@@ -22,6 +34,8 @@ export function validateInscription(body: unknown): {
   const whatsapp = String(b.whatsapp ?? "").trim();
   const schedule = String(b.schedule ?? "") as ScheduleId;
   const acceptTerms = Boolean(b.acceptTerms);
+  const password = String(b.password ?? "");
+  const passwordConfirm = String(b.passwordConfirm ?? "");
 
   if (fullName.length < 2) return { error: "Nom trop court" };
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { error: "Email invalide" };
@@ -31,10 +45,12 @@ export function validateInscription(body: unknown): {
   if (schedule !== "saturday" && schedule !== "saturday_pm" && schedule !== "sunday") {
     return { error: "Choisis ton créneau (samedi matin, samedi après-midi ou dimanche matin)" };
   }
+  const badPassword = passwordError(password, passwordConfirm);
+  if (badPassword) return { error: badPassword };
   if (!acceptTerms) return { error: "Tu dois accepter les conditions" };
 
   return {
-    data: { fullName, email, whatsapp, schedule, acceptTerms },
+    data: { fullName, email, whatsapp, schedule, acceptTerms, password },
   };
 }
 
