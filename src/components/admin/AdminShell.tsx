@@ -42,7 +42,6 @@ const sections: { title: string | null; items: NavItem[] }[] = [
 const externalLinks = [
   { label: "Voir l'espace apprenant", href: "/espace" },
   { label: "Base de données (Supabase)", href: "https://supabase.com/dashboard/project/xnoaghfvrccbihksttfe" },
-  { label: "WhatsApp (Evolution)", href: "https://evolution.guelichweb.store/manager" },
   { label: "Site public", href: "/" },
 ];
 
