@@ -17,7 +17,8 @@ export async function POST(request: Request) {
     const body = (await request.json()) as { kind?: PaymentKind };
     const kind = body.kind;
 
-    if (!kind || !(PAYABLE_INSTALLMENTS as string[]).includes(kind)) {
+    // La préinscription se paie aussi depuis le compte (page /inscription/paiement), en plus des tranches.
+    if (!kind || (kind !== "registration" && !(PAYABLE_INSTALLMENTS as string[]).includes(kind))) {
       return NextResponse.json({ error: "Tranche invalide" }, { status: 400 });
     }
 
@@ -36,7 +37,10 @@ export async function POST(request: Request) {
     }
 
     const origin = getPublicOrigin(request, "www.forgeia.site");
-    const callbackUrl = `${origin}/espace/paiements?status=success&kind=${kind}`;
+    const callbackUrl =
+      kind === "registration"
+        ? `${origin}/inscription/paiement?retour=1`
+        : `${origin}/espace/paiements?status=success&kind=${kind}`;
 
     const [firstname, ...rest] = enrollment.fullName.trim().split(/\s+/);
     const lastname = rest.join(" ") || firstname;
