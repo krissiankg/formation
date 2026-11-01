@@ -7,11 +7,30 @@ import { contact } from "@/lib/config/formation";
 
 /** Numéro WhatsApp au format international sans + (ex. 22966368705). */
 export function formatWhatsAppDigits(phone: string) {
+  return whatsAppNumberCandidates(phone)[0];
+}
+
+/**
+ * Formats possibles d'un numéro pour WhatsApp, du plus probable au moins probable.
+ * Bénin : les numéros sont passés à 10 chiffres (préfixe 01) fin 2024, mais WhatsApp
+ * connaît beaucoup de comptes uniquement sous l'ancien format 229 + 8 chiffres.
+ */
+export function whatsAppNumberCandidates(phone: string): string[] {
   let digits = phone.replace(/\D/g, "");
   if (digits.startsWith("00")) digits = digits.slice(2);
-  if (digits.length === 8) return `229${digits}`;
-  if (digits.length === 10 && digits.startsWith("0")) return `229${digits.slice(1)}`;
-  return digits;
+  const benin = beninLocalDigits(digits);
+  if (benin) return [`229${benin}`, `22901${benin}`];
+  if (digits.length === 10 && digits.startsWith("0")) return [`229${digits.slice(1)}`];
+  return [digits];
+}
+
+/** Les 8 chiffres d'un numéro béninois (ancien ou nouveau format), sinon null. */
+function beninLocalDigits(digits: string) {
+  if (digits.length === 8) return digits;
+  if (digits.length === 10 && digits.startsWith("01")) return digits.slice(2);
+  if (digits.length === 11 && digits.startsWith("229")) return digits.slice(3);
+  if (digits.length === 13 && digits.startsWith("22901")) return digits.slice(5);
+  return null;
 }
 
 export async function notifyTelegram(message: string) {
@@ -51,14 +70,14 @@ async function sendViaEvolutionApi(to: string, message: string) {
     return null;
   }
 
+  const headers = { apikey: apiKey, "Content-Type": "application/json" };
+  const number = await pickEvolutionNumber(baseUrl, instance, headers, whatsAppNumberCandidates(to));
+
   const res = await fetch(`${baseUrl}/message/sendText/${instance}`, {
     method: "POST",
-    headers: {
-      apikey: apiKey,
-      "Content-Type": "application/json",
-    },
+    headers,
     body: JSON.stringify({
-      number: formatWhatsAppDigits(to),
+      number,
       text: message,
     }),
   });
@@ -69,6 +88,31 @@ async function sendViaEvolutionApi(to: string, message: string) {
   }
 
   return { ok: true, stub: false, provider: "evolution" as const };
+}
+
+/** Demande à Evolution lequel des formats possibles existe sur WhatsApp ; le premier par défaut. */
+async function pickEvolutionNumber(
+  baseUrl: string,
+  instance: string,
+  headers: Record<string, string>,
+  candidates: string[],
+) {
+  if (candidates.length === 1) return candidates[0];
+  try {
+    const res = await fetch(`${baseUrl}/chat/whatsappNumbers/${instance}`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ numbers: candidates }),
+    });
+    if (res.ok) {
+      const found = (await res.json()) as { number?: string; exists?: boolean }[];
+      const known = candidates.find((c) => found.some((n) => n.number === c && n.exists));
+      if (known) return known;
+    }
+  } catch (err) {
+    console.warn("[whatsapp:lookup]", err);
+  }
+  return candidates[0];
 }
 
 async function sendViaMetaCloudApi(to: string, message: string) {

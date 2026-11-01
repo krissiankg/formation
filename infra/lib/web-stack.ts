@@ -33,8 +33,6 @@ const ENV_SECRET_KEYS = [
   "FEDAPAY_SECRET_KEY",
   "FEDAPAY_ENV",
   "FEDAPAY_WEBHOOK_SECRET",
-  "EVOLUTION_API_URL",
-  "EVOLUTION_API_INSTANCE",
   "EVOLUTION_API_KEY",
   "ADMIN_WHATSAPP",
   "ADMIN_EMAIL",
@@ -161,6 +159,9 @@ export class ForgeiaWebStack extends cdk.Stack {
         UPLOADS_BUCKET: uploadsBucket.bucketName,
         WEBSITE_EXAMPLES_PREVIEW_BASE_URL: examplesPreviewBaseUrl,
         AWS_REGION: this.region,
+        // WhatsApp : Evolution API sur le VPS, joint par son URL publique (127.0.0.1 ne marche que sur le VPS).
+        EVOLUTION_API_URL: "https://evolution.guelichweb.store",
+        EVOLUTION_API_INSTANCE: "ForgeIA",
       },
       secrets: Object.fromEntries(
         ENV_SECRET_KEYS.map((key) => [key, ecs.Secret.fromSecretsManager(base.envSecret, key)]),
