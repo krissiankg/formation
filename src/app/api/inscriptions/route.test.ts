@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   telegram: vi.fn(),
   notifyStudent: vi.fn(),
   notifyAdmin: vi.fn(),
+  session: vi.fn(),
 }));
 vi.mock("@/lib/store/enrollments", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/store/enrollments")>()),
@@ -15,7 +16,7 @@ vi.mock("@/lib/store/enrollments", async (importOriginal) => ({
   createEnrollment: mocks.create,
 }));
 vi.mock("@/lib/supabase/admin", () => ({ getSupabaseAdmin: vi.fn() }));
-vi.mock("@/lib/auth/session", () => ({ createSession: mocks.createSession }));
+vi.mock("@/lib/auth/session", () => ({ createSession: mocks.createSession, getSessionEnrollment: mocks.session }));
 vi.mock("@/lib/integrations", () => ({ createFedapayTransaction: mocks.createTx, notifyTelegram: mocks.telegram }));
 vi.mock("@/lib/email/notify", () => ({ notifyStudent: mocks.notifyStudent, notifyAdmin: mocks.notifyAdmin }));
 vi.mock("@/lib/enrollment/seats-server", () => ({
@@ -83,6 +84,22 @@ describe("inscription avec mot de passe", () => {
     expect(mocks.notifyStudent).toHaveBeenCalledTimes(1);
     expect(mocks.notifyAdmin).toHaveBeenCalledTimes(1);
     expect(await response.json()).toEqual({ enrollmentId: "enr-1", paymentUrl: "https://process.fedapay.com/tx-1" });
+  });
+
+  it("a retry by the same signed-in student goes to the payment page instead of « compte existe »", async () => {
+    mocks.findByEmail.mockResolvedValue({ id: "enr-1", payments: [{ kind: "registration", amount: 2500, status: "pending" }] });
+    mocks.session.mockResolvedValue({ id: "enr-1" });
+    const response = await register();
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ enrollmentId: "enr-1", paymentUrl: null, redirectTo: "/inscription/paiement" });
+    expect(mocks.create).not.toHaveBeenCalled();
+  });
+
+  it("a failing Telegram alert does not break the sign-up", async () => {
+    mocks.telegram.mockRejectedValue(new TypeError("fetch failed"));
+    const response = await register();
+    expect(response.status).toBe(200);
+    expect((await response.json()).paymentUrl).toBe("https://process.fedapay.com/tx-1");
   });
 
   it("FedaPay down still lets the student retry from the payment page", async () => {

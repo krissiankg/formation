@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createPasswordResetToken } from "@/lib/auth/password-reset";
 import { notifyStudent } from "@/lib/email/notify";
 import { passwordLinkEmail } from "@/lib/email/messages";
-import { getPublicOrigin } from "@/lib/http/public-origin";
+import { siteOrigin } from "@/lib/config/site";
 import { findEnrollmentByEmail } from "@/lib/store/enrollments";
 
 const COOLDOWN_MS = 60_000;
@@ -24,13 +24,12 @@ export async function POST(request: Request) {
 
     lastSentAt.set(email, now);
     const token = createPasswordResetToken(enrollment);
-    const origin = getPublicOrigin(request, "www.forgeia.site");
     const firstname = enrollment.fullName.trim().split(/\s+/)[0] ?? "";
     await notifyStudent(
       enrollment,
       passwordLinkEmail({
         firstname,
-        url: `${origin}/mot-de-passe/nouveau?token=${encodeURIComponent(token)}`,
+        url: `${siteOrigin}/mot-de-passe/nouveau?token=${encodeURIComponent(token)}`,
         purpose: enrollment.passwordHash ? "reset" : "setup",
       }),
     );

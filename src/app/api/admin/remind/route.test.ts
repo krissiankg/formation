@@ -41,6 +41,17 @@ describe("relance par email depuis l'admin", () => {
     expect(message.text).toContain("/mot-de-passe/nouveau?token=");
   });
 
+  it("builds the password link on the real site even behind a forged host header", async () => {
+    await POST(new Request("https://www.forgeia.site/api/admin/remind", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-forwarded-host": "evil.tld" },
+      body: JSON.stringify({ enrollmentId: "enr-1", type: "password" }),
+    }));
+    const [, message] = mocks.notifyStudent.mock.calls[0] as [unknown, { text: string; html: string }];
+    expect(message.text).toContain("https://www.forgeia.site/mot-de-passe/nouveau?token=");
+    expect(message.html).not.toContain("evil.tld");
+  });
+
   it("refuses an unknown reminder type", async () => {
     const response = await remind({ enrollmentId: "enr-1", type: "bogus" });
     expect(response.status).toBe(400);

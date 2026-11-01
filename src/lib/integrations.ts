@@ -2,6 +2,9 @@
  * Intégrations externes (Telegram, FedaPay). Les notifications apprenants partent par email (src/lib/email).
  */
 
+// FedaPay qui ne répond pas doit échouer avant le délai de CloudFront (60 s) pour que l'apprenant puisse réessayer.
+const FEDAPAY_TIMEOUT_MS = 15_000;
+
 export async function notifyTelegram(message: string) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
@@ -11,23 +14,29 @@ export async function notifyTelegram(message: string) {
     return { ok: true, stub: true };
   }
 
-  const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      chat_id: chatId,
-      text: message,
-      parse_mode: "HTML",
-    }),
-  });
+  try {
+    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: message,
+        parse_mode: "HTML",
+      }),
+      signal: AbortSignal.timeout(10_000),
+    });
 
-  if (!res.ok) {
-    const body = await res.text();
-    console.error("[telegram:error]", body);
+    if (!res.ok) {
+      const body = await res.text();
+      console.error("[telegram:error]", body);
+      return { ok: false, stub: false };
+    }
+
+    return { ok: true, stub: false };
+  } catch (error) {
+    console.error("[telegram:error]", error);
     return { ok: false, stub: false };
   }
-
-  return { ok: true, stub: false };
 }
 
 function parseFedapayPhone(phone?: string): { number: string; country: string } | null {
@@ -73,6 +82,7 @@ async function getOrCreateFedapayCustomerId(
       `${base}/v1/customers?search[email]=${encodeURIComponent(customer.email)}`,
       {
         headers: { Authorization: `Bearer ${secret}` },
+        signal: AbortSignal.timeout(FEDAPAY_TIMEOUT_MS),
       }
     );
     if (searchRes.ok) {
@@ -91,6 +101,7 @@ async function getOrCreateFedapayCustomerId(
     const phoneObj = parseFedapayPhone(customer.phone);
     const createRes = await fetch(`${base}/v1/customers`, {
       method: "POST",
+      signal: AbortSignal.timeout(FEDAPAY_TIMEOUT_MS),
       headers: {
         Authorization: `Bearer ${secret}`,
         "Content-Type": "application/json",
@@ -169,6 +180,7 @@ export async function createFedapayTransaction(input: {
 
   const res = await fetch(`${base}/v1/transactions`, {
     method: "POST",
+    signal: AbortSignal.timeout(FEDAPAY_TIMEOUT_MS),
     headers: {
       Authorization: `Bearer ${secret}`,
       "Content-Type": "application/json",

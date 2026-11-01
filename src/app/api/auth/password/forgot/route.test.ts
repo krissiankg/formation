@@ -37,6 +37,18 @@ describe("mot de passe oublié", () => {
     expect(message.subject).toBe("Crée ton mot de passe FORGE IA");
   });
 
+  it("always builds the link on the real site, whatever host header the request carries", async () => {
+    mocks.findByEmail.mockResolvedValue({ id: "enr-3", email: "ama@example.com", fullName: "Ama" });
+    await POST(new Request("https://www.forgeia.site/api/auth/password/forgot", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-forwarded-host": "evil.tld" },
+      body: JSON.stringify({ email: "ama@example.com" }),
+    }));
+    const [, message] = mocks.notifyStudent.mock.calls[0] as [unknown, { text: string; html: string }];
+    expect(message.text).toContain("https://www.forgeia.site/mot-de-passe/nouveau?token=");
+    expect(message.html).not.toContain("evil.tld");
+  });
+
   it("sends at most one email per address per minute", async () => {
     mocks.findByEmail.mockResolvedValue({ id: "enr-2", email: "kofi@example.com", fullName: "Kofi", passwordHash: "s:h" });
     expect((await forgot("kofi@example.com")).status).toBe(200);

@@ -3,7 +3,8 @@ import { validateInscription } from "@/lib/types";
 import { createEnrollment, findEnrollmentByEmail, hashPassword } from "@/lib/store/enrollments";
 import { formation } from "@/lib/config/formation";
 import { createFedapayTransaction, notifyTelegram } from "@/lib/integrations";
-import { createSession } from "@/lib/auth/session";
+import { createSession, getSessionEnrollment } from "@/lib/auth/session";
+import { hasRegistrationAccess } from "@/lib/access/registration";
 import { notifyAdmin, notifyStudent } from "@/lib/email/notify";
 import { accountCreatedEmail, adminAlertEmail } from "@/lib/email/messages";
 import { formatFcfa } from "@/lib/format";
@@ -23,7 +24,13 @@ export async function POST(request: Request) {
 
     const data = parsed.data;
 
-    if (await findEnrollmentByEmail(data.email)) {
+    const existing = await findEnrollmentByEmail(data.email);
+    if (existing) {
+      // Même apprenant qui renvoie le formulaire (paiement lent ou erreur réseau) : on reprend au paiement.
+      const session = await getSessionEnrollment();
+      if (session?.id === existing.id && !hasRegistrationAccess(existing)) {
+        return NextResponse.json({ enrollmentId: existing.id, paymentUrl: null, redirectTo: PAYMENT_PAGE });
+      }
       return NextResponse.json(
         { error: "Un compte existe déjà avec cet email. Connecte-toi pour continuer." },
         { status: 409 },
@@ -69,7 +76,8 @@ export async function POST(request: Request) {
     const scheduleLabel = formation.schedule[data.schedule]?.label || data.schedule;
     const fee = formatFcfa(formation.registrationFee);
 
-    await Promise.all([
+    // Les notifications ne doivent jamais empêcher l'inscription d'aller jusqu'au paiement.
+    await Promise.allSettled([
       notifyStudent(enrollment, accountCreatedEmail({ firstname, scheduleLabel, amount: formation.registrationFee })),
       notifyAdmin(
         adminAlertEmail("Nouvelle inscription", [

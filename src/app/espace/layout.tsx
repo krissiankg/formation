@@ -4,7 +4,7 @@ import { hasRegistrationAccess } from "@/lib/access/registration";
 import { getSessionEnrollment } from "@/lib/auth/session";
 import { formation } from "@/lib/config/formation";
 import { getStudentPending } from "@/lib/espace/pending";
-import { getWhatsAppGroupUrl } from "@/lib/settings/whatsapp-group";
+import { getWhatsAppGroupUrlFor } from "@/lib/settings/whatsapp-group";
 
 export default async function EspaceLayout({
   children,
@@ -17,7 +17,7 @@ export default async function EspaceLayout({
   if (!hasRegistrationAccess(enrollment)) redirect("/inscription/paiement");
 
   const firstName = enrollment.fullName.trim().split(/\s+/)[0] || "Apprenant";
-  const [pending, whatsappGroupUrl] = await Promise.all([getStudentPending(enrollment), getWhatsAppGroupUrl()]);
+  const [pending, whatsappGroupUrl] = await Promise.all([getStudentPending(enrollment), getWhatsAppGroupUrlFor(enrollment)]);
 
   return (
     <StudentShell

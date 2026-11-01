@@ -3,6 +3,7 @@ import type { AccessOverride, Enrollment, EnrollmentStatus, PaymentStatus, Payme
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { initStudentProgress } from "@/lib/store/progress";
 import { MANUAL_PAYMENT_REF } from "@/lib/programme/installments";
+import { hasRegistrationAccess } from "@/lib/access/registration";
 
 type EnrollmentRow = {
   id: string;
@@ -158,7 +159,10 @@ export async function getEnrollment(id: string) {
   return mapRow(data as EnrollmentRow);
 }
 
-/** Compte le plus récent pour cet email (l'ancien parcours a pu créer des doublons). */
+/**
+ * Compte de cet email. L'ancien parcours a pu créer des doublons : on garde d'abord un compte
+ * payé (ou en accès complet), puis un compte avec mot de passe, puis le plus récent.
+ */
 export async function findEnrollmentByEmail(email: string) {
   const normalizedEmail = email.trim().toLowerCase();
   const supabase = getSupabaseAdmin();
@@ -166,12 +170,12 @@ export async function findEnrollmentByEmail(email: string) {
     .from("enrollments")
     .select("*")
     .eq("email", normalizedEmail)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+    .order("created_at", { ascending: false });
 
-  if (error || !data) return null;
-  return mapRow(data as EnrollmentRow);
+  if (error || !data?.length) return null;
+  const rank = (e: Enrollment) => (hasRegistrationAccess(e) ? 2 : 0) + (e.passwordHash ? 1 : 0);
+  // Tri stable : à rang égal, l'ordre « plus récent d'abord » de la requête est conservé.
+  return (data as EnrollmentRow[]).map(mapRow).sort((a, b) => rank(b) - rank(a))[0];
 }
 
 export function hashPassword(password: string): string {
@@ -213,8 +217,9 @@ export async function updateEnrollmentProfile(
   if (updates.avatarUrl !== undefined) {
     payload.avatar_url = updates.avatarUrl;
   }
-  if (updates.password && updates.password.trim().length >= 8) {
-    payload.password_hash = hashPassword(updates.password.trim());
+  // Le mot de passe est enregistré tel que saisi : la connexion le compare sans le modifier.
+  if (updates.password && updates.password.length >= 8) {
+    payload.password_hash = hashPassword(updates.password);
   }
 
   if (Object.keys(payload).length === 0) {

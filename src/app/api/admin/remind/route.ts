@@ -11,7 +11,7 @@ import {
   trainerMessageEmail,
 } from "@/lib/email/messages";
 import type { EmailMessage } from "@/lib/email/brevo";
-import { getPublicOrigin } from "@/lib/http/public-origin";
+import { siteOrigin } from "@/lib/config/site";
 import { getEnrollment } from "@/lib/store/enrollments";
 
 /** Relance d'un inscrit par email depuis l'admin. */
@@ -44,10 +44,9 @@ export async function POST(request: Request) {
       message = trainerMessageEmail({ firstname, message: body.customMessage.trim() });
     } else if (body.type === "password") {
       const token = createPasswordResetToken(enrollment);
-      const origin = getPublicOrigin(request, "www.forgeia.site");
       message = passwordLinkEmail({
         firstname,
-        url: `${origin}/mot-de-passe/nouveau?token=${encodeURIComponent(token)}`,
+        url: `${siteOrigin}/mot-de-passe/nouveau?token=${encodeURIComponent(token)}`,
         purpose: enrollment.passwordHash ? "reset" : "setup",
       });
     } else {

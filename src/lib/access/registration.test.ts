@@ -11,6 +11,11 @@ describe("hasRegistrationAccess", () => {
     ["pending but full access granted by the admin", { payments: registration("pending"), accessOverride: "full" }, true],
     ["paid but blocked (blocking stays in the course access)", { payments: registration("paid"), accessOverride: "blocked" }, true],
     ["no payments at all", { payments: [] }, false],
+    [
+      "a tranche paid while the pre-registration row is still pending",
+      { payments: [...registration("pending"), { kind: "start" as const, amount: 30000, status: "paid" as const }] },
+      true,
+    ],
   ])("%s", (_label, enrollment, expected) => {
     expect(hasRegistrationAccess(enrollment)).toBe(expected);
   });
