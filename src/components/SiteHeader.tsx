@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { brand, contact } from "@/lib/config/formation";
+import { contact } from "@/lib/config/formation";
 
 const links = [
   { href: "/#programme", label: "Programme" },

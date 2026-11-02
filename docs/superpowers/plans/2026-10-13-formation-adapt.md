@@ -1,5 +1,7 @@
 # Formation ADAPT dans l'application — Implementation Plan
 
+> **Historique (2026-11-02) :** plan exécuté en octobre 2026 pour la version à 8 séances. Les fichiers de `content/formation/` ont depuis été retirés (voir `content/formation/README.md`) ; le contenu vit dans la base et se modifie dans l'admin.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Mettre la formation ADAPT de 2 mois (contenus, défis, recherches, quiz, grilles, calendrier, prix) dans l'application, lisible par les apprenants.

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { brand, formation } from "@/lib/config/formation";
+import { brand, contact, formation } from "@/lib/config/formation";
 
 const marqueeItems = [
   "SaaS",
@@ -11,6 +11,19 @@ const marqueeItems = [
   "Nov → Déc 2026",
   "Samedi ou Dimanche",
   "Outils & codes",
+];
+
+const navLinks = [
+  { href: "/#programme", label: "Programme" },
+  { href: "/#tarifs", label: "Tarifs" },
+  { href: "/#faq", label: "FAQ" },
+  { href: "/inscription", label: "Inscription" },
+  { href: "/connexion", label: "Connexion" },
+];
+
+const legalLinks = [
+  { href: "/condition", label: "Conditions" },
+  { href: "/politique", label: "Confidentialité" },
 ];
 
 export function SiteFooter() {
@@ -26,29 +39,36 @@ export function SiteFooter() {
           ))}
         </div>
       </div>
-      <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-10 text-sm text-white/55 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-        <p>
-          © {new Date().getFullYear()} {brand.name}. {formation.location}.
-        </p>
-        <div className="flex flex-wrap gap-5 font-display text-sm font-medium tracking-wide">
-          <Link href="/connexion" className="hover:text-white transition-colors">
-            Connexion
-          </Link>
-          <Link href="/inscription" className="hover:text-white transition-colors">
-            Inscription
-          </Link>
-          <Link href="/espace" className="hover:text-white transition-colors">
-            Espace apprenant
-          </Link>
-          <Link href="/admin" className="hover:text-white transition-colors">
-            Admin
-          </Link>
-          <Link href="/condition" className="hover:text-white transition-colors">
-            Conditions
-          </Link>
-          <Link href="/politique" className="hover:text-white transition-colors">
-            Confidentialité
-          </Link>
+      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 pb-24 pt-10 text-sm text-white/55 sm:px-6">
+        <nav
+          aria-label="Pied de page"
+          className="flex flex-wrap gap-x-6 gap-y-3 font-display text-sm font-medium tracking-wide text-white/75"
+        >
+          {navLinks.map((link) => (
+            <Link key={link.href} href={link.href} className="hover:text-white transition-colors">
+              {link.label}
+            </Link>
+          ))}
+          <a
+            href={contact.whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-white transition-colors"
+          >
+            WhatsApp
+          </a>
+        </nav>
+        <div className="flex flex-col gap-3 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
+          <p>
+            © {new Date().getFullYear()} {brand.name}. {formation.location}.
+          </p>
+          <div className="flex flex-wrap gap-5">
+            {legalLinks.map((link) => (
+              <Link key={link.href} href={link.href} className="hover:text-white transition-colors">
+                {link.label}
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
     </footer>
