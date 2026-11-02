@@ -1,0 +1,248 @@
+<!doctype html>
+<!--
+  Source de l'image de partage (affichée quand on partage le site sur Facebook, WhatsApp…),
+  actuellement public/og-image-2026-11.png. Pour la régénérer après modification (1200 × 630) :
+    "C:/Program Files/Google/Chrome/Application/chrome.exe" --headless=new --hide-scrollbars \
+      --force-device-scale-factor=1 --window-size=1200,630 --virtual-time-budget=8000 \
+      --user-data-dir="%TEMP%/og-chrome" --screenshot="public/og-image-AAAA-MM.png" \
+      "file:///<chemin du dépôt>/scripts/og-image/og-image.html"
+  Utilisez un nouveau nom de fichier à chaque version et mettez-le à jour dans src/app/layout.tsx :
+  Facebook, WhatsApp et le CDN gardent l'ancienne image en cache tant que l'adresse ne change pas.
+-->
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Orbitron:wght@600;700;800;900&family=IBM+Plex+Mono:wght@500&display=block"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --black: #171d17;
+        --cream: #fbfaf4;
+        --accent: #791d3e;
+        --accent-light: #9e2a52;
+        --accent-lightest: #faedf2;
+        --pink: #ee7aa3;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html,
+      body {
+        width: 1200px;
+        height: 630px;
+        overflow: hidden;
+        background: var(--black);
+      }
+      .og {
+        position: relative;
+        width: 1200px;
+        height: 630px;
+        overflow: hidden;
+        padding: 52px 60px;
+        display: flex;
+        gap: 48px;
+        align-items: stretch;
+        color: var(--cream);
+        font-family: Inter, system-ui, sans-serif;
+        background:
+          radial-gradient(circle at 92% 8%, rgba(158, 42, 82, 0.55), transparent 42%),
+          radial-gradient(circle at 0% 100%, rgba(121, 29, 62, 0.45), transparent 45%),
+          var(--black);
+      }
+      .grid {
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+        background-size: 40px 40px;
+        mask-image: linear-gradient(90deg, black, transparent 75%);
+      }
+      .left {
+        position: relative;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      /* Ne garde que le pictogramme : le nom écrit sous le logo est rogné. */
+      .brand .mark {
+        width: 64px;
+        height: 50px;
+        overflow: hidden;
+      }
+      .brand img {
+        display: block;
+        width: 64px;
+        height: 64px;
+        object-fit: contain;
+      }
+      .wordmark {
+        font-family: Orbitron, sans-serif;
+        font-weight: 900;
+        font-size: 30px;
+        letter-spacing: 0.08em;
+      }
+      .wordmark span {
+        color: var(--pink);
+      }
+      .kicker {
+        margin-top: 34px;
+        font-family: Orbitron, sans-serif;
+        font-weight: 700;
+        font-size: 16px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--accent-lightest);
+        opacity: 0.85;
+      }
+      h1 {
+        margin-top: 16px;
+        font-family: Orbitron, sans-serif;
+        font-weight: 800;
+        font-size: 50px;
+        line-height: 1.14;
+        letter-spacing: -0.005em;
+        color: #fff;
+      }
+      h1 em {
+        font-style: normal;
+        color: var(--pink);
+        white-space: nowrap;
+      }
+      .sub {
+        margin-top: 20px;
+        font-size: 23px;
+        line-height: 1.45;
+        color: rgba(255, 255, 255, 0.72);
+        max-width: 600px;
+      }
+      .chips {
+        list-style: none;
+        margin-top: 26px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .chips li {
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 999px;
+        padding: 8px 16px;
+        font-size: 17px;
+        color: rgba(255, 255, 255, 0.82);
+        background: rgba(255, 255, 255, 0.04);
+      }
+      .url {
+        margin-top: auto;
+        font-family: "IBM Plex Mono", monospace;
+        font-weight: 500;
+        font-size: 20px;
+        letter-spacing: 0.04em;
+        color: rgba(255, 255, 255, 0.6);
+      }
+      .card {
+        position: relative;
+        width: 410px;
+        align-self: center;
+        border-radius: 26px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.05);
+        padding: 30px 30px 28px;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+      }
+      .card .mono {
+        font-family: "IBM Plex Mono", monospace;
+        font-weight: 500;
+        font-size: 14px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.6);
+      }
+      .card .big {
+        margin-top: 10px;
+        font-family: Orbitron, sans-serif;
+        font-weight: 800;
+        font-size: 40px;
+        color: #fff;
+      }
+      .card .dates {
+        margin-top: 6px;
+        font-size: 19px;
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.78);
+      }
+      .slots {
+        list-style: none;
+        margin-top: 20px;
+        border-top: 1px solid rgba(255, 255, 255, 0.12);
+      }
+      .slots li {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+        font-size: 18px;
+      }
+      .slots li span:first-child {
+        font-weight: 600;
+        color: #fff;
+      }
+      .slots li span:last-child {
+        color: rgba(255, 255, 255, 0.6);
+      }
+      .cta {
+        margin-top: 24px;
+        border-radius: 999px;
+        background: var(--accent-lightest);
+        color: var(--black);
+        font-family: Orbitron, sans-serif;
+        font-weight: 700;
+        font-size: 16px;
+        letter-spacing: 0.02em;
+        white-space: nowrap;
+        text-align: center;
+        padding: 17px 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="og">
+      <div class="grid"></div>
+      <div class="left">
+        <div class="brand">
+          <div class="mark"><img src="../../public/logo-white.png" alt="" /></div>
+          <div class="wordmark">FORGE<span>IA</span></div>
+        </div>
+        <p class="kicker">Formation en présentiel · Godomey</p>
+        <h1>Crée des sites et des applications avec l'IA. <em>Et vends-les.</em></h1>
+        <p class="sub">6 séances le week-end, sans savoir coder. Tu repars avec 3 projets en ligne.</p>
+        <ul class="chips">
+          <li>Aucune base en code</li>
+          <li>20 places par classe</li>
+        </ul>
+        <p class="url">www.forgeia.site</p>
+      </div>
+      <div class="card">
+        <p class="mono">Cohorte du 14 novembre 2026</p>
+        <p class="big">6 séances</p>
+        <p class="dates">14 nov. → 19 déc. 2026</p>
+        <ul class="slots">
+          <li><span>Samedi matin</span><span>9h – 13h30</span></li>
+          <li><span>Samedi après-midi</span><span>16h – 20h30</span></li>
+          <li><span>Dimanche matin</span><span>9h – 13h30</span></li>
+        </ul>
+        <div class="cta">Réserver ma place — 2&nbsp;500&nbsp;FCFA</div>
+      </div>
+    </div>
+  </body>
+</html>
