@@ -69,7 +69,7 @@ function Hero({ countdown, seats }: { countdown: string | null; seats: Seats | n
     <section className="relative overflow-hidden border-b border-[color:var(--border)]">
       <div className="relative mx-auto grid max-w-6xl gap-10 px-4 pb-14 pt-10 sm:px-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:pb-24 lg:pt-20 [&>*]:min-w-0">
         <div className="fade-up max-w-2xl">
-          <p className="section-kicker mb-4">Formation en présentiel à Cotonou</p>
+          <p className="section-kicker mb-4">Formation en présentiel à Godomey</p>
           <h1 className="font-display text-[1.9rem] font-extrabold leading-[1.12] tracking-tight text-[color:var(--neutral-black)] sm:text-5xl lg:text-[3.3rem]">
             Crée des sites et des applications avec l&apos;IA.{" "}
             <span className="whitespace-nowrap text-[color:var(--accent)]">Et vends-les.</span>

@@ -2,7 +2,7 @@ export const brand = {
   name: "FORGE IA",
   tagline: "Créez. Vendez. Gagnez avec l'IA.",
   shortDescription:
-    "Formation en présentiel à Cotonou : apprends à créer des sites, des applications et des SaaS avec l'IA, sans savoir coder, et à les vendre.",
+    "Formation en présentiel à Godomey : apprends à créer des sites, des applications et des SaaS avec l'IA, sans savoir coder, et à les vendre.",
 } as const;
 
 export const trainer = {
@@ -41,7 +41,7 @@ export const formation = {
   endLabel: "20 décembre 2026",
   durationMonths: 2,
   sessionsCount: 6,
-  location: "Présentiel à Cotonou — l'adresse exacte est communiquée avant la première séance",
+  location: "Présentiel à Godomey",
   seatsHint: "20 places maximum par classe",
   /** Places maximum par classe (créneau). Au-delà, le créneau est affiché complet. */
   maxPerClass: 20,
@@ -144,7 +144,7 @@ export const formation = {
     },
     {
       q: "Où se déroule la formation ?",
-      a: "En présentiel à Cotonou. L'adresse exacte est communiquée aux inscrits avant la première séance.",
+      a: "En présentiel à Godomey. L'adresse exacte est communiquée aux inscrits avant la première séance.",
     },
     {
       q: "Comment se paie le reste de la formation ?",
