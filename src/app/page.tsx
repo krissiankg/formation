@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { MobileCtaBar } from "@/components/landing/MobileCtaBar";
 import { Reveal } from "@/components/Reveal";
@@ -6,7 +5,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { TestimonialsSection } from "@/components/TestimonialsSection";
 import { WhatsAppLink } from "@/components/WhatsAppFloat";
-import { formation, trainer } from "@/lib/config/formation";
+import { formation } from "@/lib/config/formation";
 import type { Seats } from "@/lib/enrollment/seats";
 import { getSeats } from "@/lib/enrollment/seats-server";
 import { formatFcfa } from "@/lib/format";
@@ -33,7 +32,6 @@ export default async function HomePage() {
         <Projects />
         <Audience />
         <Programme />
-        <Trainer />
         <Pricing />
         <Steps />
         <TestimonialsSection testimonials={testimonials} />
@@ -285,51 +283,6 @@ function Programme() {
             </Reveal>
           ))}
         </div>
-      </div>
-    </section>
-  );
-}
-
-function Trainer() {
-  return (
-    <section id="formateur" className="scroll-mt-24 border-b border-[color:var(--border)] py-16 sm:py-20">
-      <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 sm:px-6 md:grid-cols-[0.8fr_1.2fr] [&>*]:min-w-0">
-        <Reveal>
-          <Image
-            src={trainer.photo}
-            alt={`Portrait de ${trainer.name}`}
-            width={640}
-            height={800}
-            sizes="(min-width: 768px) 40vw, 100vw"
-            className="mx-auto w-full max-w-sm rounded-[1.5rem] border border-[color:var(--border)] object-cover shadow-[0_24px_60px_rgba(23,29,23,0.14)]"
-          />
-        </Reveal>
-        <Reveal delay={100}>
-          <p className="section-kicker">Ton formateur</p>
-          <h2 className="font-display mt-3 text-3xl tracking-tight sm:text-4xl">{trainer.name}</h2>
-          <p className="mt-2 font-medium text-[color:var(--accent-dark)]">{trainer.role}</p>
-          <p className="mt-5 leading-relaxed text-[color:var(--neutral-600)]">{trainer.bio}</p>
-          <ul className="mt-6 space-y-3">
-            {trainer.facts.map((fact) => (
-              <li key={fact} className="flex gap-3 text-[color:var(--neutral-700)]">
-                <Check />
-                <span>{fact}</span>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-6 text-sm text-[color:var(--neutral-600)]">
-            <span className="font-semibold text-[color:var(--neutral-black)]">Quelques réalisations : </span>
-            {trainer.projects.join(" · ")}
-          </p>
-          <a
-            href={trainer.portfolioUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-6 inline-flex font-display text-sm font-semibold text-[color:var(--accent)] hover:underline"
-          >
-            Voir son portfolio →
-          </a>
-        </Reveal>
       </div>
     </section>
   );
