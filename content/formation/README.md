@@ -17,7 +17,7 @@ Ce dossier contenait les fichiers Markdown et `quizzes.json` qui ont servi à re
 plus au cours. Ils restent dans l'historique git :
 
 ```bash
-git show 117ae7e:content/formation/01-mois-1/s1-seance.md
+git show 52b26df:content/formation/01-mois-1/s1-seance.md
 ```
 
 Ne réappliquez pas `supabase/migrations/006_formation_adapt.sql` : elle remettrait l'ancien programme et
