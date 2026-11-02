@@ -1,6 +1,12 @@
+"use client";
+
+import { usePathname } from "next/navigation";
 import { contact } from "@/lib/config/formation";
 
 export function WhatsAppFloat() {
+  const pathname = usePathname();
+  // Inutile dans l'admin, où il masquait les boutons du bas de l'écran sur mobile.
+  if (pathname?.startsWith("/admin")) return null;
   return (
     <a
       href={contact.whatsappUrl}

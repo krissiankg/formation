@@ -80,7 +80,7 @@ export function AdminTestimonialsPanel({
         </div>
 
         {/* Filtres */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {["all", "pending", "approved", "rejected"].map((st) => (
             <button
               key={st}

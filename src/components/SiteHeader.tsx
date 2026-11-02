@@ -24,7 +24,8 @@ export function SiteHeader() {
             className="rounded-lg object-contain transition group-hover:scale-105"
             priority
           />
-          <span className="font-logo text-lg font-black tracking-wider text-[color:var(--neutral-black)]">
+          {/* Masqué sous 360 px : sinon les boutons Connexion et S'inscrire le recouvrent. */}
+          <span className="font-logo text-lg font-black tracking-wider text-[color:var(--neutral-black)] max-[359px]:hidden">
             FORGE<span className="text-[color:var(--accent)]">IA</span>
           </span>
         </Link>
