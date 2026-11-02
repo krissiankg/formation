@@ -20,17 +20,20 @@ export default async function InscriptionPage() {
       <SiteHeader />
       <main className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-10 px-4 py-12 sm:px-6 lg:grid-cols-[0.95fr_1.05fr] [&>*]:min-w-0 lg:py-16">
         <div>
-          <p className="section-kicker">10 — Démarrer l&apos;inscription</p>
+          <p className="section-kicker">Inscription</p>
           <h1 className="font-display mt-3 text-3xl tracking-tight sm:text-4xl">
-            Rejoins la cohorte {formation.startLabel}
+            Rejoins la cohorte du {formation.startLabel}
           </h1>
           <p className="mt-4 leading-relaxed text-[color:var(--neutral-600)]">
             Crée ton compte, choisis ta classe (samedi matin, samedi après-midi ou dimanche matin),
             puis paie la préinscription de {formatFcfa(formation.registrationFee)} pour réserver ta place et ouvrir ton espace.
           </p>
           <ul className="mt-8 space-y-3 text-sm text-[color:var(--neutral-600)]">
-            <li>• {formation.sessionsCount} séances en présentiel · {formation.startLabel} → {formation.endLabel}</li>
-            <li>• {formation.seatsHint} · lieu communiqué avant la première séance</li>
+            <li>
+              • {formation.sessionsCount} séances en présentiel · {formation.startLabel} → {formation.endLabel} (
+              {formation.sundayNote})
+            </li>
+            <li>• {formation.seatsHint} · à Godomey, adresse exacte communiquée avant la première séance</li>
             <li>• Total : {formatFcfa(formation.totalPrice)}</li>
             <li>• Ton compte : email + mot de passe · notifications par email</li>
             <li>• Accès au groupe WhatsApp de la formation après la préinscription</li>

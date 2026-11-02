@@ -41,8 +41,9 @@ const sections: LegalSection[] = [
         <ul>
           <li>
             une <strong>formation présentielle</strong> de {formation.durationMonths} mois ({formation.startLabel} →{" "}
-            {formation.endLabel}), le samedi ou le dimanche selon le créneau choisi, au lieu communiqué aux
-            inscrits ;
+            {formation.endLabel}, {formation.sundayNote}), le samedi ou le dimanche selon le créneau choisi, à
+            Godomey (adresse exacte
+            communiquée aux inscrits avant la première séance) ;
           </li>
           <li>
             un <strong>espace apprenant en ligne</strong> : programme, ressources, quiz, dépôt de projets, suivi
@@ -57,7 +58,7 @@ const sections: LegalSection[] = [
         </ul>
         <p>
           Le programme, les dates et le lieu peuvent être ajustés pour des raisons pédagogiques ou
-          d&apos;organisation ; tu en es alors informé par WhatsApp ou dans ton espace apprenant.
+          d&apos;organisation ; tu en es alors informé par e-mail ou dans ton espace apprenant.
         </p>
       </>
     ),
@@ -73,8 +74,8 @@ const sections: LegalSection[] = [
         </li>
         <li>
           Tu t&apos;engages à fournir des informations exactes (nom, e-mail, numéro WhatsApp) et à les tenir à
-          jour. Le numéro WhatsApp est indispensable : c&apos;est par lui que passent les informations sur la
-          formation.
+          jour. L&apos;adresse e-mail est indispensable : c&apos;est par elle que passent les informations sur la
+          formation. Le numéro WhatsApp sert à t&apos;ajouter au groupe de la cohorte.
         </li>
         <li>
           Ton compte est personnel. Tu es responsable de la confidentialité de ton mot de passe et ne dois pas

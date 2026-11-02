@@ -38,7 +38,10 @@ export const formation = {
   startLabel: "14 novembre 2026",
   /** Premier jour de la cohorte (classes du samedi), pour le compte à rebours. */
   startDate: "2026-11-14",
-  endLabel: "20 décembre 2026",
+  /** Dernier jour pour les classes du samedi (Demo Day) ; voir sundayNote. */
+  endLabel: "19 décembre 2026",
+  /** Les dates annoncées sont celles du samedi : la classe du dimanche a lieu le lendemain. */
+  sundayNote: "le lendemain pour la classe du dimanche",
   durationMonths: 2,
   sessionsCount: 6,
   location: "Présentiel à Godomey",

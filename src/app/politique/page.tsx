@@ -86,8 +86,9 @@ const sections: LegalSection[] = [
           contrat et obligations légales comptables.
         </li>
         <li>
-          <strong>Te contacter</strong> par WhatsApp (et, si nécessaire, par e-mail) au sujet de ta formation (confirmation,
-          rappels d&apos;échéance, nouveaux contenus, horaires) — base légale : exécution du contrat.
+          <strong>Te contacter</strong> par e-mail au sujet de ta formation (confirmation, rappels d&apos;échéance,
+          nouveaux contenus, horaires), et par WhatsApp pour le groupe de la cohorte et les questions que tu nous
+          poses — base légale : exécution du contrat.
         </li>
         <li>
           <strong>Publier ton avis</strong> sur le site : en déposant un avis, tu acceptes qu&apos;il soit
@@ -123,11 +124,17 @@ const sections: LegalSection[] = [
             des fichiers.
           </li>
           <li>
-            <strong>OVHcloud</strong> (Canada) — hébergement de la base de données.
+            <strong>Supabase</strong> (région Irlande, Union européenne) — hébergement de la base de données.
           </li>
           <li>
-            <strong>WhatsApp (Meta)</strong> et <strong>Telegram</strong> — envoi des notifications liées à ta
-            formation.
+            <strong>Brevo</strong> (France) — envoi des e-mails liés à ta formation.
+          </li>
+          <li>
+            <strong>Telegram</strong> — alertes internes envoyées à l&apos;équipe {brand.name} lors d&apos;une
+            inscription ou d&apos;un paiement.
+          </li>
+          <li>
+            <strong>WhatsApp (Meta)</strong> — groupe de la cohorte et échanges avec le formateur.
           </li>
           <li>
             <strong>Google</strong> — stockage de la bibliothèque de ressources pédagogiques (Google Drive).

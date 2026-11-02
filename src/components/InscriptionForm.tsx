@@ -6,6 +6,7 @@ import { formation } from "@/lib/config/formation";
 import type { ScheduleId } from "@/lib/types";
 import { formatFcfa } from "@/lib/format";
 import type { Seats } from "@/lib/enrollment/seats";
+import { seatsLabel } from "@/lib/landing";
 import { SignupSteps } from "@/components/inscription/SignupSteps";
 
 type InscriptionState = {
@@ -188,7 +189,7 @@ export function InscriptionForm({ seats }: { seats: Seats }) {
         <div className="grid gap-3 sm:grid-cols-3">
           {slots.map((slot) => {
             const selected = form.schedule === slot.id;
-            const { left, full } = seats[slot.id];
+            const { full } = seats[slot.id];
             return (
               <label
                 key={slot.id}
@@ -211,7 +212,7 @@ export function InscriptionForm({ seats }: { seats: Seats }) {
                 <p className="font-medium text-[color:var(--neutral-black)]">{slot.label}</p>
                 <p className="mt-1 text-sm accent-text">{slot.hours}</p>
                 <p className={`mt-2 text-xs font-medium ${full ? "text-[color:var(--error)]" : "text-[color:var(--neutral-500)]"}`}>
-                  {full ? "Complet" : `${left} place${left > 1 ? "s" : ""} restante${left > 1 ? "s" : ""}`}
+                  {seatsLabel(seats[slot.id]) ?? "Places disponibles"}
                 </p>
               </label>
             );

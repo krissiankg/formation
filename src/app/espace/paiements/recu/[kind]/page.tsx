@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getSessionEnrollment } from "@/lib/auth/session";
 import { formation, brand } from "@/lib/config/formation";
+import { legal } from "@/lib/config/legal";
 import { formatFcfa } from "@/lib/format";
 import type { PaymentKind } from "@/lib/types";
 import { PrintButton } from "./PrintButton";
@@ -84,7 +85,9 @@ export default async function RecuPage({
               <p className="mt-2 text-xs font-mono text-gray-500 uppercase tracking-widest">
                 Académie d'Excellence IA & SaaS
               </p>
-              <p className="mt-1 text-xs text-gray-500">Cotonou, Bénin · contact@guelichweb.store</p>
+              <p className="mt-1 text-xs text-gray-500">
+                {legal.address} · {legal.email}
+              </p>
             </div>
 
             <div className="sm:text-right">
@@ -109,7 +112,10 @@ export default async function RecuPage({
               <p className="text-xs text-gray-600">
                 Créneau : {formation.schedule[enrollment.schedule].label} · {formation.schedule[enrollment.schedule].hours}
               </p>
-              <p className="text-xs text-gray-600">Durée : {formation.sessionsCount} séances présentielles, du {formation.startLabel} au {formation.endLabel}</p>
+              <p className="text-xs text-gray-600">
+                Durée : {formation.sessionsCount} séances présentielles, du {formation.startLabel} au{" "}
+                {formation.endLabel} ({formation.sundayNote})
+              </p>
             </div>
           </div>
 

@@ -30,7 +30,7 @@ export function AdminDashboard({
           </h1>
           <p className="mt-3 max-w-xl text-[color:var(--neutral-600)]">
             {formation.title} · {formation.startLabel} → {formation.endLabel}. Suis les
-            inscriptions, publie des ressources et notifie les apprenants sur WhatsApp.
+            inscriptions, publie des ressources et préviens les apprenants par e-mail.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link href="/admin/contenus" className="btn-primary">
@@ -152,11 +152,11 @@ export function AdminDashboard({
               Notifications
             </p>
             <p className="mt-2 text-sm text-white/65">
-              Chaque inscription payée et chaque contenu publié peut déclencher un WhatsApp
-              automatique (admin + apprenants).
+              Chaque inscription et chaque paiement t&apos;envoient un e-mail ; un contenu publié peut
+              aussi prévenir les apprenants par e-mail. Les envois passent par Brevo.
             </p>
             <p className="mt-3 text-xs text-white/40">
-              Instance Evolution : forgeia · connectée
+              Les annonces de la cohorte passent aussi par le groupe WhatsApp.
             </p>
           </section>
         </div>

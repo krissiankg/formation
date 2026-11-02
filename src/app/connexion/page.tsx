@@ -2,7 +2,7 @@ import Link from "next/link";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { LoginForm } from "@/components/LoginForm";
-import { brand, formation } from "@/lib/config/formation";
+import { brand } from "@/lib/config/formation";
 import { getSessionEnrollment } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
 
@@ -25,7 +25,7 @@ export default async function ConnexionPage() {
             Accède à ton espace apprenant
           </h1>
           <p className="mt-4 leading-relaxed text-[color:var(--neutral-600)]">
-            Connecte-toi avec l&apos;email et le mot de passe de ton compte {formation.title}.
+            Connecte-toi avec l&apos;email et le mot de passe de ton compte {brand.name}.
           </p>
           <ul className="mt-8 space-y-3 text-sm text-[color:var(--neutral-600)]">
             <li>• Programme, outils et codes</li>

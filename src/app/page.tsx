@@ -143,7 +143,8 @@ function CohortCard({ countdown, seats }: { countdown: string | null; seats: Sea
           })}
         </ul>
         <p className="mt-4 text-sm text-white/60">
-          {formation.sessionsCount} séances de 4 h 30 · du {formation.startLabel} au {formation.endLabel}
+          {formation.sessionsCount} séances de 4 h 30 · du {formation.startLabel} au {formation.endLabel} (
+          {formation.sundayNote})
         </p>
         <Link
           href="/inscription"
@@ -161,7 +162,7 @@ function Projects() {
     <section className="border-b border-[color:var(--border)] bg-[color:var(--neutral-100)] py-16 sm:py-20">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <Reveal>
-          <p className="section-kicker">Le 20 décembre</p>
+          <p className="section-kicker">Au Demo Day</p>
           <h2 className="font-display mt-3 max-w-3xl text-3xl tracking-tight sm:text-4xl">
             Tu auras 3 projets en ligne dans ton portfolio.
           </h2>

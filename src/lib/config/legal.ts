@@ -8,5 +8,5 @@ export const legal = {
   address: "Abomey-Calavi, Bénin",
   email: "contact@guelichweb.store",
   siteUrl: siteOrigin,
-  lastUpdated: "21 octobre 2026",
+  lastUpdated: "2 novembre 2026",
 } as const;

@@ -97,14 +97,6 @@ export function LoginForm() {
         {loading ? "Connexion…" : "Se connecter"}
       </button>
 
-      <p className="rounded-xl bg-[color:var(--neutral-100)] px-4 py-3 text-xs leading-relaxed text-[color:var(--neutral-600)]">
-        Première connexion depuis la mise à jour ?{" "}
-        <Link href="/mot-de-passe-oublie" className="font-semibold accent-text hover:underline">
-          Crée ton mot de passe
-        </Link>{" "}
-        avec ton email : tu reçois un lien en quelques secondes.
-      </p>
-
       <p className="text-center text-sm text-[color:var(--neutral-600)]">
         Pas encore inscrit ?{" "}
         <Link href="/inscription" className="accent-text hover:underline">
