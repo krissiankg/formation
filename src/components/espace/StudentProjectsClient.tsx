@@ -43,7 +43,7 @@ export function StudentProjectsClient({
       if (!res.ok) throw new Error(data.error || "Erreur lors de la soumission");
 
       setProjects([data.project, ...projects]);
-      setSuccess("Projet soumis avec succès ! Le formateur a été notifié sur WhatsApp.");
+      setSuccess("Projet soumis avec succès ! Le formateur a été prévenu par email.");
       setTitle("");
       setProjectUrl("");
       setGithubUrl("");

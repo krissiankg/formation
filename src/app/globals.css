@@ -403,6 +403,13 @@ select.input-field {
   animation-play-state: paused;
 }
 
+/* Sur mobile, le bouton WhatsApp remonte au-dessus de la barre d'inscription de l'accueil. */
+@media (max-width: 767px) {
+  body:has(.mobile-cta-bar[data-visible="true"]) .wa-float {
+    bottom: 7rem;
+  }
+}
+
 .wa-float-ring {
   position: absolute;
   inset: 0;

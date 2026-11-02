@@ -241,7 +241,7 @@ export function ResourcesPanel({ contents, renderAttachment }: { contents: Conte
             Aucun support partagé pour le moment
           </p>
           <p className="mx-auto mt-1 max-w-md text-xs text-[color:var(--neutral-500)] leading-relaxed">
-            Dès que le formateur publie un support, un code ou des fichiers joints, ils apparaîtront instantanément ici et tu recevras une alerte WhatsApp.
+            Dès que le formateur publie un support, un code ou des fichiers joints, ils apparaîtront instantanément ici et tu recevras un email.
           </p>
         </div>
       ) : (

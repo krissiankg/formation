@@ -4,7 +4,7 @@ import { brand, contact } from "@/lib/config/formation";
 
 const links = [
   { href: "/#programme", label: "Programme" },
-  { href: "/#format", label: "Format" },
+  { href: "/#formateur", label: "Formateur" },
   { href: "/#tarifs", label: "Tarifs" },
   { href: "/#faq", label: "FAQ" },
 ];
