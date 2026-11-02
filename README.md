@@ -1,5 +1,8 @@
 # FORGE IA — Plateforme de formation
 
+
+https://github.com/user-attachments/assets/83f2c6fc-96b5-428f-99dd-0cefcbf3c029
+
 Application web (mobile + desktop) pour vendre et diriger une formation présentielle : landing, inscription avec FedaPay, espace apprenant, admin, notifications Telegram / WhatsApp.
 
 ## Stack
