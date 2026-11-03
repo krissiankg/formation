@@ -43,13 +43,14 @@ export function EnrollmentsPanel({
         )}
       </div>
 
-      <div className="grid grid-cols-3 gap-2 sm:gap-3">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3">
         <SummaryCard label="Total" value={String(stats.total)} />
         <SummaryCard label="Payés" value={String(stats.paidCount)} accent />
         <SummaryCard
+          className="col-span-2 sm:col-span-1"
           label="Recettes préinscription"
           value={formatFcfa(stats.revenue)}
-          hint={`${formation.registrationFee.toLocaleString("fr-FR")} FCFA / apprenant`}
+          hint={`${formatFcfa(formation.registrationFee)} / apprenant`}
         />
       </div>
 
@@ -118,15 +119,17 @@ function SummaryCard({
   value,
   hint,
   accent,
+  className = "",
 }: {
   label: string;
   value: string;
   hint?: string;
   accent?: boolean;
+  className?: string;
 }) {
   return (
     <div
-      className={`min-w-0 rounded-2xl border p-3 sm:p-5 ${
+      className={`min-w-0 rounded-2xl border p-3 sm:p-5 ${className} ${
         accent
           ? "border-[color:var(--accent)] bg-[color:var(--accent-lightest)]"
           : "border-[color:var(--border)] bg-[color:var(--neutral-50)]"

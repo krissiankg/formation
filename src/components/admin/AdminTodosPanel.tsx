@@ -64,17 +64,17 @@ export function AdminTodosPanel({ todos }: { todos: FormationTodo[] }) {
             {todos.map((todo, i) => (
               <li
                 key={todo.id}
-                className={`flex items-center justify-between gap-3 rounded-xl border border-[color:var(--border)] bg-[color:var(--neutral-100)] p-3 text-sm ${
+                className={`flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[color:var(--border)] bg-[color:var(--neutral-100)] p-3 text-sm ${
                   !todo.active ? "opacity-50" : ""
                 }`}
               >
-                <div className="flex gap-3">
+                <div className="flex min-w-40 flex-1 gap-3">
                   <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-[color:var(--accent-lightest)] text-[10px] font-semibold text-[color:var(--accent-darkest)]">
                     {i + 1}
                   </span>
                   <span>{todo.title}</span>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex shrink-0 gap-2">
                   <button
                     type="button"
                     className="text-xs accent-text hover:underline"

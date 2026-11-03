@@ -257,8 +257,8 @@ export function SessionsPanel({
                 key={session.id}
                 className="rounded-2xl border border-[color:var(--accent)] bg-[color:var(--accent-lightest)] p-5"
               >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-48 flex-1">
                     <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-[color:var(--accent-darkest)]">
                       {session.schedule === "both"
                         ? "Tous créneaux"

@@ -1,7 +1,8 @@
 import { formation } from "@/lib/config/formation";
 
+/** Montant et devise insécables : « 2 500 FCFA » ne se coupe jamais en fin de ligne. */
 export function formatFcfa(amount: number): string {
-  return `${new Intl.NumberFormat("fr-FR").format(amount)} ${formation.currencyLabel}`;
+  return `${new Intl.NumberFormat("fr-FR").format(amount)} ${formation.currencyLabel}`;
 }
 
 export function formatFileSize(bytes: number): string {

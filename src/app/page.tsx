@@ -313,7 +313,8 @@ function Pricing() {
               <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-[color:var(--neutral-500)]">
                 Aujourd&apos;hui · préinscription
               </p>
-              <p className="font-display mt-2 text-4xl text-[color:var(--accent-darkest)]">
+              {/* Taille liée à la largeur d'écran : le montant insécable tient sur une ligne même en texte agrandi. */}
+              <p className="font-display mt-2 text-[clamp(1.5rem,8vw,2.25rem)] text-[color:var(--accent-darkest)]">
                 {formatFcfa(formation.registrationFee)}
               </p>
               <p className="mt-3 text-sm text-[color:var(--neutral-600)]">

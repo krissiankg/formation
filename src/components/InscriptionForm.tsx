@@ -307,7 +307,7 @@ export function InscriptionForm({ seats }: { seats: Seats }) {
         />
         <span>
           Je confirme mon choix de créneau, je m&apos;engage à payer{" "}
-          {promoApplied ? "0 FCFA" : formatFcfa(formation.registrationFee)} de préinscription (non remboursables) pour réserver
+          {formatFcfa(promoApplied ? 0 : formation.registrationFee)} de préinscription (non remboursables) pour réserver
           ma place et j&apos;accepte les{" "}
           <Link href="/condition" target="_blank" className="accent-text underline">
             conditions d&apos;utilisation
@@ -330,7 +330,7 @@ export function InscriptionForm({ seats }: { seats: Seats }) {
         {loading
           ? "Traitement en cours…"
           : promoApplied
-            ? "Confirmer mon inscription (0 FCFA)"
+            ? `Confirmer mon inscription (${formatFcfa(0)})`
             : `Créer mon compte et payer (${formatFcfa(formation.registrationFee)})`}
       </button>
     </form>

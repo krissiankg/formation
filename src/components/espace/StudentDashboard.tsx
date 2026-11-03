@@ -87,7 +87,7 @@ export function StudentDashboard({
         </div>
       </section>
 
-      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <Kpi label="Prochaine séance" value={sessionKpi} hint={sessionHint} />
         <Kpi
           label="Module actif"

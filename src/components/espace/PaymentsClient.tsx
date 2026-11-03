@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { formation } from "@/lib/config/formation";
+import { formatFcfa } from "@/lib/format";
 import type { PaymentDisplayItem } from "@/lib/programme/payments";
 
 export function PaymentsClient({ items }: { items: PaymentDisplayItem[] }) {
@@ -108,7 +109,7 @@ export function PaymentsClient({ items }: { items: PaymentDisplayItem[] }) {
       <div className="mt-6 rounded-xl bg-[color:var(--neutral-100)] p-4 text-sm text-[color:var(--neutral-600)]">
         Total formation :{" "}
         <span className="font-semibold text-[color:var(--neutral-black)]">
-          {formation.totalPrice.toLocaleString("fr-FR")} {formation.currencyLabel}
+          {formatFcfa(formation.totalPrice)}
         </span>{" "}
         · Paiement sécurisé via FedaPay (MTN, Moov, Celtiis)
       </div>

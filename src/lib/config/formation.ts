@@ -142,7 +142,8 @@ export const formation = {
       a: "20 personnes maximum par classe : un créneau complet n'est plus proposé. Si une classe n'atteint pas le nombre minimum d'inscrits, les classes seront fusionnées et tu seras prévenu à l'avance.",
     },
     {
-      q: "À quoi sert la préinscription de 2 500 F ?",
+      // Montants avec espaces insécables ( ) : ils ne se coupent pas en fin de ligne.
+      q: "À quoi sert la préinscription de 2 500 F ?",
       a: "Elle réserve ta place dans la classe choisie et t'ouvre ton espace apprenant et le groupe WhatsApp de la cohorte. Le paiement se fait par Mobile Money. Elle n'est pas remboursable.",
     },
     {
@@ -151,7 +152,7 @@ export const formation = {
     },
     {
       q: "Comment se paie le reste de la formation ?",
-      a: "Total 80 000 F. Après la préinscription (2 500 F) : 30 000 F le premier jour de formation, puis le solde de 47 500 F à la première séance de décembre.",
+      a: "Total 80 000 F. Après la préinscription (2 500 F) : 30 000 F le premier jour de formation, puis le solde de 47 500 F à la première séance de décembre.",
     },
     {
       q: "Comment je reçois les cours et les annonces ?",

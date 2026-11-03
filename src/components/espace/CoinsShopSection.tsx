@@ -264,7 +264,7 @@ export function CoinsShopSection({
                 </span>
               </div>
               <div className="mt-1 flex items-center gap-2 text-xs text-[color:var(--neutral-600)] font-mono">
-                <span>Soit {unitPrice} FCFA / coin</span>
+                <span>Soit {unitPrice}&nbsp;FCFA / coin</span>
                 {discountPercent > 0 && (
                   <span className="font-bold text-emerald-600">(-{discountPercent}%)</span>
                 )}
@@ -419,7 +419,7 @@ export function CoinsShopSection({
                     </span>
                   </div>
                   <p className="text-[11px] font-mono text-[color:var(--neutral-500)]">
-                    Soit {unit} FCFA / coin
+                    Soit {unit}&nbsp;FCFA / coin
                   </p>
                   <p className="text-xs text-[color:var(--neutral-600)] pt-2 line-clamp-2">
                     {pack.description}

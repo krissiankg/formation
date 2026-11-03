@@ -70,11 +70,11 @@ export default async function RecuPage({
         </div>
 
         {/* Facture / Reçu A4 */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm sm:p-12 print:border-none print:shadow-none print:p-8">
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-12 print:border-none print:shadow-none print:p-8">
           {/* Header */}
           <div className="flex flex-col sm:flex-row justify-between items-start gap-6 border-b border-gray-100 pb-8">
             <div>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3">
                 <span className="font-display text-2xl font-black tracking-wider text-black">
                   FORGE<span className="text-[#00ff88]">IA</span>
                 </span>
@@ -124,34 +124,37 @@ export default async function RecuPage({
             <h3 className="text-xs font-mono uppercase tracking-wider text-gray-400 mb-3">
               Détail du règlement
             </h3>
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-gray-200 text-xs font-semibold text-gray-600">
-                  <th className="py-3">Désignation</th>
-                  <th className="py-3 text-center">Statut</th>
-                  <th className="py-3 text-right">Montant Réglé</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 text-sm">
-                <tr>
-                  <td className="py-4 font-medium text-gray-900">
-                    {kindTitles[payment.kind as PaymentKind] || payment.kind}
-                    <div className="text-xs text-gray-500 font-normal">
-                      Moyen : Mobile Money / Carte (FedaPay)
-                      {payment.fedapayId ? ` · Réf: ${payment.fedapayId}` : ""}
-                    </div>
-                  </td>
-                  <td className="py-4 text-center">
-                    <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-                      ✓ Payé & Confirmé
-                    </span>
-                  </td>
-                  <td className="py-4 text-right font-mono font-bold text-gray-900">
-                    {formatFcfa(payment.amount)}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            {/* Sur un petit écran avec texte agrandi, le tableau défile au lieu d'élargir la page. */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-gray-200 text-xs font-semibold text-gray-600">
+                    <th className="py-3">Désignation</th>
+                    <th className="py-3 text-center">Statut</th>
+                    <th className="py-3 text-right">Montant Réglé</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 text-sm">
+                  <tr>
+                    <td className="py-4 font-medium text-gray-900">
+                      {kindTitles[payment.kind as PaymentKind] || payment.kind}
+                      <div className="text-xs text-gray-500 font-normal">
+                        Moyen : Mobile Money / Carte (FedaPay)
+                        {payment.fedapayId ? ` · Réf: ${payment.fedapayId}` : ""}
+                      </div>
+                    </td>
+                    <td className="py-4 text-center">
+                      <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
+                        ✓ Payé & Confirmé
+                      </span>
+                    </td>
+                    <td className="py-4 text-right font-mono font-bold text-gray-900">
+                      {formatFcfa(payment.amount)}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
 
           {/* Synthèse comptable */}

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { contact, formation } from "@/lib/config/formation";
+import { formatFcfa } from "@/lib/format";
 import type { PaymentDisplayItem } from "@/lib/programme/payments";
 import { LESSON_TYPE_LABELS } from "@/lib/programme/lesson-types";
 import type {
@@ -66,7 +67,7 @@ export function Kpi({
   hint: string;
 }) {
   return (
-    <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--neutral-50)] p-4">
+    <div className="min-w-0 rounded-2xl border border-[color:var(--border)] bg-[color:var(--neutral-50)] p-4">
       <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[color:var(--neutral-500)]">
         {label}
       </p>
@@ -345,7 +346,7 @@ export function PaymentsPanel({ items }: { items: PaymentDisplayItem[] }) {
       <div className="mt-6 rounded-xl bg-[color:var(--neutral-100)] p-4 text-sm text-[color:var(--neutral-600)]">
         Total formation :{" "}
         <span className="font-semibold text-[color:var(--neutral-black)]">
-          {formation.totalPrice.toLocaleString("fr-FR")} {formation.currencyLabel}
+          {formatFcfa(formation.totalPrice)}
         </span>{" "}
         · Paiement par Mobile Money
       </div>

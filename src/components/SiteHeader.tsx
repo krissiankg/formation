@@ -11,21 +11,26 @@ const links = [
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-[color:var(--border)] bg-[color:color-mix(in_srgb,var(--neutral-50)_86%,transparent)] backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
+        {/* Hauteur fixe + retour à la ligne masqué : si le nom ne tient pas à côté des boutons
+            (petit écran, texte agrandi sur Android), il passe à la ligne et disparaît en entier
+            au lieu d'être recouvert par « Connexion ». */}
         <Link
           href="/"
-          className="flex items-center gap-2.5 group"
+          className="group flex h-10 min-w-0 flex-1 flex-wrap content-start items-center gap-x-2.5 overflow-hidden md:flex-none"
         >
-          <Image
-            src="/logo-color.png"
-            alt="Logo FORGEIA"
-            width={34}
-            height={34}
-            className="rounded-lg object-contain transition group-hover:scale-105"
-            priority
-          />
-          {/* Masqué sous 360 px : sinon les boutons Connexion et S'inscrire le recouvrent. */}
-          <span className="font-logo text-lg font-black tracking-wider text-[color:var(--neutral-black)] max-[359px]:hidden">
+          {/* Même hauteur que le lien : le nom renvoyé à la ligne commence pile sous la zone visible. */}
+          <span className="flex h-10 shrink-0 items-center">
+            <Image
+              src="/logo-color.png"
+              alt="Logo FORGEIA"
+              width={34}
+              height={34}
+              className="rounded-lg object-contain transition group-hover:scale-105"
+              priority
+            />
+          </span>
+          <span className="whitespace-nowrap font-logo text-lg font-black leading-10 tracking-wider text-[color:var(--neutral-black)]">
             FORGE<span className="text-[color:var(--accent)]">IA</span>
           </span>
         </Link>
@@ -40,7 +45,7 @@ export function SiteHeader() {
             </Link>
           ))}
         </nav>
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           <a
             href={contact.whatsappUrl}
             target="_blank"
