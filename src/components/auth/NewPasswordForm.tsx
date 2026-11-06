@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { PasswordInput } from "@/components/PasswordInput";
 
 const inputClass =
   "w-full rounded-xl border border-[color:var(--border)] bg-[color:var(--neutral-50)] px-4 py-3 outline-none transition focus:border-[color:var(--accent)]";
@@ -54,8 +55,7 @@ export function NewPasswordForm({ token }: { token: string }) {
     <form onSubmit={onSubmit} className="space-y-5">
       <label className="block">
         <span className="mb-2 block text-sm font-medium text-[color:var(--neutral-black)]">Nouveau mot de passe</span>
-        <input
-          type="password"
+        <PasswordInput
           required
           minLength={8}
           autoComplete="new-password"
@@ -67,8 +67,7 @@ export function NewPasswordForm({ token }: { token: string }) {
       </label>
       <label className="block">
         <span className="mb-2 block text-sm font-medium text-[color:var(--neutral-black)]">Confirme le mot de passe</span>
-        <input
-          type="password"
+        <PasswordInput
           required
           autoComplete="new-password"
           value={passwordConfirm}

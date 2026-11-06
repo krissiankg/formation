@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { PasswordInput } from "@/components/PasswordInput";
 
 export function AdminLoginForm() {
   const router = useRouter();
@@ -69,8 +70,7 @@ export function AdminLoginForm() {
         <span className="mb-2 block text-sm font-medium text-[color:var(--neutral-black)]">
           Mot de passe
         </span>
-        <input
-          type="password"
+        <PasswordInput
           required
           autoComplete="current-password"
           value={password}

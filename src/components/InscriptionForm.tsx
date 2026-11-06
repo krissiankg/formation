@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useTransition } from "react";
+import { useState, useTransition, type ChangeEvent } from "react";
+import { PasswordInput } from "@/components/PasswordInput";
 import { formation } from "@/lib/config/formation";
 import type { ScheduleId } from "@/lib/types";
 import { formatFcfa } from "@/lib/format";
@@ -354,19 +355,25 @@ function Field({
   required?: boolean;
   hint?: string;
 }) {
+  const inputProps = {
+    value,
+    required,
+    placeholder,
+    onChange: (e: ChangeEvent<HTMLInputElement>) => onChange(e.target.value),
+    className:
+      "w-full rounded-xl border border-[color:var(--border)] bg-[color:var(--neutral-50)] px-4 py-3 text-[color:var(--neutral-black)] outline-none transition focus:border-[color:var(--accent)]",
+  };
+
   return (
     <label className="block">
       <span className="mb-2 block text-sm font-medium text-[color:var(--neutral-black)]">
         {label}
       </span>
-      <input
-        type={type}
-        value={value}
-        required={required}
-        placeholder={placeholder}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-xl border border-[color:var(--border)] bg-[color:var(--neutral-50)] px-4 py-3 text-[color:var(--neutral-black)] outline-none transition focus:border-[color:var(--accent)]"
-      />
+      {type === "password" ? (
+        <PasswordInput autoComplete="new-password" {...inputProps} />
+      ) : (
+        <input type={type} {...inputProps} />
+      )}
       {hint ? (
         <span className="mt-1.5 block text-xs text-[color:var(--neutral-500)]">
           {hint}

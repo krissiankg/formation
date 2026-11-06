@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { PasswordInput } from "@/components/PasswordInput";
 
 const inputClass =
   "w-full rounded-xl border border-[color:var(--border)] bg-[color:var(--neutral-50)] px-4 py-3 outline-none transition focus:border-[color:var(--accent)]";
@@ -72,8 +73,7 @@ export function LoginForm() {
             Mot de passe oublié ?
           </Link>
         </span>
-        <input
-          type="password"
+        <PasswordInput
           required
           autoComplete="current-password"
           value={password}
