@@ -35,11 +35,11 @@ export const formation = {
   id: "forge-ia-2026-q4",
   title: "Créer et vendre avec l'IA",
   subtitle: "SaaS · Applications · Sites web · Monétisation",
-  startLabel: "14 novembre 2026",
+  startLabel: "28 novembre 2026",
   /** Premier jour de la cohorte (classes du samedi), pour le compte à rebours. */
-  startDate: "2026-11-14",
+  startDate: "2026-11-28",
   /** Dernier jour pour les classes du samedi (Demo Day) ; voir sundayNote. */
-  endLabel: "19 décembre 2026",
+  endLabel: "16 janvier 2027",
   /** Les dates annoncées sont celles du samedi : la classe du dimanche a lieu le lendemain. */
   sundayNote: "le lendemain pour la classe du dimanche",
   durationMonths: 2,
@@ -67,15 +67,15 @@ export const formation = {
       id: "start",
       label: "Au démarrage",
       amount: 30_000,
-      due: "Premier jour de formation (14 ou 15 novembre 2026)",
-      dueDate: "2026-11-14",
+      due: "Premier jour de formation (28 ou 29 novembre 2026)",
+      dueDate: "2026-11-28",
     },
     {
       id: "month1",
       label: "Solde",
       amount: 47_500,
-      due: "Première séance de décembre (5 ou 6 décembre 2026)",
-      dueDate: "2026-12-05",
+      due: "4e séance, avant la pause des fêtes (19 ou 20 décembre 2026)",
+      dueDate: "2026-12-19",
     },
   ],
   outcomes: [
@@ -100,23 +100,24 @@ export const formation = {
   ],
   months: [
     {
-      month: "Mois 1 — Novembre",
+      month: "Partie 1 — Novembre et décembre",
       focus: "La méthode ADAPT sur de vrais sites",
       points: [
         "Ton atelier IA : Cursor, Antigravity, Claude Code",
         "Projet 1 : un template UI8 / Figma transformé en landing page",
         "Projet 2 : un thème WordPress recodé en site vitrine",
-        "3 séances : 14, 21 et 28 novembre (ou le lendemain pour la classe du dimanche)",
+        "Projet 3 lancé : l'interface et la base de données de ton SaaS",
+        "4 séances : 28 novembre, 5, 12 et 19 décembre (ou le lendemain pour la classe du dimanche)",
       ],
     },
     {
-      month: "Mois 2 — Décembre",
+      month: "Partie 2 — Janvier, après les fêtes",
       focus: "Ton SaaS et ton offre",
       points: [
-        "Projet 3 : ton SaaS avec base de données et paiement Mobile Money",
+        "Ton SaaS encaisse : paiement Mobile Money, débogage et mise en ligne",
         "Déboguer et livrer comme un pro avec l'IA, puis VS Code + Cline",
-        "Demo Day le 19 décembre (20 pour le dimanche), offre commerciale et certificat",
-        "3 séances : 5, 12 et 19 décembre (ou le lendemain pour la classe du dimanche)",
+        "Demo Day le 16 janvier (17 pour le dimanche), offre commerciale et certificat",
+        "2 séances : 9 et 16 janvier 2027 (ou le lendemain pour la classe du dimanche)",
       ],
     },
   ],
@@ -135,7 +136,7 @@ export const formation = {
     },
     {
       q: "Quels sont les créneaux ?",
-      a: "Trois classes au choix, à la préinscription : samedi matin (9h – 13h30), samedi après-midi (16h – 20h30) ou dimanche matin (9h – 13h30). 6 séances, du 14 novembre au 19 décembre 2026 (le lendemain pour la classe du dimanche).",
+      a: "Trois classes au choix, à la préinscription : samedi matin (9h – 13h30), samedi après-midi (16h – 20h30) ou dimanche matin (9h – 13h30). 6 séances, du 28 novembre 2026 au 16 janvier 2027, avec une pause pendant les fêtes : 4 séances avant Noël (jusqu'au 19 décembre), puis 2 en janvier (9 et 16 janvier). La classe du dimanche a lieu le lendemain.",
     },
     {
       q: "Combien de places par classe ?",
@@ -152,7 +153,7 @@ export const formation = {
     },
     {
       q: "Comment se paie le reste de la formation ?",
-      a: "Total 80 000 F. Après la préinscription (2 500 F) : 30 000 F le premier jour de formation, puis le solde de 47 500 F à la première séance de décembre.",
+      a: "Total 80 000 F. Après la préinscription (2 500 F) : 30 000 F le premier jour de formation, puis le solde de 47 500 F à la 4e séance (19 ou 20 décembre), avant la pause des fêtes.",
     },
     {
       q: "Comment je reçois les cours et les annonces ?",

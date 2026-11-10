@@ -38,10 +38,10 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/og-image-2026-11.png",
+        url: "/og-image-2026-11-28.png",
         width: 1200,
         height: 630,
-        alt: "FORGEIA — Formation en présentiel à Godomey : 6 séances du 14 novembre au 19 décembre 2026",
+        alt: "FORGEIA — Formation en présentiel à Godomey : 6 séances du 28 novembre 2026 au 16 janvier 2027",
       },
     ],
   },
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: `${brand.name} — ${brand.tagline}`,
     description: brand.shortDescription,
-    images: ["/og-image-2026-11.png"],
+    images: ["/og-image-2026-11-28.png"],
   },
   icons: {
     icon: [
