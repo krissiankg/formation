@@ -35,14 +35,13 @@ const body = {
   schedule: "saturday",
   acceptTerms: true,
   password: "motdepasse1",
-  passwordConfirm: "motdepasse1",
 };
 
-const register = () =>
+const register = (overrides: Partial<typeof body> = {}) =>
   POST(new Request("https://www.forgeia.site/api/inscriptions", {
     method: "POST",
     headers: { "Content-Type": "application/json", host: "www.forgeia.site" },
-    body: JSON.stringify(body),
+    body: JSON.stringify({ ...body, ...overrides }),
   }));
 
 beforeEach(() => {
@@ -61,6 +60,15 @@ beforeEach(() => {
 });
 
 describe("inscription avec mot de passe", () => {
+  it("a class that is not open for sign-up is refused, even with free seats", async () => {
+    const response = await register({ schedule: "sunday" });
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({
+      error: "La classe « Dimanche matin » n'est pas ouverte pour cette cohorte.",
+    });
+    expect(mocks.create).not.toHaveBeenCalled();
+  });
+
   it("an existing email is sent to the login page", async () => {
     mocks.findByEmail.mockResolvedValue({ id: "old" });
     const response = await register();

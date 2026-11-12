@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { MobileCtaBar } from "@/components/landing/MobileCtaBar";
 import { Reveal } from "@/components/Reveal";
@@ -5,7 +6,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { TestimonialsSection } from "@/components/TestimonialsSection";
 import { WhatsAppLink } from "@/components/WhatsAppFloat";
-import { formation } from "@/lib/config/formation";
+import { formation, openSlots, trainer } from "@/lib/config/formation";
 import type { Seats } from "@/lib/enrollment/seats";
 import { getSeats } from "@/lib/enrollment/seats-server";
 import { formatFcfa } from "@/lib/format";
@@ -19,6 +20,10 @@ import type { StudentTestimonial } from "@/lib/types";
 export const revalidate = 300;
 
 const ctaLabel = `Réserver ma place — ${formatFcfa(formation.registrationFee)}`;
+/** Nombre de paiements : la préinscription puis les tranches. */
+const paymentsCount = formation.installments.length + 1;
+/** « le samedi matin » quand une seule classe est ouverte, sinon « le week-end ». */
+const whenLabel = openSlots.length === 1 ? `le ${openSlots[0].label.toLowerCase()}` : "le week-end";
 
 export default async function HomePage() {
   const [seats, testimonials] = await Promise.all([loadSeats(), loadTestimonials()]);
@@ -30,6 +35,7 @@ export default async function HomePage() {
       <main>
         <Hero countdown={countdown} seats={seats} />
         <Projects />
+        <Trainer />
         <Audience />
         <Programme />
         <Pricing />
@@ -75,11 +81,11 @@ function Hero({ countdown, seats }: { countdown: string | null; seats: Seats | n
             <span className="whitespace-nowrap text-[color:var(--accent)]">Et vends-les.</span>
           </h1>
           <p className="mt-5 max-w-xl text-lg leading-relaxed text-[color:var(--neutral-600)]">
-            {formation.sessionsCount} séances le week-end, sans savoir coder. Tu repars avec 3 projets en ligne
+            {formation.sessionsCount} séances {whenLabel}, sans savoir coder. Tu repars avec 3 projets en ligne
             et une offre prête à vendre.
           </p>
           <ul className="mt-6 flex flex-wrap gap-2 text-sm text-[color:var(--neutral-700)]">
-            {["Aucune base en code", "Viens avec ton ordinateur", `${formation.maxPerClass} places par classe`].map(
+            {["Aucune base en code", "Viens avec ton ordinateur", `${formation.maxPerClass} places seulement`].map(
               (item) => (
                 <li
                   key={item}
@@ -94,13 +100,18 @@ function Hero({ countdown, seats }: { countdown: string | null; seats: Seats | n
             <Link href="/inscription" className="btn-primary w-full text-sm sm:w-auto sm:text-base">
               {ctaLabel}
             </Link>
-            <a href="#programme" className="btn-ghost w-full sm:w-auto">
-              Voir le programme
-            </a>
+            {/* Beaucoup de visiteurs veulent parler à quelqu'un avant de payer : WhatsApp passe avant le programme. */}
+            <WhatsAppLink className="btn-ghost w-full sm:w-auto">Une question ? WhatsApp</WhatsAppLink>
           </div>
           <p className="mt-3 text-sm text-[color:var(--neutral-500)]">
-            Paiement Mobile Money · inscription en 2 minutes
+            Total {formatFcfa(formation.totalPrice)}, payable en {paymentsCount} fois · Paiement Mobile Money
           </p>
+          <a
+            href="#programme"
+            className="mt-3 inline-flex text-sm font-semibold text-[color:var(--accent-dark)] hover:underline"
+          >
+            Voir le programme ↓
+          </a>
         </div>
         <div className="fade-up" style={{ animationDelay: "120ms" }}>
           <CohortCard countdown={countdown} seats={seats} />
@@ -122,7 +133,7 @@ function CohortCard({ countdown, seats }: { countdown: string | null; seats: Sea
           {countdown ?? "Inscriptions ouvertes"}
         </p>
         <ul className="mt-5 divide-y divide-white/10 border-y border-white/10">
-          {Object.values(formation.schedule).map((slot) => {
+          {openSlots.map((slot) => {
             const seat = seats?.[slot.id];
             const badge = seat ? seatsLabel(seat) : null;
             return (
@@ -136,21 +147,22 @@ function CohortCard({ countdown, seats }: { countdown: string | null; seats: Sea
                     badge ? "bg-[color:var(--accent-light)] text-white" : "bg-white/10 text-white/70"
                   }`}
                 >
-                  {badge ?? "Places disponibles"}
+                  {/* Sans urgence réelle, on annonce la taille de la classe plutôt que « places disponibles ». */}
+                  {badge ?? `${formation.maxPerClass} places`}
                 </span>
               </li>
             );
           })}
         </ul>
         <p className="mt-4 text-sm text-white/60">
-          {formation.sessionsCount} séances de 4 h 30 · du {formation.startLabel} au {formation.endLabel} (
-          {formation.sundayNote})
+          {formation.sessionsCount} séances de 4 h 30 · du {formation.startLabel} au {formation.endLabel}, avec une
+          pause pendant les fêtes
         </p>
         <Link
           href="/inscription"
           className="mt-5 inline-flex font-display text-sm font-semibold text-[color:var(--accent-lightest)] hover:underline"
         >
-          Choisir ma classe →
+          Réserver ma place →
         </Link>
       </div>
     </div>
@@ -162,7 +174,7 @@ function Projects() {
     <section className="border-b border-[color:var(--border)] bg-[color:var(--neutral-100)] py-16 sm:py-20">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <Reveal>
-          <p className="section-kicker">Au Demo Day</p>
+          <p className="section-kicker">À la fin de la formation</p>
           <h2 className="font-display mt-3 max-w-3xl text-3xl tracking-tight sm:text-4xl">
             Tu auras 3 projets en ligne dans ton portfolio.
           </h2>
@@ -195,6 +207,94 @@ function Projects() {
             ))}
           </ul>
         </Reveal>
+        <Reveal>
+          <div className="mt-10 rounded-2xl border border-[color:var(--accent)] bg-[color:var(--accent-lightest)] p-6">
+            <p className="font-display text-lg text-[color:var(--accent-darkest)]">Combien se vend un site ?</p>
+            <p className="mt-2 text-[color:var(--neutral-700)]">
+              Au Bénin, ton formateur facture ses sites entre {formatFcfa(formation.sitePrice.from)} et plus de{" "}
+              {formatFcfa(formation.sitePrice.to)}. Un seul client peut rembourser ta formation (
+              {formatFcfa(formation.totalPrice)}).
+            </p>
+            <p className="mt-2 text-sm text-[color:var(--neutral-600)]">
+              Tes premiers tarifs seront souvent plus bas, c&apos;est normal : on voit en séance comment fixer tes
+              prix et trouver tes premiers clients.
+            </p>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+function Trainer() {
+  return (
+    <section id="formateur" className="scroll-mt-24 border-b border-[color:var(--border)] py-16 sm:py-20">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <div className="grid items-center gap-10 md:grid-cols-[0.8fr_1.2fr] [&>*]:min-w-0">
+          <Reveal>
+            <Image
+              src={trainer.photo}
+              alt={`Portrait de ${trainer.name}`}
+              width={640}
+              height={800}
+              sizes="(min-width: 768px) 40vw, 100vw"
+              className="w-full max-w-[13rem] rounded-[1.5rem] border border-[color:var(--border)] object-cover shadow-[0_24px_60px_rgba(23,29,23,0.14)] md:mx-auto md:max-w-sm"
+            />
+          </Reveal>
+          <Reveal delay={100}>
+            <p className="section-kicker">Ton formateur</p>
+            <h2 className="font-display mt-3 text-3xl tracking-tight sm:text-4xl">{trainer.name}</h2>
+            <p className="mt-2 font-medium text-[color:var(--accent-dark)]">{trainer.role}</p>
+            <p className="mt-5 leading-relaxed text-[color:var(--neutral-600)]">{trainer.bio}</p>
+            <ul className="mt-6 space-y-3">
+              {trainer.facts.map((fact) => (
+                <li key={fact} className="flex gap-3 text-[color:var(--neutral-700)]">
+                  <Check />
+                  <span>{fact}</span>
+                </li>
+              ))}
+            </ul>
+            <a
+              href={trainer.portfolioUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-6 inline-flex font-display text-sm font-semibold text-[color:var(--accent)] hover:underline"
+            >
+              Voir son portfolio →
+            </a>
+          </Reveal>
+        </div>
+
+        <Reveal>
+          <h3 className="font-display mt-14 text-xl tracking-tight sm:text-2xl">
+            Des sites et des applications qu&apos;il a livrés à ses clients
+          </h3>
+          <p className="mt-2 max-w-2xl text-[color:var(--neutral-600)]">
+            C&apos;est ce métier qu&apos;il te transmet : créer, mettre en ligne et vendre.
+          </p>
+        </Reveal>
+        {/* Galerie à faire glisser : la carte suivante dépasse à droite pour montrer qu'il y a une suite. */}
+        <ul className="mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 lg:grid lg:grid-cols-3 lg:overflow-visible lg:pb-0">
+          {trainer.works.map((work) => (
+            <li key={work.image} className="w-[80%] shrink-0 snap-start sm:w-[46%] lg:w-auto">
+              <figure className="h-full overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[color:var(--neutral-50)]">
+                <Image
+                  src={work.image}
+                  alt={`${work.name} : ${work.kind}`}
+                  width={work.width}
+                  height={work.height}
+                  sizes="(min-width: 1024px) 31vw, (min-width: 640px) 46vw, 80vw"
+                  className="aspect-[4/3] w-full object-cover"
+                />
+                <figcaption className="p-4">
+                  <p className="font-display text-base">{work.name}</p>
+                  <p className="mt-1 text-sm text-[color:var(--neutral-600)]">{work.kind}</p>
+                </figcaption>
+              </figure>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-1 text-xs text-[color:var(--neutral-500)] lg:hidden">Fais glisser pour voir la suite →</p>
       </div>
     </section>
   );
@@ -290,7 +390,6 @@ function Programme() {
 }
 
 function Pricing() {
-  const remaining = formation.installments.length;
   return (
     <section
       id="tarifs"
@@ -303,7 +402,9 @@ function Pricing() {
             Commence avec {formatFcfa(formation.registrationFee)}.
           </h2>
           <p className="mt-4 max-w-2xl text-[color:var(--neutral-600)]">
-            La préinscription réserve ta place. Le reste se paie pendant la formation, en {remaining} fois.
+            La formation coûte {formatFcfa(formation.totalPrice)} au total, payables en {paymentsCount} fois :{" "}
+            {formatFcfa(formation.registrationFee)} aujourd&apos;hui pour réserver ta place, le reste pendant la
+            formation.
           </p>
         </Reveal>
 
@@ -318,8 +419,14 @@ function Pricing() {
                 {formatFcfa(formation.registrationFee)}
               </p>
               <p className="mt-3 text-sm text-[color:var(--neutral-600)]">
-                Réserve ta place dans la classe choisie et ouvre ton espace apprenant. Paiement par Mobile Money,
-                non remboursable.
+                Réserve ta place et ouvre ton espace apprenant. Paiement par Mobile Money, non remboursable si tu
+                changes d&apos;avis.
+              </p>
+              <p className="mt-4 flex gap-3 text-sm text-[color:var(--neutral-700)]">
+                <Check />
+                <span>
+                  <strong>Garantie :</strong> {lowerFirst(formation.refundGuarantee)}
+                </span>
               </p>
               <Link href="/inscription" className="btn-primary mt-6 w-full sm:w-auto">
                 Réserver ma place
@@ -368,7 +475,7 @@ function Pricing() {
 }
 
 const steps = [
-  { title: "Crée ton compte", text: "Ton nom, ton email, un mot de passe et ta classe. Une minute suffit." },
+  { title: "Crée ton compte", text: "Ton nom, ton email, ton numéro WhatsApp et un mot de passe. Une minute suffit." },
   {
     title: `Paie ${formatFcfa(formation.registrationFee)}`,
     text: "Par Mobile Money, en quelques secondes. Ta place est réservée.",
@@ -460,7 +567,7 @@ function FinalCta({ countdown }: { countdown: string | null }) {
                 Dans {formation.sessionsCount} séances, tu crées et tu vends avec l&apos;IA.
               </h2>
               <p className="mt-4 text-white/65">
-                {formation.maxPerClass} places par classe. Réserve la tienne pour{" "}
+                {formation.maxPerClass} places seulement. Réserve la tienne pour{" "}
                 {formatFcfa(formation.registrationFee)} et rejoins la cohorte du {formation.startLabel}.
               </p>
               <Link
@@ -469,12 +576,23 @@ function FinalCta({ countdown }: { countdown: string | null }) {
               >
                 {ctaLabel}
               </Link>
+              <p className="mt-5 text-sm text-white/65">
+                Une question avant de t&apos;inscrire ?{" "}
+                <WhatsAppLink className="font-semibold text-[color:var(--accent-lightest)] hover:underline">
+                  Écris au formateur sur WhatsApp
+                </WhatsAppLink>
+              </p>
             </div>
           </div>
         </Reveal>
       </div>
     </section>
   );
+}
+
+/** Pour enchaîner une phrase de la configuration après « Garantie : ». */
+function lowerFirst(text: string): string {
+  return text.charAt(0).toLowerCase() + text.slice(1);
 }
 
 function Check() {

@@ -114,7 +114,7 @@ export default async function RecuPage({
               </p>
               <p className="text-xs text-gray-600">
                 Durée : {formation.sessionsCount} séances présentielles, du {formation.startLabel} au{" "}
-                {formation.endLabel} ({formation.sundayNote})
+                {formation.endLabel}
               </p>
             </div>
           </div>

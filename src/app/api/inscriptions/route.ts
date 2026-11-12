@@ -37,6 +37,14 @@ export async function POST(request: Request) {
       );
     }
 
+    // Seules les classes ouvertes pour cette cohorte acceptent des inscriptions.
+    if (!formation.openSchedules.includes(data.schedule)) {
+      return NextResponse.json(
+        { error: `La classe « ${formation.schedule[data.schedule].label} » n'est pas ouverte pour cette cohorte.` },
+        { status: 409 },
+      );
+    }
+
     // 20 places maximum par classe : un créneau complet n'accepte plus de préinscription.
     const seats = await getSeats();
     if (seats[data.schedule].full) {

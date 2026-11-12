@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useState, useTransition, type ChangeEvent } from "react";
 import { PasswordInput } from "@/components/PasswordInput";
-import { formation } from "@/lib/config/formation";
+import { WhatsAppLink } from "@/components/WhatsAppFloat";
+import { formation, openSlots } from "@/lib/config/formation";
 import type { ScheduleId } from "@/lib/types";
 import { formatFcfa } from "@/lib/format";
 import type { Seats } from "@/lib/enrollment/seats";
@@ -16,53 +17,24 @@ type InscriptionState = {
   whatsapp: string;
   schedule: ScheduleId;
   acceptTerms: boolean;
-  promoCode: string;
   password: string;
-  passwordConfirm: string;
 };
 
 export function InscriptionForm({ seats }: { seats: Seats }) {
-  const slots = Object.values(formation.schedule);
-  const firstOpen = slots.find((slot) => !seats[slot.id].full)?.id ?? "saturday";
-  const allFull = slots.every((slot) => seats[slot.id].full);
+  const firstOpen = openSlots.find((slot) => !seats[slot.id].full)?.id ?? openSlots[0].id;
+  const allFull = openSlots.every((slot) => seats[slot.id].full);
   const [form, setForm] = useState<InscriptionState>({
     fullName: "",
     email: "",
     whatsapp: "",
     schedule: firstOpen,
     acceptTerms: false,
-    promoCode: "",
     password: "",
-    passwordConfirm: "",
   });
 
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [promoChecked, setPromoChecked] = useState<"idle" | "valid" | "invalid">("idle");
   const [, startTransition] = useTransition();
-
-  const promoApplied = promoChecked === "valid";
-
-  async function checkPromo() {
-    const code = form.promoCode.trim();
-    if (!code) return;
-    try {
-      const res = await fetch("/api/inscriptions/check-promo", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ promoCode: code }),
-      });
-      const data = (await res.json()) as { valid?: boolean };
-      if (data.valid) {
-        setPromoChecked("valid");
-        setError(null);
-      } else {
-        setPromoChecked("invalid");
-      }
-    } catch {
-      setPromoChecked("invalid");
-    }
-  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -70,10 +42,6 @@ export function InscriptionForm({ seats }: { seats: Seats }) {
 
     if (form.password.length < 8) {
       setError("Le mot de passe doit contenir au moins 8 caractères.");
-      return;
-    }
-    if (form.password !== form.passwordConfirm) {
-      setError("Les deux mots de passe ne correspondent pas.");
       return;
     }
 
@@ -95,8 +63,6 @@ export function InscriptionForm({ seats }: { seats: Seats }) {
           schedule: form.schedule,
           acceptTerms: form.acceptTerms,
           password: form.password,
-          passwordConfirm: form.passwordConfirm,
-          promoCode: promoApplied ? form.promoCode.trim() : undefined,
         }),
       });
 
@@ -105,13 +71,6 @@ export function InscriptionForm({ seats }: { seats: Seats }) {
       if (!res.ok) {
         setError(data.error ?? "Une erreur est survenue lors de l'inscription.");
         setLoading(false);
-        return;
-      }
-
-      if (data.promoApplied) {
-        startTransition(() => {
-          window.location.href = `/inscription/confirmation?id=${data.enrollmentId}&promo=1`;
-        });
         return;
       }
 
@@ -144,6 +103,7 @@ export function InscriptionForm({ seats }: { seats: Seats }) {
         value={form.fullName}
         onChange={(v) => setForm((s) => ({ ...s, fullName: v }))}
         placeholder="Jean Dupont"
+        autoComplete="name"
         required
       />
       <Field
@@ -152,142 +112,107 @@ export function InscriptionForm({ seats }: { seats: Seats }) {
         value={form.email}
         onChange={(v) => setForm((s) => ({ ...s, email: v }))}
         placeholder="toi@email.com"
+        autoComplete="email"
         required
       />
       <Field
         label="Numéro WhatsApp"
+        type="tel"
         value={form.whatsapp}
         onChange={(v) => setForm((s) => ({ ...s, whatsapp: v }))}
         placeholder="+229 01 XX XX XX XX"
         hint="Pour te contacter et t'ajouter au groupe WhatsApp de la formation."
+        autoComplete="tel"
         required
       />
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field
-          label="Mot de passe"
-          type="password"
-          value={form.password}
-          onChange={(v) => setForm((s) => ({ ...s, password: v }))}
-          placeholder="8 caractères minimum"
-          required
-        />
-        <Field
-          label="Confirme le mot de passe"
-          type="password"
-          value={form.passwordConfirm}
-          onChange={(v) => setForm((s) => ({ ...s, passwordConfirm: v }))}
-          required
-        />
-      </div>
+      {/* Un seul champ : l'œil permet de relire le mot de passe, inutile de le taper deux fois. */}
+      <Field
+        label="Choisis un mot de passe"
+        type="password"
+        value={form.password}
+        onChange={(v) => setForm((s) => ({ ...s, password: v }))}
+        placeholder="8 caractères minimum"
+        hint="Il te servira à entrer dans ton espace apprenant."
+        required
+      />
 
-      <fieldset>
-        <legend className="mb-2 text-sm font-medium text-[color:var(--neutral-black)]">
-          Ta classe (créneau de formation)
-        </legend>
-        <p className="mb-3 text-xs leading-relaxed text-[color:var(--neutral-600)]">
-          {formation.classPolicy}
+      {openSlots.length === 1 ? (
+        <div className="rounded-xl border border-[color:var(--accent)] bg-[color:var(--accent-lightest)] p-4">
+          <p className="text-sm font-medium text-[color:var(--neutral-black)]">Ta classe</p>
+          <p className="mt-1 font-display text-lg text-[color:var(--accent-darkest)]">
+            {openSlots[0].label} · {openSlots[0].hours}
+          </p>
+          <p className="mt-1 text-sm text-[color:var(--neutral-600)]">
+            {formation.sessionsCount} séances, du {formation.startLabel} au {formation.endLabel}
+            {seatsLabel(seats[openSlots[0].id]) ? ` · ${seatsLabel(seats[openSlots[0].id])}` : ""}
+          </p>
+          <p className="mt-2 text-xs text-[color:var(--neutral-600)]">
+            Pas libre à cet horaire ?{" "}
+            <WhatsAppLink className="accent-text font-semibold underline">Écris-nous sur WhatsApp</WhatsAppLink>
+          </p>
+        </div>
+      ) : (
+        <fieldset>
+          <legend className="mb-2 text-sm font-medium text-[color:var(--neutral-black)]">
+            Ta classe (créneau de formation)
+          </legend>
+          <p className="mb-3 text-xs leading-relaxed text-[color:var(--neutral-600)]">{formation.classPolicy}</p>
+          <div className="grid gap-3 sm:grid-cols-3">
+            {openSlots.map((slot) => {
+              const selected = form.schedule === slot.id;
+              const { full } = seats[slot.id];
+              return (
+                <label
+                  key={slot.id}
+                  className={`rounded-xl border p-4 transition ${
+                    full
+                      ? "cursor-not-allowed border-[color:var(--border)] bg-[color:var(--neutral-100)] opacity-60"
+                      : selected
+                        ? "cursor-pointer border-[color:var(--accent)] bg-[color:var(--accent-lightest)]"
+                        : "cursor-pointer border-[color:var(--border)] bg-[color:var(--neutral-50)] hover:border-[color:var(--accent)]"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="schedule"
+                    className="sr-only"
+                    checked={selected}
+                    disabled={full}
+                    onChange={() => setForm((s) => ({ ...s, schedule: slot.id }))}
+                  />
+                  <p className="font-medium text-[color:var(--neutral-black)]">{slot.label}</p>
+                  <p className="mt-1 text-sm accent-text">{slot.hours}</p>
+                  <p
+                    className={`mt-2 text-xs font-medium ${full ? "text-[color:var(--error)]" : "text-[color:var(--neutral-500)]"}`}
+                  >
+                    {seatsLabel(seats[slot.id]) ?? "Places disponibles"}
+                  </p>
+                </label>
+              );
+            })}
+          </div>
+        </fieldset>
+      )}
+      {allFull ? (
+        <p className="text-sm text-[color:var(--error)]">
+          La classe est complète. Écris-nous sur WhatsApp pour être sur la liste d&apos;attente.
         </p>
-        <div className="grid gap-3 sm:grid-cols-3">
-          {slots.map((slot) => {
-            const selected = form.schedule === slot.id;
-            const { full } = seats[slot.id];
-            return (
-              <label
-                key={slot.id}
-                className={`rounded-xl border p-4 transition ${
-                  full
-                    ? "cursor-not-allowed border-[color:var(--border)] bg-[color:var(--neutral-100)] opacity-60"
-                    : selected
-                      ? "cursor-pointer border-[color:var(--accent)] bg-[color:var(--accent-lightest)]"
-                      : "cursor-pointer border-[color:var(--border)] bg-[color:var(--neutral-50)] hover:border-[color:var(--accent)]"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="schedule"
-                  className="sr-only"
-                  checked={selected}
-                  disabled={full}
-                  onChange={() => setForm((s) => ({ ...s, schedule: slot.id }))}
-                />
-                <p className="font-medium text-[color:var(--neutral-black)]">{slot.label}</p>
-                <p className="mt-1 text-sm accent-text">{slot.hours}</p>
-                <p className={`mt-2 text-xs font-medium ${full ? "text-[color:var(--error)]" : "text-[color:var(--neutral-500)]"}`}>
-                  {seatsLabel(seats[slot.id]) ?? "Places disponibles"}
-                </p>
-              </label>
-            );
-          })}
-        </div>
-        {allFull ? (
-          <p className="mt-3 text-sm text-[color:var(--error)]">
-            Toutes les classes sont complètes. Écris-nous sur WhatsApp pour être sur la liste d&apos;attente.
-          </p>
-        ) : null}
-      </fieldset>
-
-      {/* ── Code promo (discret sans exemple affiché) ─────────────────────────── */}
-      <div className="space-y-2">
-        <label className="block text-sm font-medium text-[color:var(--neutral-black)]">
-          Code promo <span className="font-normal text-[color:var(--neutral-500)]">(facultatif)</span>
-        </label>
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={form.promoCode}
-            onChange={(v) => {
-              setForm((s) => ({ ...s, promoCode: v.target.value }));
-              setPromoChecked("idle");
-            }}
-            placeholder="Entrez votre code"
-            className="min-w-0 flex-1 rounded-xl border border-[color:var(--border)] bg-[color:var(--neutral-50)] px-4 py-3 text-[color:var(--neutral-black)] uppercase outline-none transition focus:border-[color:var(--accent)]"
-          />
-          <button
-            type="button"
-            onClick={checkPromo}
-            disabled={!form.promoCode.trim() || loading}
-            className="btn-ghost shrink-0"
-          >
-            Appliquer
-          </button>
-        </div>
-        {promoChecked === "valid" && (
-          <p className="text-sm font-medium text-green-600">
-            ✓ Code valide — préinscription offerte !
-          </p>
-        )}
-        {promoChecked === "invalid" && (
-          <p className="text-sm text-[color:var(--error)]">
-            Code promo invalide.
-          </p>
-        )}
-      </div>
+      ) : null}
 
       {/* ── Récapitulatif paiement ─────────────────────────────────────────────── */}
       <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--neutral-100)] p-4 text-sm text-[color:var(--neutral-600)]">
-        <p className="font-medium text-[color:var(--neutral-black)]">
-          Plan de paiement
-        </p>
+        <p className="font-medium text-[color:var(--neutral-black)]">Plan de paiement</p>
         <ul className="mt-3 space-y-2">
           <li className="flex justify-between gap-3">
             <span>Préinscription (maintenant)</span>
-            {promoApplied ? (
-              <span className="font-medium text-green-600">
-                <s className="mr-1 text-[color:var(--neutral-400)]">{formatFcfa(formation.registrationFee)}</s>
-                Offerts
-              </span>
-            ) : (
-              <span className="text-[color:var(--neutral-black)]">
-                {formatFcfa(formation.registrationFee)}
-              </span>
-            )}
+            <span className="font-medium text-[color:var(--neutral-black)]">
+              {formatFcfa(formation.registrationFee)}
+            </span>
           </li>
           {formation.installments.map((item) => (
             <li key={item.id} className="flex justify-between gap-3">
               <span>{item.label}</span>
-              <span className="text-[color:var(--neutral-black)]">
-                {formatFcfa(item.amount)}
-              </span>
+              <span className="text-[color:var(--neutral-black)]">{formatFcfa(item.amount)}</span>
             </li>
           ))}
           <li className="flex justify-between gap-3 border-t border-[color:var(--border)] pt-2 font-medium text-[color:var(--neutral-black)]">
@@ -295,6 +220,9 @@ export function InscriptionForm({ seats }: { seats: Seats }) {
             <span>{formatFcfa(formation.totalPrice)}</span>
           </li>
         </ul>
+        <p className="mt-3 border-t border-[color:var(--border)] pt-3 text-xs leading-relaxed">
+          {formation.refundGuarantee}
+        </p>
       </div>
 
       <label className="flex items-start gap-3 text-sm text-[color:var(--neutral-600)]">
@@ -302,14 +230,11 @@ export function InscriptionForm({ seats }: { seats: Seats }) {
           type="checkbox"
           className="mt-1"
           checked={form.acceptTerms}
-          onChange={(e) =>
-            setForm((s) => ({ ...s, acceptTerms: e.target.checked }))
-          }
+          onChange={(e) => setForm((s) => ({ ...s, acceptTerms: e.target.checked }))}
         />
         <span>
-          Je confirme mon choix de créneau, je m&apos;engage à payer{" "}
-          {formatFcfa(promoApplied ? 0 : formation.registrationFee)} de préinscription (non remboursables) pour réserver
-          ma place et j&apos;accepte les{" "}
+          Je m&apos;engage à payer {formatFcfa(formation.registrationFee)} de préinscription pour réserver ma place
+          (non remboursables si je change d&apos;avis) et j&apos;accepte les{" "}
           <Link href="/condition" target="_blank" className="accent-text underline">
             conditions d&apos;utilisation
           </Link>{" "}
@@ -327,13 +252,14 @@ export function InscriptionForm({ seats }: { seats: Seats }) {
         </p>
       ) : null}
 
-      <button type="submit" className="btn-primary w-full" disabled={loading || allFull}>
-        {loading
-          ? "Traitement en cours…"
-          : promoApplied
-            ? `Confirmer mon inscription (${formatFcfa(0)})`
-            : `Créer mon compte et payer (${formatFcfa(formation.registrationFee)})`}
-      </button>
+      <div>
+        <button type="submit" className="btn-primary w-full" disabled={loading || allFull}>
+          {loading ? "Traitement en cours…" : `Créer mon compte et payer (${formatFcfa(formation.registrationFee)})`}
+        </button>
+        <p className="mt-2 text-center text-xs text-[color:var(--neutral-500)]">
+          Paiement par Mobile Money, sécurisé par FedaPay
+        </p>
+      </div>
     </form>
   );
 }
@@ -346,6 +272,7 @@ function Field({
   type = "text",
   required,
   hint,
+  autoComplete,
 }: {
   label: string;
   value: string;
@@ -354,6 +281,7 @@ function Field({
   type?: string;
   required?: boolean;
   hint?: string;
+  autoComplete?: string;
 }) {
   const inputProps = {
     value,
@@ -372,7 +300,7 @@ function Field({
       {type === "password" ? (
         <PasswordInput autoComplete="new-password" {...inputProps} />
       ) : (
-        <input type={type} {...inputProps} />
+        <input type={type} autoComplete={autoComplete} {...inputProps} />
       )}
       {hint ? (
         <span className="mt-1.5 block text-xs text-[color:var(--neutral-500)]">

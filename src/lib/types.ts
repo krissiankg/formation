@@ -35,7 +35,6 @@ export function validateInscription(body: unknown): {
   const schedule = String(b.schedule ?? "") as ScheduleId;
   const acceptTerms = Boolean(b.acceptTerms);
   const password = String(b.password ?? "");
-  const passwordConfirm = String(b.passwordConfirm ?? "");
 
   if (fullName.length < 2) return { error: "Nom trop court" };
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { error: "Email invalide" };
@@ -45,8 +44,8 @@ export function validateInscription(body: unknown): {
   if (schedule !== "saturday" && schedule !== "saturday_pm" && schedule !== "sunday") {
     return { error: "Choisis ton créneau (samedi matin, samedi après-midi ou dimanche matin)" };
   }
-  const badPassword = passwordError(password, passwordConfirm);
-  if (badPassword) return { error: badPassword };
+  // Un seul champ à l'inscription : l'apprenant relit son mot de passe avec l'œil, sans le retaper.
+  if (password.length < PASSWORD_MIN_LENGTH) return { error: PASSWORD_TOO_SHORT };
   if (!acceptTerms) return { error: "Tu dois accepter les conditions" };
 
   return {

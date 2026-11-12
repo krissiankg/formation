@@ -1,16 +1,16 @@
 import Link from "next/link";
 import { brand, contact, formation } from "@/lib/config/formation";
 
+// Bandeau défilant : rien de daté ici, les dates et la classe viennent de la configuration.
 const marqueeItems = [
-  "SaaS",
-  "Applications",
   "Sites web",
-  "Mobile Money",
-  "Méthode ADAPT",
-  "Présentiel",
-  "Nov → Déc 2026",
-  "Samedi ou Dimanche",
-  "Outils & codes",
+  "Applications",
+  "Sans savoir coder",
+  "Paiement Mobile Money",
+  "Présentiel à Godomey",
+  `Dès le ${formation.startLabel}`,
+  `${formation.maxPerClass} places`,
+  "3 projets en ligne",
 ];
 
 const navLinks = [

@@ -41,9 +41,8 @@ const sections: LegalSection[] = [
         <ul>
           <li>
             une <strong>formation présentielle</strong> de {formation.durationMonths} mois ({formation.startLabel} →{" "}
-            {formation.endLabel}, {formation.sundayNote}), le samedi ou le dimanche selon le créneau choisi, à
-            Godomey (adresse exacte
-            communiquée aux inscrits avant la première séance) ;
+            {formation.endLabel}), le week-end selon la classe choisie, à Godomey (adresse exacte communiquée
+            aux inscrits avant la première séance) ;
           </li>
           <li>
             un <strong>espace apprenant en ligne</strong> : programme, ressources, quiz, dépôt de projets, suivi
@@ -83,7 +82,7 @@ const sections: LegalSection[] = [
         </li>
         <li>
           Ta place est réservée dès la confirmation du paiement de la préinscription, dans la limite de{" "}
-          {formation.maxPerClass} places par classe (samedi matin, samedi après-midi ou dimanche matin).
+          {formation.maxPerClass} places par classe.
         </li>
         <li>
           Si une classe n&apos;atteint pas le nombre minimum d&apos;inscrits, {brand.name} peut fusionner les

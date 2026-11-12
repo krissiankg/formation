@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { validateInscription } from "@/lib/types";
 
+// Le formulaire d'inscription ne demande le mot de passe qu'une fois (l'œil permet de le relire).
 const body = {
   fullName: "Awa Kossou",
   email: "awa@example.com",
@@ -8,19 +9,12 @@ const body = {
   schedule: "saturday",
   acceptTerms: true,
   password: "motdepasse1",
-  passwordConfirm: "motdepasse1",
 };
 
 describe("validateInscription", () => {
   it("refuses a password shorter than 8 characters", () => {
-    expect(validateInscription({ ...body, password: "court", passwordConfirm: "court" }).error).toBe(
+    expect(validateInscription({ ...body, password: "court" }).error).toBe(
       "Le mot de passe doit contenir au moins 8 caractères.",
-    );
-  });
-
-  it("refuses two different passwords", () => {
-    expect(validateInscription({ ...body, passwordConfirm: "motdepasse2" }).error).toBe(
-      "Les deux mots de passe ne correspondent pas.",
     );
   });
 
