@@ -5,6 +5,7 @@ import { formation } from "@/lib/config/formation";
 import { formatFcfa } from "@/lib/format";
 import type { AccessOverride, Enrollment } from "@/lib/types";
 import { getCourseAccess } from "@/lib/access/course-access";
+import { toWhatsAppDigits } from "@/lib/whatsapp";
 import { PaymentStatusBadge } from "@/components/admin/PaymentStatusBadge";
 import { PaymentScheduleControl } from "@/components/admin/PaymentScheduleControl";
 
@@ -90,9 +91,7 @@ export function EnrollmentRow({
     }
   }
 
-  const cleanDigits = enrollment.whatsapp.replace(/\D/g, "");
-  const waDigits = cleanDigits.length === 8 ? `229${cleanDigits}` : cleanDigits;
-  const waLink = `https://wa.me/${waDigits}`;
+  const waLink = `https://wa.me/${toWhatsAppDigits(enrollment.whatsapp)}`;
 
   if (compact) {
     return (

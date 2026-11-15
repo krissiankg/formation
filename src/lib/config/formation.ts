@@ -28,9 +28,10 @@ export const trainer = {
   ],
 } as const;
 
+// Numéro au format béninois à 10 chiffres (01 XX XX XX XX), celui des comptes WhatsApp.
 export const contact = {
-  whatsapp: "+22966368705",
-  whatsappDigits: "22966368705",
+  whatsapp: "+2290166368705",
+  whatsappDigits: "2290166368705",
   get whatsappUrl() {
     const text = encodeURIComponent(
       "Bonjour, je souhaite plus de renseignements sur la formation FORGE IA.",
