@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-/** Lien d'invitation du groupe WhatsApp, montré aux apprenants après le paiement de la préinscription. */
+/** Lien d'invitation du groupe WhatsApp, donné à chaque inscrit juste après le formulaire d'inscription. */
 export function WhatsAppGroupCard({ initialUrl }: { initialUrl: string | null }) {
   const [saved, setSaved] = useState(initialUrl);
   const [value, setValue] = useState(initialUrl ?? "");
@@ -45,8 +45,8 @@ export function WhatsAppGroupCard({ initialUrl }: { initialUrl: string | null })
       </div>
       <h2 className="font-display mt-1 text-xl font-bold tracking-tight">Groupe WhatsApp</h2>
       <p className="mt-1 max-w-xl text-xs text-[color:var(--neutral-600)]">
-        Les apprenants voient ce lien sur leur tableau de bord et dans l&apos;email de bienvenue, uniquement après le
-        paiement de leur préinscription.
+        Chaque inscrit reçoit ce lien juste après le formulaire : sur la page Merci et dans l&apos;email de
+        confirmation. C&apos;est dans ce groupe que tu donnes le lieu et que tu encaisses la préinscription.
       </p>
       <div className="mt-4 flex flex-col gap-2 sm:flex-row">
         <input

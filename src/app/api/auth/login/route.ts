@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { hasRegistrationAccess } from "@/lib/access/registration";
 import { createSession } from "@/lib/auth/session";
 import { findEnrollmentByEmail, verifyPassword } from "@/lib/store/enrollments";
 
@@ -16,6 +17,16 @@ export async function POST(request: Request) {
     }
 
     const enrollment = await findEnrollmentByEmail(email);
+    if (enrollment && !enrollment.passwordHash && !hasRegistrationAccess(enrollment)) {
+      // Inscrit sans paiement en ligne : son mot de passe arrive quand le formateur valide sa préinscription.
+      return NextResponse.json(
+        {
+          error:
+            "Ton inscription est enregistrée, mais ta préinscription n'est pas encore validée. Rejoins le groupe WhatsApp de la formation avec le lien de ton email de confirmation : tu recevras ton mot de passe dès que le formateur l'aura validée.",
+        },
+        { status: 401 },
+      );
+    }
     if (enrollment && !enrollment.passwordHash) {
       // Inscrit avant le passage aux mots de passe : il le crée par « mot de passe oublié ».
       return NextResponse.json(

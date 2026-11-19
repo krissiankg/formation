@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useState, useTransition, type ChangeEvent } from "react";
-import { PasswordInput } from "@/components/PasswordInput";
 import { WhatsAppLink } from "@/components/WhatsAppFloat";
 import { formation, openSlots } from "@/lib/config/formation";
 import type { ScheduleId } from "@/lib/types";
@@ -17,7 +16,6 @@ type InscriptionState = {
   whatsapp: string;
   schedule: ScheduleId;
   acceptTerms: boolean;
-  password: string;
 };
 
 export function InscriptionForm({ seats }: { seats: Seats }) {
@@ -29,7 +27,6 @@ export function InscriptionForm({ seats }: { seats: Seats }) {
     whatsapp: "",
     schedule: firstOpen,
     acceptTerms: false,
-    password: "",
   });
 
   const [error, setError] = useState<string | null>(null);
@@ -39,11 +36,6 @@ export function InscriptionForm({ seats }: { seats: Seats }) {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-
-    if (form.password.length < 8) {
-      setError("Le mot de passe doit contenir au moins 8 caractères.");
-      return;
-    }
 
     if (!form.acceptTerms) {
       setError("Tu dois accepter les conditions pour continuer.");
@@ -62,7 +54,6 @@ export function InscriptionForm({ seats }: { seats: Seats }) {
           whatsapp: form.whatsapp,
           schedule: form.schedule,
           acceptTerms: form.acceptTerms,
-          password: form.password,
         }),
       });
 
@@ -74,12 +65,7 @@ export function InscriptionForm({ seats }: { seats: Seats }) {
         return;
       }
 
-      if (data.paymentUrl) {
-        window.location.href = data.paymentUrl;
-        return;
-      }
-
-      // Compte créé mais paiement indisponible pour l'instant : on réessaie depuis la page de paiement.
+      // Inscription enregistrée : page Merci, qui envoie vers le groupe WhatsApp.
       if (data.redirectTo) {
         startTransition(() => {
           window.location.assign(data.redirectTo);
@@ -87,7 +73,7 @@ export function InscriptionForm({ seats }: { seats: Seats }) {
         return;
       }
 
-      setError("Impossible d'initialiser le paiement.");
+      setError("Une erreur est survenue lors de l'inscription.");
       setLoading(false);
     } catch {
       setError("Erreur réseau. Vérifie ta connexion et réessaie.");
@@ -121,18 +107,8 @@ export function InscriptionForm({ seats }: { seats: Seats }) {
         value={form.whatsapp}
         onChange={(v) => setForm((s) => ({ ...s, whatsapp: v }))}
         placeholder="+229 01 XX XX XX XX"
-        hint="Pour te contacter et t'ajouter au groupe WhatsApp de la formation."
+        hint="Le formateur te contacte sur ce numéro, dans le groupe WhatsApp de la formation."
         autoComplete="tel"
-        required
-      />
-      {/* Un seul champ : l'œil permet de relire le mot de passe, inutile de le taper deux fois. */}
-      <Field
-        label="Choisis un mot de passe"
-        type="password"
-        value={form.password}
-        onChange={(v) => setForm((s) => ({ ...s, password: v }))}
-        placeholder="8 caractères minimum"
-        hint="Il te servira à entrer dans ton espace apprenant."
         required
       />
 
@@ -204,7 +180,7 @@ export function InscriptionForm({ seats }: { seats: Seats }) {
         <p className="font-medium text-[color:var(--neutral-black)]">Plan de paiement</p>
         <ul className="mt-3 space-y-2">
           <li className="flex justify-between gap-3">
-            <span>Préinscription (maintenant)</span>
+            <span>Préinscription, à régler au formateur après ton inscription</span>
             <span className="font-medium text-[color:var(--neutral-black)]">
               {formatFcfa(formation.registrationFee)}
             </span>
@@ -233,8 +209,8 @@ export function InscriptionForm({ seats }: { seats: Seats }) {
           onChange={(e) => setForm((s) => ({ ...s, acceptTerms: e.target.checked }))}
         />
         <span>
-          Je m&apos;engage à payer {formatFcfa(formation.registrationFee)} de préinscription pour réserver ma place
-          (non remboursables si je change d&apos;avis) et j&apos;accepte les{" "}
+          Je m&apos;engage à régler {formatFcfa(formation.registrationFee)} de préinscription au formateur pour
+          réserver ma place (non remboursables si je change d&apos;avis) et j&apos;accepte les{" "}
           <Link href="/condition" target="_blank" className="accent-text underline">
             conditions d&apos;utilisation
           </Link>{" "}
@@ -254,10 +230,10 @@ export function InscriptionForm({ seats }: { seats: Seats }) {
 
       <div>
         <button type="submit" className="btn-primary w-full" disabled={loading || allFull}>
-          {loading ? "Traitement en cours…" : `Créer mon compte et payer (${formatFcfa(formation.registrationFee)})`}
+          {loading ? "Inscription en cours…" : "Je m'inscris"}
         </button>
         <p className="mt-2 text-center text-xs text-[color:var(--neutral-500)]">
-          Paiement par Mobile Money, sécurisé par FedaPay
+          Rien à payer en ligne. Tu rejoins ensuite le groupe WhatsApp de la formation.
         </p>
       </div>
     </form>
@@ -297,11 +273,7 @@ function Field({
       <span className="mb-2 block text-sm font-medium text-[color:var(--neutral-black)]">
         {label}
       </span>
-      {type === "password" ? (
-        <PasswordInput autoComplete="new-password" {...inputProps} />
-      ) : (
-        <input type={type} autoComplete={autoComplete} {...inputProps} />
-      )}
+      <input type={type} autoComplete={autoComplete} {...inputProps} />
       {hint ? (
         <span className="mt-1.5 block text-xs text-[color:var(--neutral-500)]">
           {hint}

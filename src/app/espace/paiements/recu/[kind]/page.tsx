@@ -5,6 +5,7 @@ import { formation, brand } from "@/lib/config/formation";
 import { legal } from "@/lib/config/legal";
 import { formatFcfa } from "@/lib/format";
 import type { PaymentKind } from "@/lib/types";
+import { MANUAL_PAYMENT_REF } from "@/lib/programme/installments";
 import { PrintButton } from "./PrintButton";
 
 export const metadata = {
@@ -139,8 +140,9 @@ export default async function RecuPage({
                     <td className="py-4 font-medium text-gray-900">
                       {kindTitles[payment.kind as PaymentKind] || payment.kind}
                       <div className="text-xs text-gray-500 font-normal">
-                        Moyen : Mobile Money / Carte (FedaPay)
-                        {payment.fedapayId ? ` · Réf: ${payment.fedapayId}` : ""}
+                        {payment.fedapayId === MANUAL_PAYMENT_REF
+                          ? "Moyen : réglé directement au formateur"
+                          : `Moyen : Mobile Money / Carte (FedaPay)${payment.fedapayId ? ` · Réf: ${payment.fedapayId}` : ""}`}
                       </div>
                     </td>
                     <td className="py-4 text-center">

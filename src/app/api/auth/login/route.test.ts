@@ -18,7 +18,13 @@ const login = (body: unknown) =>
     body: JSON.stringify(body),
   }));
 
-const account = (passwordHash?: string) => ({ id: "enr-1", email: "awa@example.com", fullName: "Awa", passwordHash });
+const account = (passwordHash?: string, registration: "paid" | "pending" = "paid") => ({
+  id: "enr-1",
+  email: "awa@example.com",
+  fullName: "Awa",
+  passwordHash,
+  payments: [{ kind: "registration", amount: 2500, status: registration }],
+});
 
 beforeEach(() => vi.resetAllMocks());
 
@@ -47,6 +53,17 @@ describe("connexion par mot de passe", () => {
       error: "Ton compte n'a pas encore de mot de passe. Clique sur « Mot de passe oublié » pour le créer.",
       needsPassword: true,
     });
+  });
+
+  it("a sign-up not yet validated by the trainer is sent to the WhatsApp group, not to « mot de passe oublié »", async () => {
+    mocks.findByEmail.mockResolvedValue(account(undefined, "pending"));
+    const response = await login({ email: "awa@example.com", password: "nimporte" });
+    expect(response.status).toBe(401);
+    expect(await response.json()).toEqual({
+      error:
+        "Ton inscription est enregistrée, mais ta préinscription n'est pas encore validée. Rejoins le groupe WhatsApp de la formation avec le lien de ton email de confirmation : tu recevras ton mot de passe dès que le formateur l'aura validée.",
+    });
+    expect(mocks.createSession).not.toHaveBeenCalled();
   });
 
   it("no longer signs in with email and WhatsApp number", async () => {

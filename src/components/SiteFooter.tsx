@@ -6,7 +6,7 @@ const marqueeItems = [
   "Sites web",
   "Applications",
   "Sans savoir coder",
-  "Paiement Mobile Money",
+  "Paiement en 3 fois",
   "Présentiel à Godomey",
   `Dès le ${formation.startLabel}`,
   `${formation.maxPerClass} places`,

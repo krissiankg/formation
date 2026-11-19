@@ -1,6 +1,8 @@
 /**
  * Lien d'invitation du groupe WhatsApp FORGEIA. Stocké en base (app_settings), jamais dans le dépôt
- * qui est public, et montré seulement aux apprenants dont la préinscription est payée.
+ * qui est public. Donné à chaque inscrit après le formulaire (page Merci, email de confirmation) : c'est dans
+ * ce groupe que le formateur donne le lieu et encaisse la préinscription. Dans l'espace apprenant, il reste
+ * réservé aux inscrits validés (getWhatsAppGroupUrlFor).
  */
 
 import { hasRegistrationAccess } from "@/lib/access/registration";

@@ -24,7 +24,7 @@ export function PaymentScheduleControl({ enrollment }: { enrollment: Enrollment 
   async function update(kind: PaymentKind, paid: boolean, amount: number) {
     const label = getInstallmentLabel(kind);
     const question = paid
-      ? `Confirmer que ${firstName} a payé « ${label} » (${formatFcfa(amount)}) ?\n\nSon accès au cours sera mis à jour et il recevra une confirmation WhatsApp.`
+      ? `Confirmer que ${firstName} a payé « ${label} » (${formatFcfa(amount)}) ?\n\nSon accès au cours sera mis à jour et il recevra une confirmation par email.`
       : `Annuler le paiement manuel « ${label} » de ${firstName} ?\n\nSon accès au cours redeviendra celui de ses autres paiements.`;
     if (!window.confirm(question)) return;
 

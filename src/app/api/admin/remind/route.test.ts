@@ -1,12 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const mocks = vi.hoisted(() => ({ verify: vi.fn(), getEnrollment: vi.fn(), notifyStudent: vi.fn() }));
+const mocks = vi.hoisted(() => ({ verify: vi.fn(), getEnrollment: vi.fn(), notifyStudent: vi.fn(), groupUrl: vi.fn() }));
 vi.mock("next/headers", () => ({ cookies: async () => ({ get: () => ({ value: "test-session" }) }) }));
 vi.mock("@/lib/auth/admin-session", () => ({
   ADMIN_SESSION_COOKIE: "forge_admin_session", verifyAdminSessionToken: mocks.verify,
 }));
 vi.mock("@/lib/store/enrollments", () => ({ getEnrollment: mocks.getEnrollment }));
 vi.mock("@/lib/email/notify", () => ({ notifyStudent: mocks.notifyStudent }));
+vi.mock("@/lib/settings/whatsapp-group", () => ({ getWhatsAppGroupUrl: mocks.groupUrl }));
 import { POST } from "./route";
 
 const remind = (body: unknown) =>
@@ -21,6 +22,7 @@ beforeEach(() => {
   vi.stubEnv("ADMIN_SESSION_SECRET", "remind-test-secret");
   mocks.verify.mockResolvedValue(true);
   mocks.notifyStudent.mockResolvedValue({ ok: true, stub: false });
+  mocks.groupUrl.mockResolvedValue("https://chat.whatsapp.com/AbCdEf123");
   mocks.getEnrollment.mockResolvedValue({
     id: "enr-1",
     fullName: "Awa Kossou",
@@ -50,6 +52,20 @@ describe("relance par email depuis l'admin", () => {
     const [, message] = mocks.notifyStudent.mock.calls[0] as [unknown, { text: string; html: string }];
     expect(message.text).toContain("https://www.forgeia.site/mot-de-passe/nouveau?token=");
     expect(message.html).not.toContain("evil.tld");
+  });
+
+  it("a first-password link lasts 7 days", async () => {
+    await remind({ enrollmentId: "enr-1", type: "password" });
+    const [, message] = mocks.notifyStudent.mock.calls[0] as [unknown, { text: string }];
+    expect(message.text).toContain("valable 7 jours");
+  });
+
+  it("the sign-up reminder leads to the WhatsApp group, not to an online payment", async () => {
+    const response = await remind({ enrollmentId: "enr-1", type: "registration" });
+    expect(response.status).toBe(200);
+    const [, message] = mocks.notifyStudent.mock.calls[0] as [unknown, { text: string }];
+    expect(message.text).toContain("Rejoindre le groupe WhatsApp : https://chat.whatsapp.com/AbCdEf123");
+    expect(message.text).not.toContain("/inscription/paiement");
   });
 
   it("refuses an unknown reminder type", async () => {

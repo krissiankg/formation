@@ -6,6 +6,12 @@ import { hmacMatches, hmacSign } from "@/lib/auth/hmac";
  * L'empreinte du mot de passe actuel rend le lien inutilisable dès que le mot de passe change.
  */
 const VALIDITY_SECONDS = 60 * 60;
+/**
+ * Lien de création du premier mot de passe, envoyé quand le formateur valide la préinscription :
+ * 7 jours, car l'apprenant ne lit pas forcément ses emails tout de suite. Il ne sert qu'une fois,
+ * l'empreinte changeant dès que le mot de passe est créé.
+ */
+export const SETUP_LINK_VALIDITY_SECONDS = 7 * 24 * 60 * 60;
 
 export function passwordFingerprint(passwordHash: string | undefined): string {
   return createHash("sha256").update(passwordHash ?? "aucun").digest("hex").slice(0, 16);
@@ -14,8 +20,9 @@ export function passwordFingerprint(passwordHash: string | undefined): string {
 export function createPasswordResetToken(
   enrollment: { id: string; passwordHash?: string },
   nowMs: number = Date.now(),
+  validitySeconds: number = VALIDITY_SECONDS,
 ): string {
-  const exp = Math.floor(nowMs / 1000) + VALIDITY_SECONDS;
+  const exp = Math.floor(nowMs / 1000) + validitySeconds;
   const payload = `reset:${enrollment.id}:${exp}:${passwordFingerprint(enrollment.passwordHash)}`;
   return `${payload}.${hmacSign(payload)}`;
 }

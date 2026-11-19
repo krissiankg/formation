@@ -47,13 +47,13 @@ export function AdminDashboard({
 
         <div className="rounded-2xl border border-[color:var(--border)] bg-[#171d17] p-6 text-[#fbfaf4]">
           <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-[color:var(--accent)]">
-            Inscriptions payées
+            Préinscriptions validées
           </p>
           <div className="mt-5">
             <p className="text-4xl font-semibold tracking-tight">{stats.paidCount}</p>
             <p className="mt-2 text-sm text-white/55">
-              sur {stats.total} inscription{stats.total !== 1 ? "s" : ""} · {fillRate}%
-              converties
+              sur {stats.total} inscrit{stats.total !== 1 ? "s" : ""} · {fillRate}%
+              validés
             </p>
             <p className="mt-4 text-2xl font-medium text-[color:var(--accent-light)]">
               {formatFcfa(stats.revenue)}
@@ -66,9 +66,9 @@ export function AdminDashboard({
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <Kpi label="Inscrits" value={String(stats.total)} hint="Total formulaires" />
         <Kpi
-          label="En attente"
+          label="À valider"
           value={String(stats.pendingCount)}
-          hint="Paiement non confirmé"
+          hint="Préinscription pas encore reçue"
         />
         <Kpi
           label="Créneaux"

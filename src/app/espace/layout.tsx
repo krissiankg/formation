@@ -13,8 +13,9 @@ export default async function EspaceLayout({
 }) {
   const enrollment = await getSessionEnrollment();
   if (!enrollment) redirect("/connexion");
-  // L'espace s'ouvre une fois la préinscription payée (ou l'accès complet accordé par l'admin).
-  if (!hasRegistrationAccess(enrollment)) redirect("/inscription/paiement");
+  // L'espace s'ouvre une fois la préinscription validée (ou l'accès complet accordé par l'admin).
+  // Un inscrit pas encore validé par le formateur retombe sur la page Merci, qui l'envoie dans le groupe WhatsApp.
+  if (!hasRegistrationAccess(enrollment)) redirect("/inscription/merci");
 
   const firstName = enrollment.fullName.trim().split(/\s+/)[0] || "Apprenant";
   const [pending, whatsappGroupUrl] = await Promise.all([getStudentPending(enrollment), getWhatsAppGroupUrlFor(enrollment)]);

@@ -1,6 +1,9 @@
-const STEPS = ["Ton compte", "Paiement", "Bienvenue"] as const;
+const STEPS = ["Inscription", "WhatsApp", "Place réservée"] as const;
 
-/** Barre de progression de l'inscription : 1. Ton compte → 2. Paiement → 3. Bienvenue. */
+/**
+ * Barre de progression de l'inscription : 1. Inscription → 2. Groupe WhatsApp (où se règle la préinscription)
+ * → 3. Place réservée (préinscription validée par le formateur).
+ */
 export function SignupSteps({ current }: { current: 1 | 2 | 3 }) {
   return (
     <ol className="mb-6 flex items-center gap-2 text-xs font-medium sm:text-sm" aria-label="Étapes de l'inscription">
@@ -21,7 +24,8 @@ export function SignupSteps({ current }: { current: 1 | 2 | 3 }) {
               {done ? "✓" : step}
             </span>
             <span
-              className={`truncate ${active ? "text-[color:var(--neutral-black)]" : "text-[color:var(--neutral-500)]"}`}
+              // Sur téléphone, seul le libellé de l'étape en cours tient sans être coupé.
+              className={`truncate ${active ? "shrink-0 text-[color:var(--neutral-black)]" : "hidden text-[color:var(--neutral-500)] sm:inline"}`}
             >
               {label}
             </span>

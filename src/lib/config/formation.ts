@@ -32,6 +32,8 @@ export const trainer = {
 export const contact = {
   whatsapp: "+2290166368705",
   whatsappDigits: "2290166368705",
+  /** Numéro tel qu'on l'écrit pour le lire ou le taper (affiches, emails). */
+  whatsappDisplay: "+229 01 66 36 87 05",
   get whatsappUrl() {
     const text = encodeURIComponent(
       "Bonjour, je souhaite plus de renseignements sur la formation FORGE IA.",
@@ -166,8 +168,8 @@ export const formation = {
       a: "20 personnes maximum, pour que le formateur ait le temps de suivre chacun. Quand la classe est complète, les inscriptions ferment.",
     },
     {
-      q: "À quoi sert la préinscription de 2 500 F ?",
-      a: "Elle réserve ta place et t'ouvre ton espace apprenant et le groupe WhatsApp de la cohorte. Le paiement se fait par Mobile Money. Elle n'est pas remboursable si tu changes d'avis.",
+      q: "Faut-il payer pour s'inscrire ?",
+      a: "Non. L'inscription sur le site ne demande aucun paiement. Ensuite, tu rejoins le groupe WhatsApp de la formation et tu règles au formateur la préinscription de 2 500 F : elle réserve ta place et ouvre ton espace apprenant. Elle n'est pas remboursable si tu changes d'avis.",
     },
     {
       q: "Et si la formation est annulée ou reportée ?",
@@ -175,7 +177,7 @@ export const formation = {
     },
     {
       q: "Où se déroule la formation ?",
-      a: "En présentiel à Godomey. L'adresse exacte est communiquée aux inscrits avant la première séance.",
+      a: "En présentiel à Godomey. L'adresse exacte est donnée dans le groupe WhatsApp de la formation, que tu rejoins juste après ton inscription.",
     },
     {
       q: "Comment se paie le reste de la formation ?",

@@ -5,7 +5,7 @@ import type { Enrollment } from "@/lib/types";
 
 /**
  * Accès à la formation, par module (ordre du module) :
- * - préinscription payée (2 500 F)  → module 0 « Avant de commencer »
+ * - préinscription validée (2 500 F) → module 0 « Avant de commencer »
  * - 1re tranche payée (30 000 F)     → + module 1 « Mois 1 »
  * - solde payé (47 500 F)            → toute la formation
  * Le choix de l'admin (accès complet / bloqué) est prioritaire sur les paiements.
@@ -40,7 +40,7 @@ export function getCourseAccess(enrollment: Pick<Enrollment, "payments" | "acces
   if (isPaid(enrollment, "registration")) {
     return { maxModuleSort: 0, label: "Avant de commencer", overridden: false, blocked: false };
   }
-  return { maxModuleSort: -1, label: "Inscription à finaliser", overridden: false, blocked: false };
+  return { maxModuleSort: -1, label: "Espace fermé jusqu'à la validation", overridden: false, blocked: false };
 }
 
 export function canAccessModule(access: CourseAccess, moduleSortOrder: number) {

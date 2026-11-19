@@ -17,7 +17,8 @@ export async function POST(request: Request) {
     const body = (await request.json()) as { kind?: PaymentKind };
     const kind = body.kind;
 
-    // La préinscription se paie aussi depuis le compte (page /inscription/paiement), en plus des tranches.
+    // La préinscription se règle maintenant au formateur (aucun bouton ne la propose en ligne), mais l'API
+    // l'accepte encore : un paiement FedaPay la valide comme avant.
     if (!kind || (kind !== "registration" && !(PAYABLE_INSTALLMENTS as string[]).includes(kind))) {
       return NextResponse.json({ error: "Tranche invalide" }, { status: 400 });
     }

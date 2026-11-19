@@ -19,7 +19,8 @@ import type { StudentTestimonial } from "@/lib/types";
 // avec un compte à rebours et des places restantes à jour.
 export const revalidate = 300;
 
-const ctaLabel = `Réserver ma place — ${formatFcfa(formation.registrationFee)}`;
+/** L'inscription en ligne ne demande aucun paiement : la préinscription se règle ensuite au formateur. */
+const ctaLabel = "Je m'inscris, sans payer maintenant";
 /** Nombre de paiements : la préinscription puis les tranches. */
 const paymentsCount = formation.installments.length + 1;
 /** « le samedi matin » quand une seule classe est ouverte, sinon « le week-end ». */
@@ -104,7 +105,8 @@ function Hero({ countdown, seats }: { countdown: string | null; seats: Seats | n
             <WhatsAppLink className="btn-ghost w-full sm:w-auto">Une question ? WhatsApp</WhatsAppLink>
           </div>
           <p className="mt-3 text-sm text-[color:var(--neutral-500)]">
-            Total {formatFcfa(formation.totalPrice)}, payable en {paymentsCount} fois · Paiement Mobile Money
+            Inscription sans paiement en ligne · Total {formatFcfa(formation.totalPrice)}, payable en{" "}
+            {paymentsCount} fois
           </p>
           <a
             href="#programme"
@@ -162,7 +164,7 @@ function CohortCard({ countdown, seats }: { countdown: string | null; seats: Sea
           href="/inscription"
           className="mt-5 inline-flex font-display text-sm font-semibold text-[color:var(--accent-lightest)] hover:underline"
         >
-          Réserver ma place →
+          M&apos;inscrire →
         </Link>
       </div>
     </div>
@@ -399,12 +401,13 @@ function Pricing() {
         <Reveal>
           <p className="section-kicker">Tarif</p>
           <h2 className="font-display mt-3 text-3xl tracking-tight sm:text-4xl">
-            Commence avec {formatFcfa(formation.registrationFee)}.
+            Inscris-toi d&apos;abord, paie ensuite.
           </h2>
           <p className="mt-4 max-w-2xl text-[color:var(--neutral-600)]">
-            La formation coûte {formatFcfa(formation.totalPrice)} au total, payables en {paymentsCount} fois :{" "}
-            {formatFcfa(formation.registrationFee)} aujourd&apos;hui pour réserver ta place, le reste pendant la
-            formation.
+            L&apos;inscription en ligne ne demande aucun paiement. La formation coûte{" "}
+            {formatFcfa(formation.totalPrice)} au total, payables en {paymentsCount} fois :{" "}
+            {formatFcfa(formation.registrationFee)} de préinscription réglés au formateur après ton inscription, le
+            reste pendant la formation.
           </p>
         </Reveal>
 
@@ -412,15 +415,15 @@ function Pricing() {
           <Reveal>
             <div className="h-full rounded-2xl border border-[color:var(--accent)] bg-[color:var(--accent-lightest)] p-6">
               <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-[color:var(--neutral-500)]">
-                Aujourd&apos;hui · préinscription
+                Après ton inscription · préinscription
               </p>
               {/* Taille liée à la largeur d'écran : le montant insécable tient sur une ligne même en texte agrandi. */}
               <p className="font-display mt-2 text-[clamp(1.5rem,8vw,2.25rem)] text-[color:var(--accent-darkest)]">
                 {formatFcfa(formation.registrationFee)}
               </p>
               <p className="mt-3 text-sm text-[color:var(--neutral-600)]">
-                Réserve ta place et ouvre ton espace apprenant. Paiement par Mobile Money, non remboursable si tu
-                changes d&apos;avis.
+                Tu la règles au formateur, dans le groupe WhatsApp de la formation. Elle réserve ta place et ouvre ton
+                espace apprenant. Non remboursable si tu changes d&apos;avis.
               </p>
               <p className="mt-4 flex gap-3 text-sm text-[color:var(--neutral-700)]">
                 <Check />
@@ -429,7 +432,7 @@ function Pricing() {
                 </span>
               </p>
               <Link href="/inscription" className="btn-primary mt-6 w-full sm:w-auto">
-                Réserver ma place
+                M&apos;inscrire
               </Link>
             </div>
           </Reveal>
@@ -475,14 +478,14 @@ function Pricing() {
 }
 
 const steps = [
-  { title: "Crée ton compte", text: "Ton nom, ton email, ton numéro WhatsApp et un mot de passe. Une minute suffit." },
+  { title: "Inscris-toi", text: "Ton nom, ton email et ton numéro WhatsApp. Une minute suffit, rien à payer en ligne." },
   {
-    title: `Paie ${formatFcfa(formation.registrationFee)}`,
-    text: "Par Mobile Money, en quelques secondes. Ta place est réservée.",
+    title: "Rejoins le groupe WhatsApp",
+    text: `Le formateur y donne l'adresse exacte et t'explique comment régler ta préinscription de ${formatFcfa(formation.registrationFee)}.`,
   },
   {
-    title: "Entre dans ton espace",
-    text: "Tu accèdes à ton espace apprenant et au groupe WhatsApp de la cohorte.",
+    title: "Ta place est réservée",
+    text: "Dès qu'il valide ta préinscription, ton espace apprenant s'ouvre.",
   },
 ];
 
@@ -567,8 +570,8 @@ function FinalCta({ countdown }: { countdown: string | null }) {
                 Dans {formation.sessionsCount} séances, tu crées et tu vends avec l&apos;IA.
               </h2>
               <p className="mt-4 text-white/65">
-                {formation.maxPerClass} places seulement. Réserve la tienne pour{" "}
-                {formatFcfa(formation.registrationFee)} et rejoins la cohorte du {formation.startLabel}.
+                {formation.maxPerClass} places seulement. Inscris-toi en une minute, sans payer en ligne, et rejoins la
+                cohorte du {formation.startLabel}.
               </p>
               <Link
                 href="/inscription"

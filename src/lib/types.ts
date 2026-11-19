@@ -6,14 +6,13 @@ export type InscriptionInput = {
   whatsapp: string;
   schedule: ScheduleId;
   acceptTerms: boolean;
-  password: string;
 };
 
 export const PASSWORD_MIN_LENGTH = 8;
 export const PASSWORD_TOO_SHORT = "Le mot de passe doit contenir au moins 8 caractères.";
 export const PASSWORDS_MISMATCH = "Les deux mots de passe ne correspondent pas.";
 
-/** Mot de passe choisi par l'apprenant (inscription, réinitialisation) : null si valide, sinon le message d'erreur. */
+/** Mot de passe choisi par l'apprenant (création, réinitialisation) : null si valide, sinon le message d'erreur. */
 export function passwordError(password: string, confirm: string): string | null {
   if (password.length < PASSWORD_MIN_LENGTH) return PASSWORD_TOO_SHORT;
   if (password !== confirm) return PASSWORDS_MISMATCH;
@@ -34,7 +33,6 @@ export function validateInscription(body: unknown): {
   const whatsapp = String(b.whatsapp ?? "").trim();
   const schedule = String(b.schedule ?? "") as ScheduleId;
   const acceptTerms = Boolean(b.acceptTerms);
-  const password = String(b.password ?? "");
 
   if (fullName.length < 2) return { error: "Nom trop court" };
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { error: "Email invalide" };
@@ -44,12 +42,11 @@ export function validateInscription(body: unknown): {
   if (schedule !== "saturday" && schedule !== "saturday_pm" && schedule !== "sunday") {
     return { error: "Choisis ton créneau (samedi matin, samedi après-midi ou dimanche matin)" };
   }
-  // Un seul champ à l'inscription : l'apprenant relit son mot de passe avec l'œil, sans le retaper.
-  if (password.length < PASSWORD_MIN_LENGTH) return { error: PASSWORD_TOO_SHORT };
+  // Pas de mot de passe à l'inscription : l'apprenant le crée quand le formateur valide sa préinscription.
   if (!acceptTerms) return { error: "Tu dois accepter les conditions" };
 
   return {
-    data: { fullName, email, whatsapp, schedule, acceptTerms, password },
+    data: { fullName, email, whatsapp, schedule, acceptTerms },
   };
 }
 

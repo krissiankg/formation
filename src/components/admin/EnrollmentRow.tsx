@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { formation } from "@/lib/config/formation";
 import { formatFcfa } from "@/lib/format";
 import type { AccessOverride, Enrollment } from "@/lib/types";
@@ -24,7 +25,9 @@ export function EnrollmentRow({
   coins?: number;
   onGrantCoins?: (student: { id: string; name: string }) => void;
 }) {
+  const router = useRouter();
   const [sending, setSending] = useState(false);
+  const [validating, setValidating] = useState(false);
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
 
   const [override, setOverride] = useState<"auto" | AccessOverride>(enrollment.accessOverride ?? "auto");
@@ -41,8 +44,8 @@ export function EnrollmentRow({
     : isPaidKind("start")
       ? { label: "1re tranche payée", done: false }
       : paid
-        ? { label: "Inscription payée", done: false }
-        : { label: "Inscription en attente", done: false };
+        ? { label: "Préinscription validée", done: false }
+        : { label: "Inscrit · préinscription à valider", done: false };
   const access = getCourseAccess({
     payments: enrollment.payments,
     accessOverride: override === "auto" ? undefined : override,
@@ -88,6 +91,36 @@ export function EnrollmentRow({
       setTimeout(() => setStatusMsg(null), 3500);
     } finally {
       setSending(false);
+    }
+  }
+
+  /**
+   * Le formateur a reçu la préinscription (dans le groupe WhatsApp) : il la valide ici. Sa place est réservée,
+   * son espace s'ouvre et il reçoit par email le lien pour créer son mot de passe.
+   */
+  async function handleValidateRegistration() {
+    const firstName = enrollment.fullName.trim().split(/\s+/)[0];
+    const ok = window.confirm(
+      `Confirmer que ${firstName} t'a réglé la préinscription (${formatFcfa(formation.registrationFee)}) ?\n\n` +
+        "Sa place sera réservée, son espace apprenant s'ouvrira et il recevra un email pour créer son mot de passe.",
+    );
+    if (!ok) return;
+    setValidating(true);
+    setStatusMsg(null);
+    try {
+      const res = await fetch("/api/admin/enrollments/payment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: enrollment.id, kind: "registration", paid: true }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erreur");
+      router.refresh();
+    } catch (err: any) {
+      setStatusMsg(`❌ ${err.message || "Erreur"}`);
+      setTimeout(() => setStatusMsg(null), 3500);
+    } finally {
+      setValidating(false);
     }
   }
 
@@ -196,6 +229,18 @@ export function EnrollmentRow({
 
   const actions = (
     <>
+      {!paid ? (
+        <button
+          type="button"
+          disabled={validating}
+          onClick={handleValidateRegistration}
+          className="inline-flex cursor-pointer items-center justify-center gap-1 whitespace-nowrap rounded-lg border border-emerald-600 bg-emerald-600 px-2.5 py-1.5 font-semibold text-white shadow-2xs transition hover:bg-emerald-700 active:scale-95 disabled:opacity-50"
+          title="Tu as reçu ses 2 500 F : sa place est réservée et son espace s'ouvre"
+        >
+          <span aria-hidden>✅</span>
+          <span>{validating ? "Validation…" : "Préinscription reçue"}</span>
+        </button>
+      ) : null}
       {statusMsg ? (
         <span className="font-medium text-[color:var(--accent-dark)]">{statusMsg}</span>
       ) : (
@@ -205,10 +250,10 @@ export function EnrollmentRow({
             disabled={sending}
             onClick={() => handleRemind(paid ? "payment" : "registration")}
             className="inline-flex cursor-pointer items-center justify-center gap-1 whitespace-nowrap rounded-lg border border-[color:var(--border)] bg-[color:var(--neutral-50)] px-2.5 py-1.5 font-medium text-[color:var(--neutral-black)] transition hover:border-[color:var(--accent)] hover:bg-[color:var(--accent-lightest)] disabled:opacity-50"
-            title={paid ? "Relancer par email : tranches suivantes" : "Relancer par email : préinscription à payer"}
+            title={paid ? "Relancer par email : tranches suivantes" : "Relancer par email : rejoindre le groupe WhatsApp"}
           >
             <span aria-hidden>✉️</span>
-            <span>{paid ? "Relance solde" : "Relancer par email"}</span>
+            <span>{paid ? "Relance solde" : "Relancer : groupe WhatsApp"}</span>
           </button>
           <button
             type="button"

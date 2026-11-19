@@ -149,7 +149,7 @@ export function StudentShell({
     avatarUrl?: string | null;
   };
   pending: StudentPending;
-  /** Lien du groupe WhatsApp, fourni seulement aux apprenants dont la préinscription est payée. */
+  /** Lien du groupe WhatsApp (l'espace n'est ouvert qu'aux inscrits dont la préinscription est validée). */
   whatsappGroupUrl: string | null;
 }) {
   const pathname = usePathname();

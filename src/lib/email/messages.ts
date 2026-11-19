@@ -5,6 +5,7 @@
 import type { EmailMessage } from "@/lib/email/brevo";
 import { renderEmail } from "@/lib/email/layout";
 import { siteOrigin } from "@/lib/config/site";
+import { contact, formation } from "@/lib/config/formation";
 import { formatFcfa } from "@/lib/format";
 
 function message(subject: string, content: Parameters<typeof renderEmail>[0]): EmailMessage {
@@ -13,33 +14,66 @@ function message(subject: string, content: Parameters<typeof renderEmail>[0]): E
 
 const hello = (firstname: string) => `Bonjour ${firstname.trim() || "à toi"},`;
 
-export function accountCreatedEmail(input: { firstname: string; scheduleLabel: string; amount: number }) {
-  return message("Ton compte FORGE IA est créé", {
-    title: "Ton compte est créé",
+/** Bouton qui mène au groupe WhatsApp de la formation, ou au formateur si le lien n'est pas enregistré. */
+function groupButton(groupUrl: string | null) {
+  return groupUrl
+    ? { label: "Rejoindre le groupe WhatsApp", url: groupUrl }
+    : { label: "Écrire au formateur sur WhatsApp", url: contact.whatsappUrl };
+}
+
+const groupFootnote = `Si le bouton ne s'ouvre pas, écris au formateur sur WhatsApp au ${contact.whatsappDisplay}.`;
+
+export function accountCreatedEmail(input: { firstname: string; scheduleLabel: string; groupUrl: string | null }) {
+  return message("Ton inscription FORGE IA est enregistrée : rejoins le groupe WhatsApp", {
+    title: "Dernière étape : rejoins le groupe WhatsApp",
     paragraphs: [
       hello(input.firstname),
-      `Ton compte pour la formation FORGE IA (${input.scheduleLabel}) est bien créé.`,
-      `Pour réserver ta place et ouvrir ton espace apprenant, il reste à régler la préinscription de ${formatFcfa(input.amount)}.`,
+      `Merci pour ton inscription à la formation FORGE IA (${input.scheduleLabel}), qui commence le ${formation.startLabel}.`,
+      input.groupUrl
+        ? `Rejoins maintenant le groupe WhatsApp de la formation. C'est là que le formateur donne l'adresse exacte, le déroulé de la 1re séance et la façon de régler ta préinscription de ${formatFcfa(formation.registrationFee)}.`
+        : `Écris maintenant au formateur sur WhatsApp : il t'ajoute au groupe de la formation, où il donne l'adresse exacte, le déroulé de la 1re séance et la façon de régler ta préinscription de ${formatFcfa(formation.registrationFee)}.`,
+      "Ta place est réservée dès que le formateur valide ta préinscription. Tu reçois alors un email pour créer ton mot de passe et ouvrir ton espace apprenant.",
     ],
-    button: { label: "Finaliser ma préinscription", url: `${siteOrigin}/inscription/paiement` },
-    footnote: "Si tu as déjà payé, ignore ce message : ton espace s'ouvre dès que FedaPay confirme le paiement.",
+    button: groupButton(input.groupUrl),
+    footnote: groupFootnote,
   });
 }
 
-export function registrationConfirmedEmail(input: { firstname: string; scheduleLabel: string; groupUrl: string | null }) {
+export function registrationReminderEmail(input: { firstname: string; scheduleLabel: string; groupUrl: string | null }) {
+  return message("As-tu rejoint le groupe WhatsApp FORGE IA ?", {
+    title: "Rejoins le groupe WhatsApp",
+    paragraphs: [
+      hello(input.firstname),
+      `Tu es inscrit à la formation FORGE IA (${input.scheduleLabel}), qui commence le ${formation.startLabel}. Ta place n'est pas encore réservée : il reste à régler ta préinscription de ${formatFcfa(formation.registrationFee)} au formateur.`,
+      "Tout se passe dans le groupe WhatsApp de la formation : l'adresse exacte, le déroulé de la 1re séance et le paiement de la préinscription.",
+    ],
+    button: groupButton(input.groupUrl),
+    footnote: groupFootnote,
+  });
+}
+
+export function registrationConfirmedEmail(input: {
+  firstname: string;
+  scheduleLabel: string;
+  groupUrl: string | null;
+  /** Lien pour créer le mot de passe, quand l'apprenant n'en a pas encore (inscription sans mot de passe). */
+  passwordUrl?: string;
+}) {
   return message("Bienvenue dans FORGE IA : ta place est réservée", {
     title: "Ta place est réservée",
     paragraphs: [
       hello(input.firstname),
-      `Ta préinscription à la formation FORGE IA (${input.scheduleLabel}) est payée. Ton espace apprenant est ouvert.`,
-      ...(input.groupUrl
-        ? ["Rejoins maintenant le groupe WhatsApp FORGEIA : c'est là que passent les annonces de la formation."]
-        : []),
+      `Ta préinscription à la formation FORGE IA (${input.scheduleLabel}) est validée. Ton espace apprenant est ouvert : tu y trouves de quoi préparer la 1re séance.`,
+      ...(input.passwordUrl ? ["Pour y entrer, crée d'abord ton mot de passe avec le bouton ci-dessous."] : []),
+      ...(input.groupUrl ? [`Si ce n'est pas déjà fait, rejoins le groupe WhatsApp de la formation : ${input.groupUrl}`] : []),
       `Ton reçu est disponible ici : ${siteOrigin}/espace/paiements/recu/registration`,
     ],
-    button: input.groupUrl
-      ? { label: "Rejoindre le groupe WhatsApp", url: input.groupUrl }
+    button: input.passwordUrl
+      ? { label: "Créer mon mot de passe", url: input.passwordUrl }
       : { label: "Accéder à mon espace", url: `${siteOrigin}/espace` },
+    ...(input.passwordUrl
+      ? { footnote: "Ce lien est valable 7 jours. Ensuite, utilise « Mot de passe oublié » sur la page de connexion." }
+      : {}),
   });
 }
 
@@ -66,18 +100,6 @@ export function coinsCreditedEmail(input: { firstname: string; coins: number; am
   });
 }
 
-export function registrationReminderEmail(input: { firstname: string; scheduleLabel: string }) {
-  return message("Ta préinscription FORGE IA attend son paiement", {
-    title: "Ta place n'est pas encore réservée",
-    paragraphs: [
-      hello(input.firstname),
-      `Ta préinscription à la formation FORGE IA (${input.scheduleLabel}) attend toujours son paiement.`,
-      "Pour sécuriser ta place avant la clôture de la cohorte, règle-la depuis ton compte.",
-    ],
-    button: { label: "Finaliser ma préinscription", url: `${siteOrigin}/inscription/paiement` },
-  });
-}
-
 export function paymentReminderEmail(input: { firstname: string; scheduleLabel: string }) {
   return message("Une échéance FORGE IA est à régler", {
     title: "Une échéance est à régler",
@@ -97,7 +119,13 @@ export function trainerMessageEmail(input: { firstname: string; message: string 
   });
 }
 
-export function passwordLinkEmail(input: { firstname: string; url: string; purpose: "reset" | "setup" }) {
+export function passwordLinkEmail(input: {
+  firstname: string;
+  url: string;
+  purpose: "reset" | "setup";
+  /** Durée du lien, écrite dans l'email (1 heure par défaut, 7 jours pour un premier mot de passe). */
+  validity?: string;
+}) {
   const setup = input.purpose === "setup";
   return message(setup ? "Crée ton mot de passe FORGE IA" : "Réinitialise ton mot de passe FORGE IA", {
     title: setup ? "Crée ton mot de passe" : "Nouveau mot de passe",
@@ -108,7 +136,7 @@ export function passwordLinkEmail(input: { firstname: string; url: string; purpo
         : "Tu as demandé à changer ton mot de passe FORGE IA. Clique sur le bouton pour en choisir un nouveau.",
     ],
     button: { label: setup ? "Créer mon mot de passe" : "Choisir un nouveau mot de passe", url: input.url },
-    footnote: "Ce lien est valable 1 heure. Si tu n'es pas à l'origine de cette demande, ignore ce message.",
+    footnote: `Ce lien est valable ${input.validity ?? "1 heure"}. Si tu n'es pas à l'origine de cette demande, ignore ce message.`,
   });
 }
 

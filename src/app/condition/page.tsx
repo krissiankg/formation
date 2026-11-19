@@ -81,8 +81,9 @@ const sections: LegalSection[] = [
           partager ton accès avec une autre personne.
         </li>
         <li>
-          Ta place est réservée dès la confirmation du paiement de la préinscription, dans la limite de{" "}
-          {formation.maxPerClass} places par classe.
+          L&apos;inscription en ligne ne demande aucun paiement. Ta place est réservée dès que le formateur a
+          validé le paiement de ta préinscription, dans la limite de {formation.maxPerClass} places par classe.
+          Ton espace apprenant s&apos;ouvre à ce moment-là.
         </li>
         <li>
           Si une classe n&apos;atteint pas le nombre minimum d&apos;inscrits, {brand.name} peut fusionner les
@@ -107,8 +108,9 @@ const sections: LegalSection[] = [
         </p>
         <ul>
           <li>
-            <strong>Préinscription obligatoire</strong> : {formatFcfa(formation.registrationFee)}, payable à
-            l&apos;inscription pour réserver ta place ;
+            <strong>Préinscription obligatoire</strong> : {formatFcfa(formation.registrationFee)}, réglée au
+            formateur après ton inscription (il t&apos;indique comment dans le groupe WhatsApp de la formation) pour
+            réserver ta place ;
           </li>
           {formation.installments.map((i) => (
             <li key={i.id}>
@@ -117,9 +119,10 @@ const sections: LegalSection[] = [
           ))}
         </ul>
         <p>
-          Les prix sont exprimés en francs CFA (XOF). Les paiements sont effectués en ligne via{" "}
-          <strong>FedaPay</strong> (Mobile Money ou carte), qui en assure la sécurité ; un reçu est disponible
-          dans ton espace apprenant pour chaque paiement validé. Les codes promotionnels éventuels ne sont ni
+          Les prix sont exprimés en francs CFA (XOF). Les tranches peuvent être réglées en ligne depuis ton
+          espace apprenant via <strong>FedaPay</strong> (Mobile Money ou carte), qui en assure la sécurité, ou
+          directement au formateur, qui enregistre alors le paiement. Un reçu est disponible dans ton espace
+          apprenant pour chaque paiement validé. Les codes promotionnels éventuels ne sont ni
           cumulables ni échangeables contre de l&apos;argent.
         </p>
         <p>

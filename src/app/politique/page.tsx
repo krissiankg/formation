@@ -49,8 +49,9 @@ const sections: LegalSection[] = [
           </li>
           <li>
             <strong>Paiements</strong> : montants, échéances, statut et références des transactions. Les
-            paiements sont traités par FedaPay : nous ne voyons ni ne conservons jamais tes codes Mobile Money
-            ou numéros de carte.
+            paiements en ligne sont traités par FedaPay : nous ne voyons ni ne conservons jamais tes codes Mobile
+            Money ou numéros de carte. Un paiement réglé directement au formateur est enregistré par lui dans ton
+            échéancier.
           </li>
           <li>
             <strong>Suivi pédagogique</strong> : progression dans le programme, tâches réalisées, réponses et

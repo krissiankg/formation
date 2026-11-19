@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { createPasswordResetToken, SETUP_LINK_VALIDITY_SECONDS } from "@/lib/auth/password-reset";
+import { siteOrigin } from "@/lib/config/site";
 import { formation } from "@/lib/config/formation";
 import { notifyStudent } from "@/lib/email/notify";
 import { paymentReceivedEmail, registrationConfirmedEmail } from "@/lib/email/messages";
@@ -45,6 +47,13 @@ export async function POST(request: Request) {
     await markPaymentPaid(id, kind, MANUAL_PAYMENT_REF);
 
     const firstname = enrollment.fullName.trim().split(/\s+/)[0] ?? "";
+    // Inscrit sans mot de passe (inscription en ligne sans paiement) : la validation lui envoie le lien pour le créer.
+    const passwordUrl =
+      kind === "registration" && !enrollment.passwordHash
+        ? `${siteOrigin}/mot-de-passe/nouveau?token=${encodeURIComponent(
+            createPasswordResetToken(enrollment, Date.now(), SETUP_LINK_VALIDITY_SECONDS),
+          )}`
+        : undefined;
     await notifyStudent(
       enrollment,
       kind === "registration"
@@ -52,6 +61,7 @@ export async function POST(request: Request) {
             firstname,
             scheduleLabel: formation.schedule[enrollment.schedule].label,
             groupUrl: await getWhatsAppGroupUrl(),
+            passwordUrl,
           })
         : paymentReceivedEmail({ firstname, label: getInstallmentLabel(kind), amount: target.amount, kind }),
     );

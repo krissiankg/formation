@@ -1,5 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createPasswordResetToken, passwordFingerprint, readPasswordResetToken } from "@/lib/auth/password-reset";
+import {
+  createPasswordResetToken,
+  passwordFingerprint,
+  readPasswordResetToken,
+  SETUP_LINK_VALIDITY_SECONDS,
+} from "@/lib/auth/password-reset";
 import { hmacSign } from "@/lib/auth/hmac";
 import { hashPassword } from "@/lib/store/enrollments";
 
@@ -23,6 +28,12 @@ describe("password reset token", () => {
   it("expires after one hour", () => {
     const token = createPasswordResetToken({ id: "enr-1" }, NOW);
     expect(readPasswordResetToken(token, NOW + 3601_000)).toBeNull();
+  });
+
+  it("a first-password link sent on validation lasts 7 days", () => {
+    const token = createPasswordResetToken({ id: "enr-1" }, NOW, SETUP_LINK_VALIDITY_SECONDS);
+    expect(readPasswordResetToken(token, NOW + 6 * 86_400_000)?.enrollmentId).toBe("enr-1");
+    expect(readPasswordResetToken(token, NOW + 7 * 86_400_000 + 1000)).toBeNull();
   });
 
   it("refuses a tampered signature", () => {

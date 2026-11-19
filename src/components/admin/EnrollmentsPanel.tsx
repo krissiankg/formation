@@ -44,8 +44,8 @@ export function EnrollmentsPanel({
       </div>
 
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3">
-        <SummaryCard label="Total" value={String(stats.total)} />
-        <SummaryCard label="Payés" value={String(stats.paidCount)} accent />
+        <SummaryCard label="Inscrits" value={String(stats.total)} />
+        <SummaryCard label="Préinscriptions validées" value={String(stats.paidCount)} accent />
         <SummaryCard
           className="col-span-2 sm:col-span-1"
           label="Recettes préinscription"

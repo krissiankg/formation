@@ -8,7 +8,7 @@ import { getSeats } from "@/lib/enrollment/seats-server";
 
 export const metadata = {
   title: `Inscription — ${formation.title}`,
-  description: `Réserve ta place pour ${formation.title}. Préinscription ${formatFcfa(formation.registrationFee)}.`,
+  description: `Inscris-toi à ${formation.title} en une minute, sans paiement en ligne.`,
 };
 
 export const dynamic = "force-dynamic";
@@ -27,11 +27,12 @@ export default async function InscriptionPage() {
             Rejoins la cohorte du {formation.startLabel}
           </h1>
           <p className="mt-4 leading-relaxed text-[color:var(--neutral-600)]">
-            Crée ton compte, puis paie {formatFcfa(formation.registrationFee)} par Mobile Money pour réserver ta
-            place.
+            Inscris-toi en une minute, sans rien payer en ligne. Tu rejoins ensuite le groupe WhatsApp de la
+            formation : le formateur y donne l&apos;adresse et t&apos;explique comment régler ta préinscription de{" "}
+            <span className="whitespace-nowrap">{formatFcfa(formation.registrationFee)}</span>.
           </p>
           <p className="mt-3 text-sm text-[color:var(--neutral-600)]">
-            Déjà inscrit ?{" "}
+            Déjà inscrit ? Le lien du groupe est dans ton email de confirmation. Place déjà validée ?{" "}
             <Link href="/connexion" className="accent-text hover:underline">
               Se connecter
             </Link>
@@ -51,7 +52,7 @@ export default async function InscriptionPage() {
             <li>
               • Total : {formatFcfa(formation.totalPrice)}, payable en {formation.installments.length + 1} fois
             </li>
-            <li>• Ton espace apprenant et le groupe WhatsApp de la formation, dès la préinscription payée</li>
+            <li>• Le groupe WhatsApp de la formation dès ton inscription, ton espace apprenant dès ta préinscription validée</li>
             <li>• {formation.refundGuarantee}</li>
           </ul>
         </div>

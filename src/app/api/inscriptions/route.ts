@@ -1,17 +1,22 @@
 import { NextResponse } from "next/server";
 import { validateInscription } from "@/lib/types";
-import { createEnrollment, findEnrollmentByEmail, hashPassword } from "@/lib/store/enrollments";
+import { createEnrollment, findEnrollmentByEmail } from "@/lib/store/enrollments";
 import { formation } from "@/lib/config/formation";
-import { createFedapayTransaction, notifyTelegram } from "@/lib/integrations";
+import { notifyTelegram } from "@/lib/integrations";
 import { createSession, getSessionEnrollment } from "@/lib/auth/session";
 import { hasRegistrationAccess } from "@/lib/access/registration";
 import { notifyAdmin, notifyStudent } from "@/lib/email/notify";
 import { accountCreatedEmail, adminAlertEmail } from "@/lib/email/messages";
 import { formatFcfa } from "@/lib/format";
-import { getPublicOrigin } from "@/lib/http/public-origin";
 import { getSeats } from "@/lib/enrollment/seats-server";
+import { getWhatsAppGroupUrl } from "@/lib/settings/whatsapp-group";
 
-const PAYMENT_PAGE = "/inscription/paiement";
+/**
+ * Inscription sans paiement en ligne ni mot de passe. L'inscrit arrive sur la page Merci, qui l'envoie
+ * dans le groupe WhatsApp : il y règle sa préinscription au formateur, qui la valide dans l'admin.
+ * C'est cette validation qui ouvre l'espace apprenant et envoie le lien pour créer le mot de passe.
+ */
+const THANK_YOU_PAGE = "/inscription/merci";
 
 export async function POST(request: Request) {
   try {
@@ -26,13 +31,18 @@ export async function POST(request: Request) {
 
     const existing = await findEnrollmentByEmail(data.email);
     if (existing) {
-      // Même apprenant qui renvoie le formulaire (paiement lent ou erreur réseau) : on reprend au paiement.
+      // Même inscrit qui renvoie le formulaire (double clic, erreur réseau) : on le ramène à la page Merci.
       const session = await getSessionEnrollment();
       if (session?.id === existing.id && !hasRegistrationAccess(existing)) {
-        return NextResponse.json({ enrollmentId: existing.id, paymentUrl: null, redirectTo: PAYMENT_PAGE });
+        return NextResponse.json({ enrollmentId: existing.id, redirectTo: THANK_YOU_PAGE });
       }
+      // Sans mot de passe, un inscrit non validé ne peut pas se connecter : on lui dit où retrouver le groupe.
       return NextResponse.json(
-        { error: "Un compte existe déjà avec cet email. Connecte-toi pour continuer." },
+        {
+          error: hasRegistrationAccess(existing)
+            ? "Un compte existe déjà avec cet email. Connecte-toi pour continuer."
+            : "Tu es déjà inscrit avec cet email. Le lien du groupe WhatsApp est dans ton email de confirmation ; sinon, écris au formateur sur WhatsApp.",
+        },
         { status: 409 },
       );
     }
@@ -45,7 +55,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // 20 places maximum par classe : un créneau complet n'accepte plus de préinscription.
+    // 20 places maximum par classe, comptées sur les préinscriptions validées.
     const seats = await getSeats();
     if (seats[data.schedule].full) {
       return NextResponse.json(
@@ -56,12 +66,12 @@ export async function POST(request: Request) {
       );
     }
 
+    // L'échéancier ne change pas : la préinscription reste due, mais elle se règle au formateur.
     const enrollment = await createEnrollment({
       fullName: data.fullName,
       email: data.email,
       whatsapp: data.whatsapp,
       schedule: data.schedule,
-      passwordHash: hashPassword(data.password),
       payments: [
         {
           kind: "registration",
@@ -76,61 +86,37 @@ export async function POST(request: Request) {
       ],
     });
 
-    // Le compte existe : l'apprenant est connecté et pourra payer plus tard depuis son compte.
+    // La session sert seulement à afficher la page Merci : l'espace reste fermé jusqu'à la validation.
     await createSession(enrollment.id);
 
-    const [firstname, ...rest] = data.fullName.trim().split(/\s+/);
-    const lastname = rest.join(" ") || firstname;
+    const firstname = data.fullName.trim().split(/\s+/)[0];
     const scheduleLabel = formation.schedule[data.schedule]?.label || data.schedule;
     const fee = formatFcfa(formation.registrationFee);
 
-    // Les notifications ne doivent jamais empêcher l'inscription d'aller jusqu'au paiement.
+    // Les notifications ne doivent jamais empêcher l'inscription d'aboutir.
     await Promise.allSettled([
-      notifyStudent(enrollment, accountCreatedEmail({ firstname, scheduleLabel, amount: formation.registrationFee })),
+      getWhatsAppGroupUrl().then((groupUrl) =>
+        notifyStudent(enrollment, accountCreatedEmail({ firstname, scheduleLabel, groupUrl })),
+      ),
       notifyAdmin(
         adminAlertEmail("Nouvelle inscription", [
           ["Nom", data.fullName],
           ["Email", data.email],
           ["WhatsApp", data.whatsapp],
           ["Créneau", scheduleLabel],
-          ["Préinscription", `${fee} (en attente de paiement)`],
+          ["Préinscription", `${fee} à régler au formateur, puis à valider dans l'admin`],
         ]),
       ),
       notifyTelegram(
-        `<b>Inscription démarrée</b>\n` +
+        `<b>Nouvelle inscription</b>\n` +
           `${data.fullName} · ${scheduleLabel}\n` +
           `WhatsApp: ${data.whatsapp}\n` +
           `Email: ${data.email}\n` +
-          `Montant: ${fee}`,
+          `Préinscription ${fee} à régler au formateur`,
       ),
     ]);
 
-    const origin = getPublicOrigin(request, "www.forgeia.site");
-    const callbackUrl = `${origin}${PAYMENT_PAGE}?retour=1`;
-
-    try {
-      const tx = await createFedapayTransaction({
-        amount: formation.registrationFee,
-        description: `Préinscription — ${formation.title}`,
-        customer: {
-          firstname,
-          lastname,
-          email: data.email,
-          phone: data.whatsapp,
-        },
-        callbackUrl,
-        customMetadata: {
-          enrollmentId: enrollment.id,
-          kind: "registration",
-        },
-      });
-      const paymentUrl = tx.stub ? `${callbackUrl}&mock_payment=1&tx=${tx.id}` : tx.paymentUrl;
-      return NextResponse.json({ enrollmentId: enrollment.id, paymentUrl });
-    } catch (paymentError) {
-      // FedaPay indisponible : le compte est créé, l'apprenant réessaie depuis la page de paiement.
-      console.error("[inscriptions:fedapay]", paymentError);
-      return NextResponse.json({ enrollmentId: enrollment.id, paymentUrl: null, redirectTo: PAYMENT_PAGE });
-    }
+    return NextResponse.json({ enrollmentId: enrollment.id, redirectTo: THANK_YOU_PAGE });
   } catch (error) {
     console.error(error);
     return NextResponse.json(
