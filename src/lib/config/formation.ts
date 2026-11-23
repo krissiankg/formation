@@ -68,7 +68,7 @@ export const formation = {
   refundGuarantee:
     "Si la formation est annulée, ou reportée à une date qui ne te convient pas, tout ce que tu as payé t'est remboursé, préinscription comprise.",
   /** Prix de vente d'un site au Bénin, en FCFA : ce sont les tarifs pratiqués par le formateur. */
-  sitePrice: { from: 125_000, to: 350_000 },
+  sitePrice: { from: 125_000, to: 500_000 },
   currency: "XOF",
   currencyLabel: "FCFA",
   totalPrice: 80_000,
