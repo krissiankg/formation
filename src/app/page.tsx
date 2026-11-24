@@ -20,7 +20,7 @@ import type { StudentTestimonial } from "@/lib/types";
 export const revalidate = 300;
 
 /** L'inscription en ligne ne demande aucun paiement : la préinscription se règle ensuite au formateur. */
-const ctaLabel = "Je m'inscris, sans payer maintenant";
+const ctaLabel = "Je m'inscris";
 /** Nombre de paiements : la préinscription puis les tranches. */
 const paymentsCount = formation.installments.length + 1;
 /** « le samedi matin » quand une seule classe est ouverte, sinon « le week-end ». */
